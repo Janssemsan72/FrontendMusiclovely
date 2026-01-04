@@ -6,6 +6,7 @@ import testimonial1 from "@/assets/testimonial-1-96.webp";
 import testimonial2 from "@/assets/testimonial-2-96.webp";
 import testimonial3 from "@/assets/testimonial-3-96.webp";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useUtmParams } from "@/hooks/useUtmParams";
 
 // Lista de vídeos em ordem de prioridade (fallbacks)
 const heroVideoSources = [
@@ -14,8 +15,6 @@ const heroVideoSources = [
 ];
 const heroVideo = heroVideoSources[0];
 const heroPoster = '/images/collage-memories-new.webp';
-// Locale removido - apenas português
-import { useUtmParams } from "@/hooks/useUtmParams";
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -33,20 +32,7 @@ export default function HeroSection() {
   const handleQuizClick = (e: React.MouseEvent) => {
     e.preventDefault();
     const quizPath = getLocalizedLink('/quiz');
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:33',message:'Clicou em criar música',data:{quizPath,currentPath:window.location.pathname},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-    try {
-      navigateWithUtms(quizPath);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:37',message:'Navegação iniciada',data:{quizPath},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-    } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:40',message:'Erro ao navegar para quiz',data:{error:error instanceof Error?error.message:String(error),quizPath},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      throw error;
-    }
+    navigateWithUtms(quizPath);
   };
 
   return (
@@ -67,21 +53,10 @@ export default function HeroSection() {
               decoding="async"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                console.error('❌ [HeroSection] Erro ao carregar poster:', {
-                  attemptedUrl: heroPoster,
-                  currentSrc: target.src,
-                  naturalWidth: target.naturalWidth,
-                  naturalHeight: target.naturalHeight
-                });
-                // Tentar fallback do poster
                 const posterFallback = '/images/collage-memories-DEqE2yio.webp';
                 if (target.src !== posterFallback) {
-                  console.log('🔄 [HeroSection] Tentando fallback do poster:', posterFallback);
                   target.src = posterFallback;
                 }
-              }}
-              onLoad={() => {
-                // Poster carregado com sucesso
               }}
             />
             {!videoError ? (
@@ -105,68 +80,28 @@ export default function HeroSection() {
                 onError={(e) => {
                   const target = e.target as HTMLVideoElement;
                   const currentSrc = target.src;
-                  // Extrair apenas o pathname da URL
-                  const currentPath = currentSrc.includes('/') 
-                    ? currentSrc.split('/').slice(-2).join('/')
-                    : currentSrc;
-                  const currentIndex = heroVideoSources.findIndex(src => 
-                    currentSrc.includes(src) || currentPath.includes(src.replace('/', ''))
-                  );
-                  
-                  const errorDetails = {
-                    currentSrc,
-                    currentPath,
+                  const currentIndex = heroVideoSources.findIndex((src) => currentSrc.includes(src));
+                  console.error('❌ [HeroSection] Erro ao carregar vídeo:', {
                     attemptedUrl: currentVideoSrc,
-                    errorCount: videoErrorCount + 1,
-                    networkState: target?.networkState,
-                    readyState: target?.readyState,
-                    error: target.error,
+                    currentSrc,
+                    attempt: videoErrorCount + 1,
+                    currentIndex,
+                    totalSources: heroVideoSources.length,
+                    networkState: target.networkState,
+                    readyState: target.readyState,
                     errorCode: target.error?.code,
-                    errorMessage: target.error?.message,
-                    videoWidth: target?.videoWidth,
-                    videoHeight: target?.videoHeight,
-                    baseURI: target?.baseURI,
-                  };
-                  
-                  console.error('❌ [HeroSection] Erro ao carregar vídeo:', errorDetails);
-                  
-                  // Verificar se o arquivo existe
-                  fetch(currentSrc, { method: 'HEAD', mode: 'no-cors' })
-                    .catch((fetchError) => {
-                      console.error('❌ [HeroSection] Erro ao verificar arquivo:', fetchError);
-                    });
+                  });
                   
                   // Tentar próximo fallback
                   if (currentIndex < heroVideoSources.length - 1) {
                     const nextVideo = heroVideoSources[currentIndex + 1];
-                    // Forçar recarregamento com timestamp para evitar cache
-                    setCurrentVideoSrc(`${nextVideo}?t=${Date.now()}`);
-                    setVideoErrorCount(prev => prev + 1);
+                    setCurrentVideoSrc(nextVideo);
+                    setVideoErrorCount((prev) => prev + 1);
                     setVideoReady(false);
                   } else {
-                    // Todos os fallbacks falharam - tentar recarregar o primeiro com timestamp
-                    if (videoErrorCount < 3) {
-                      setTimeout(() => {
-                        const retryUrl = `${heroVideoSources[0]}?t=${Date.now()}&retry=${videoErrorCount + 1}`;
-                        setCurrentVideoSrc(retryUrl);
-                        setVideoErrorCount(prev => prev + 1);
-                        setVideoReady(false);
-                      }, 2000 * (videoErrorCount + 1)); // Delay progressivo
-                    } else {
-                      console.error('❌ [HeroSection] Todos os fallbacks de vídeo falharam após múltiplas tentativas');
-                      setVideoError(true);
-                      setVideoReady(false);
-                    }
+                    setVideoError(true);
+                    setVideoReady(false);
                   }
-                }}
-                onLoadStart={() => {
-                  // Iniciando carregamento do vídeo
-                }}
-                onStalled={() => {
-                  console.warn('⚠️ [HeroSection] Vídeo travado durante carregamento');
-                }}
-                onWaiting={() => {
-                  console.warn('⚠️ [HeroSection] Vídeo aguardando dados');
                 }}
               />
             ) : (
@@ -245,4 +180,3 @@ export default function HeroSection() {
     </section>
   );
 }
-

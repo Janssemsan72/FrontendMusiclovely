@@ -1,4 +1,4 @@
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -7,13 +7,9 @@ import { Loader2 } from 'lucide-react';
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado
  * Redireciona IMEDIATAMENTE para Cakto se detectar message_id na URL
  */
-const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactNode }) => {
+export default function CheckoutRedirectWrapper({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:10',message:'CheckoutRedirectWrapper render',data:{pathname:location.pathname,search:location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-  // #endregion
   
   useEffect(() => {
     // ✅ FASE 5: Verificar se search não mudou antes de processar
@@ -72,20 +68,24 @@ const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactN
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
             const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
+            // ✅ CORREÇÃO: Detectar locale da rota atual para usar no redirect_url
+            const localeMatch = location.pathname.match(/^\/(pt|en|es)/);
+            const locale = localeMatch ? localeMatch[1] : 'pt';
+            
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55
             let normalizedWhatsapp = orderData.customer_whatsapp.replace(/\D/g, '');
             if (!normalizedWhatsapp.startsWith('55')) {
               normalizedWhatsapp = `55${normalizedWhatsapp}`;
             }
             const origin = window.location.origin;
-            const redirectUrl = `${origin}/payment-success`;
+            const redirectUrl = `${origin}/${locale}/payment-success`;
             
             const caktoParams = new URLSearchParams();
             caktoParams.set('order_id', orderData.id);
             caktoParams.set('email', orderData.customer_email);
             // ✅ Cakto usa 'phone' para pré-preencher o telefone (não 'whatsapp')
             caktoParams.set('phone', normalizedWhatsapp);
-            caktoParams.set('language', 'pt');
+            caktoParams.set('language', locale);
             caktoParams.set('redirect_url', redirectUrl);
             
             // ⚠️ CRÍTICO: NÃO adicionar parâmetros do checkout interno (restore, quiz_id, token)
@@ -135,10 +135,5 @@ const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactN
   // Sempre renderizar children para não bloquear a página
   
   return <>{children}</>;
-};
-
-// ✅ OTIMIZAÇÃO: Memoizar para evitar re-renders desnecessários
-// Nota: useLocation() dentro do componente ainda pode causar re-renders quando location muda
-// Mas isso evita re-renders quando apenas as props children mudam de referência
-export default memo(CheckoutRedirectWrapperComponent);
+}
 

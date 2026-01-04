@@ -38,12 +38,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <LanguageContext.Provider value={{
-      language: (() => {
-        const raw = i18n?.language;
-        const normalized = raw ? raw.split('-')[0] : null;
-        if (normalized === 'pt' || normalized === 'en' || normalized === 'es') return normalized;
-        return initialLanguage;
-      })(),
+      language: i18n?.language || initialLanguage,
       loading: false,
       changeLanguage,
     }}>

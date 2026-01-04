@@ -4,16 +4,12 @@ import { useLocaleContext } from '@/contexts/LocaleContext';
 import { getCurrentLocale, removeLocalePrefix } from '@/lib/i18nRoutes';
 import { getLocaleFromPath } from '@/lib/detectLocale';
 import languageAnalytics from '@/lib/languageAnalytics';
-import type { SupportedLocale } from '@/lib/language-detection';
 import { detectLocaleAtEdge, normalizeSimpleLocale } from '@/lib/edgeLocale';
 import { getDeviceInfo, getOptimizedTimeout } from '@/utils/detection/deviceDetection';
 import PublicRoutes from './PublicRoutes';
 import { devLog, i18nLog, isDevVerbose } from '@/utils/debug/devLogger';
 
 const SUPPORTED_LOCALES = ['pt', 'en', 'es'] as const;
-
-// Rotas que NÃO devem ter prefixo de idioma
-const ROUTES_WITHOUT_LOCALE_PREFIX = ['/checkout', '/payment-success', '/payment/success'];
 
 // Cache para resultado da detecção de edge (evitar múltiplas chamadas)
 let cachedEdgeDetection: { locale: string | null; timestamp: number } | null = null;
@@ -49,22 +45,12 @@ function LocaleRouterWrapper() {
     SUPPORTED_LOCALES.includes(localeFromPath as any)
   );
   
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:41',message:'LocaleRouterWrapper render',data:{pathname:currentPath,localeFromPath,hasValidLocale},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
   // Se já tem locale válido, retornar PublicRoutes diretamente SEM renderizar LocaleRouter
   if (hasValidLocale) {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:54',message:'LocaleRouterWrapper returning PublicRoutes directly',data:{hasValidLocale,localeFromPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return <PublicRoutes />;
   }
   
   // Se não tem locale válido, renderizar LocaleRouter para processar
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:58',message:'LocaleRouterWrapper returning LocaleRouterInternal',data:{hasValidLocale,localeFromPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   return <LocaleRouterInternal />;
 }
 
@@ -81,7 +67,7 @@ function LocaleRouterInternal() {
   const navigate = useNavigate();
   const params = useParams<{ locale?: string }>();
   const detectionAbortController = useRef<AbortController | null>(null);
-  const forceLocaleRef = useRef<(locale: SupportedLocale) => void>(forceLocale);
+  const forceLocaleRef = useRef(forceLocale);
   
   // ✅ CORREÇÃO CRÍTICA: Atualizar ref quando forceLocale mudar
   useEffect(() => {
@@ -155,25 +141,6 @@ function LocaleRouterInternal() {
       localeFromPathCheck && 
       SUPPORTED_LOCALES.includes(localeFromPathCheck as any)
     );
-    
-    // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
-    const pathWithoutLocaleCheck = removeLocalePrefix(currentPathCheck);
-    const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
-      pathWithoutLocaleCheck === route || pathWithoutLocaleCheck.startsWith(route + '/')
-    );
-    
-    if (shouldSkipLocalePrefix && !hasValidLocaleCheck) {
-      // Rota sem prefixo e sem locale na URL - apenas atualizar contexto e retornar
-      forceLocaleRef.current('pt'); // Default para português
-      lastProcessedRouteKeyRef.current = routeKey;
-      globalNavigationState.hasProcessed.set(routeKey, Date.now());
-      globalNavigationState.isProcessing = false;
-      if (globalNavigationState.processingTimeout) {
-        clearTimeout(globalNavigationState.processingTimeout);
-        globalNavigationState.processingTimeout = null;
-      }
-      return;
-    }
     
     if (hasValidLocaleCheck) {
       // Se já tem locale válido, apenas atualizar contexto e retornar
@@ -303,18 +270,11 @@ function LocaleRouterInternal() {
           
           // Redirecionar para o idioma preferido
           const pathWithoutLocale = removeLocalePrefix(currentPath);
-          
-          // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
-          const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
-            pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
-          );
-          
           // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
           const isMusicLovelyShop = typeof window !== 'undefined' && 
             (window.location.hostname.includes('musiclovely.shop') || 
              window.location.hostname === 'www.musiclovely.shop');
-          
-          const newPath = (shouldSkipLocalePrefix || (isMusicLovelyShop && preferred === 'pt'))
+          const newPath = (isMusicLovelyShop && preferred === 'pt')
             ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
             : `/${preferred}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
           const finalPath = `${newPath}${location.search || ''}${location.hash || ''}`;
@@ -426,14 +386,8 @@ function LocaleRouterInternal() {
         
         // Redirecionar para o idioma decidido
         const pathWithoutLocale = removeLocalePrefix(currentPath);
-        
-        // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
-        const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
-          pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
-        );
-        
         // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
-        const newPath = (shouldSkipLocalePrefix || (isMusicLovelyShop && final === 'pt'))
+        const newPath = (isMusicLovelyShop && final === 'pt') 
           ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
           : `/${final}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
         const search = location.search || '';
@@ -511,15 +465,9 @@ function LocaleRouterInternal() {
   // ✅ SOLUÇÃO RADICAL: Este useEffect SÓ executa se NÃO tem locale válido na URL
   // Se hasValidLocale for true, este useEffect nunca será executado porque o componente já retornou acima
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:503',message:'useEffect triggered',data:{routeKey,hasValidLocale,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     // ✅ CORREÇÃO CRÍTICA: Se já tem locale válido, NÃO PROCESSAR NADA
     if (hasValidLocale) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:507',message:'Early return - hasValidLocale',data:{routeKey,hasValidLocale},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       return;
     }
     
@@ -530,17 +478,11 @@ function LocaleRouterInternal() {
     
     // ✅ CORREÇÃO CRÍTICA: Se o routeKey não mudou desde a última execução, não processar
     if (lastProcessedRouteKeyRef.current === routeKey) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:516',message:'Early return - routeKey unchanged',data:{routeKey,lastProcessed:lastProcessedRouteKeyRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       return;
     }
     
     // ✅ CORREÇÃO CRÍTICA: Se já está processando ou navegando, bloquear completamente
     if (globalNavigationState.isProcessing || globalNavigationState.isNavigating) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:521',message:'Early return - already processing/navigating',data:{isProcessing:globalNavigationState.isProcessing,isNavigating:globalNavigationState.isNavigating},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       return;
     }
     
@@ -607,9 +549,6 @@ function LocaleRouterInternal() {
         return;
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:588',message:'Calling processRoute',data:{routeKey},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       processRoute();
     }, DEBOUNCE_DELAY_MS);
     

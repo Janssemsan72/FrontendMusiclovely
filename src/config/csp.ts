@@ -87,8 +87,6 @@ const baseDirectives: CSPDirectives = {
     'https://*.contentsquare.net',
     'https://*.similarweb.com',
     'https://cdn.similarweb.com',
-    'https://static.cloudflareinsights.com',
-    'https://*.cloudflareinsights.com',
     // Hashes removidos - devem estar apenas em script-src-elem
   ],
   
@@ -102,8 +100,6 @@ const baseDirectives: CSPDirectives = {
     'https://*.contentsquare.net',
     'https://*.similarweb.com',
     'https://cdn.similarweb.com',
-    'https://static.cloudflareinsights.com',
-    'https://*.cloudflareinsights.com',
     ...Object.values(INLINE_SCRIPT_HASHES).filter(Boolean),
   ],
   
@@ -169,9 +165,6 @@ const baseDirectives: CSPDirectives = {
     'https://cdn.similarweb.com',
     'https://*.contentsquare.net',
     'https://t.contentsquare.net',
-    'https://cloudflareinsights.com',
-    'https://static.cloudflareinsights.com',
-    'https://*.cloudflareinsights.com',
   ],
   
   // Frames: specific domains only
@@ -182,7 +175,6 @@ const baseDirectives: CSPDirectives = {
     'https://js.stripe.com',
     'https://connect.facebook.net',
     'https://*.facebook.net',
-    'https://www.facebook.com',
     'https://safeframe.googlesyndication.com',
     'https://*.similarweb.com',
     'https://*.contentsquare.net',

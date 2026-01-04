@@ -68,9 +68,9 @@ export default function LanguageSelector() {
     let newPath: string;
     
     if (isCheckoutPage) {
-      // Se estamos no checkout, manter no checkout (sem prefixo de idioma)
-      newPath = '/checkout';
-      console.log('🛒 [LanguageSelector] Redirecionando para checkout');
+      // Se estamos no checkout, redirecionar para o checkout no idioma selecionado
+      newPath = `/${languageCode}/checkout`;
+      console.log('🛒 [LanguageSelector] Redirecionando para checkout no idioma:', languageCode);
     } else {
       // Para outras páginas, usar a lógica normal de troca de idioma
       newPath = switchLocale(currentPath, languageCode);

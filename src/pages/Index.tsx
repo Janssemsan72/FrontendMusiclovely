@@ -62,13 +62,6 @@ const Index = memo(() => {
   
   // UTMs são capturados automaticamente pelo hook
 
-  // ✅ AUDITORIA: Log de montagem da página Index
-  useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:66',message:'Index montado',data:{pathname:window.location.pathname,hasUtms,userAgent:navigator.userAgent.substring(0,50)},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-  }, [hasUtms]);
-
   // Rastrear visualização da homepage (UTMify)
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
@@ -78,21 +71,11 @@ const Index = memo(() => {
     const schedule = () => {
       if (cancelled) return;
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:74',message:'Tentando trackEvent homepage_viewed',data:{pathname:win.location.pathname,hasUtms},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         trackEvent('homepage_viewed', {
           pathname: win.location.pathname,
           hasUtms,
-        }).catch((error) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:78',message:'Erro em trackEvent',data:{error:error?.message||String(error)},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'B'})}).catch(()=>{});
-          // #endregion
-        });
+        }).catch(() => {});
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Index.tsx:81',message:'Exceção em trackEvent',data:{error:error instanceof Error?error.message:String(error)},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         void error;
       }
     };

@@ -28,5 +28,5 @@
     "resolveJsonModule": true
   },
   "include": ["src"],
-  "exclude": ["src/__tests__", "src/index.ts", "src/routes"]
+  "exclude": ["src/__tests__"]
 }

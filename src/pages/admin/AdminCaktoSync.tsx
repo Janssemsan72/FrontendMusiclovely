@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { apiHelpers } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -318,16 +317,23 @@ export default function AdminCaktoSync() {
       if (!match.hasLyrics) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          // Usar backend Railway em vez de Edge Function
-          const result = await apiHelpers.generateLyrics({ order_id: match.orderId });
+          const authToken = session?.access_token;
 
-          if (!result.success) {
-            console.warn("⚠️ Erro ao chamar generate-lyrics (o trigger vai gerar automaticamente):", result.error);
+          const { data: functionData, error: functionError } = await supabase.functions.invoke(
+            "generate-lyrics-for-approval",
+            {
+              body: { order_id: match.orderId },
+              headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+            }
+          );
+
+          if (functionError) {
+            console.warn("⚠️ Erro ao chamar generate-lyrics-for-approval (o trigger vai gerar automaticamente):", functionError);
           } else {
-            console.log("✅ generate-lyrics chamado com sucesso (backup)");
+            console.log("✅ generate-lyrics-for-approval chamado com sucesso (backup)");
           }
         } catch (error) {
-          console.warn("⚠️ Erro ao chamar generate-lyrics (o trigger vai gerar automaticamente):", error);
+          console.warn("⚠️ Erro ao chamar generate-lyrics-for-approval (o trigger vai gerar automaticamente):", error);
         }
       } else {
         console.log("ℹ️ Pedido já tem letra, pulando geração");

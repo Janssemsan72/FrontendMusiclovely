@@ -16,11 +16,9 @@ export default function HowItWorks() {
     const currentLocale = currentPath.split('/')[1];
     
     // Se estamos em uma rota localizada, usar o locale da URL
-    const activeLocale = (currentLocale === 'pt' || currentLocale === 'en' || currentLocale === 'es')
-      ? currentLocale
-      : (currentLanguage === 'pt' || currentLanguage === 'en' || currentLanguage === 'es')
-        ? currentLanguage
-        : 'pt';
+    const activeLocale = (currentLocale === 'pt' || currentLocale === 'en' || currentLocale === 'es') 
+      ? currentLocale 
+      : currentLanguage;
     
     return getLocalizedPath(path, activeLocale);
   };

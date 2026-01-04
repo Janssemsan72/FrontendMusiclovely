@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -282,11 +281,6 @@ export function LogDetailModal({ open, onOpenChange, log, type }: LogDetailModal
           <DialogTitle>
             {type === 'checkout' ? 'Detalhes do Evento' : 'Detalhes do Log Admin'}
           </DialogTitle>
-          <DialogDescription>
-            {type === 'checkout'
-              ? 'Visualize o payload do evento e dados de rastreamento do checkout.'
-              : 'Visualize a ação registrada e as alterações associadas.'}
-          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-100px)]">
           {type === 'checkout' ? renderCheckoutEvent(log as CheckoutEvent) : renderAdminLog(log as AdminLog)}

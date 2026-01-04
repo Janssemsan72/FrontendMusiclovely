@@ -22,7 +22,7 @@ export const useTranslation = () => {
     locale: 'pt', // Sempre português
     i18n: {
       language: 'pt',
-      changeLanguage: (_lang: string) => {},
+      changeLanguage: () => {}, // Não faz nada - sempre português
       dir: () => 'ltr'
     },
     currentLanguage: 'pt',

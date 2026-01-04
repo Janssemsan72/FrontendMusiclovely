@@ -42,16 +42,10 @@ export default function ScrollRestoration() {
   ];
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ScrollRestoration.tsx:44',message:'useEffect triggered',data:{pathname:location.pathname,lastPathname:lastPathnameRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     const currentPath = location.pathname;
     
     // Verificar se pathname mudou
     if (lastPathnameRef.current === currentPath) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ScrollRestoration.tsx:48',message:'Early return - pathname unchanged',data:{currentPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       return;
     }
     lastPathnameRef.current = currentPath;

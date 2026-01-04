@@ -4,7 +4,11 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/download/:id/:token",
+      "destination": "/download.html"
+    },
+    {
+      "source": "/((?!assets|images|video|audio|testimonials|favicon.ico|robots.txt|manifest.*\\.json|.*\\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot|mp3|mp4|webm)).*)",
       "destination": "/index.html"
     }
   ],
@@ -14,7 +18,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: wss://*.supabase.co https://*.supabase.co https://api.openai.com https://js.stripe.com https://*.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com; img-src 'self' data: https: blob:; media-src 'self' https: blob: data: https://*.supabase.co; font-src 'self' data: https:; child-src 'self' blob: data: https:; frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://www.facebook.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: wss://*.supabase.co https://*.supabase.co https://api.openai.com https://js.stripe.com https://*.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://business-api.tiktok.com; img-src 'self' data: https: blob:; media-src 'self' https: blob: data: https://*.supabase.co; font-src 'self' data: https:; child-src 'self' blob: data: https:; frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://safeframe.googlesyndication.com https://*.similarweb.com;"
         }
       ]
     },
@@ -47,3 +51,4 @@
     }
   ]
 }
+>>>>>>> 9653054 (feat: inicializar repositÃ³rio frontend limpo com apenas arquivos essenciais)

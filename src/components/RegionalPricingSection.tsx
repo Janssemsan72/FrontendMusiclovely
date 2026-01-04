@@ -377,10 +377,7 @@ export default function RegionalPricingSection() {
                     // Salvar session token para checkout
                     localStorage.setItem('pricing_session_token', pricing.session_token);
                     // Redirecionar para quiz com navegação localizada (preservando UTMs)
-                    const activeLocale = (currentLanguage === 'pt' || currentLanguage === 'en' || currentLanguage === 'es')
-                      ? currentLanguage
-                      : 'pt';
-                    const quizPath = getLocalizedPath('/quiz', activeLocale);
+                    const quizPath = getLocalizedPath('/quiz', currentLanguage);
                     navigateWithUtms(quizPath);
                   }}
                 >

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCaktoSales, useCreateCaktoSale, useUpdateCaktoSale, useDeleteCaktoSale } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,7 +72,6 @@ export function CaktoSalesTab() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingSale ? "Editar" : "Nova"} Venda Cakto</DialogTitle>
-              <DialogDescription>Registre o resumo diário de vendas e taxas da Cakto.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

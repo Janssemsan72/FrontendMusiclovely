@@ -1,6 +1,6 @@
 import React from 'react';
 import { SimpleLocaleProvider } from '@/contexts/SimpleLocaleContext';
-import SimpleTranslationTest from '@/components/dev/SimpleTranslationTest';
+import SimpleTranslationTest from '@/components/SimpleTranslationTest';
 
 export default function SimpleLocaleTestPage() {
   return (

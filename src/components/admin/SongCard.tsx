@@ -2,7 +2,7 @@ import { useState, memo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Music, Calendar, Mail, Clock, Send } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -179,10 +179,6 @@ const SongCardComponent = ({
       {/* Cover Preview Dialog */}
         <Dialog open={!!selectedCover} onOpenChange={handleCloseDialog}>
         <DialogContent className="max-w-4xl">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Preview da capa</DialogTitle>
-            <DialogDescription>Visualização ampliada da capa da música.</DialogDescription>
-          </DialogHeader>
           {selectedCover && (
             <img 
               src={selectedCover} 

@@ -193,10 +193,9 @@ export async function sendReleaseWebhook(
   songs: Song[],
   about: string
 ): Promise<void> {
-  const WEBHOOK_URL = 'https://webhook.automaeia.com.br/webhook/recebimentos-musicas';
+  const WEBHOOK_URL = 'https://webhook.automaeia.com.br/webhook/music-lovely-webhhoks';
 
   try {
-    console.log(`📤 [Webhook] URL do webhook: ${WEBHOOK_URL}`);
     console.log(`📤 [Webhook] Preparando dados para webhook - Order: ${order.id}, Songs: ${songs.length}`);
 
     // Gerar URLs de download para cada música
@@ -228,7 +227,6 @@ export async function sendReleaseWebhook(
     };
 
     console.log(`📤 [Webhook] Enviando payload para webhook:`, {
-      webhook_url: WEBHOOK_URL,
       order_id: payload.order_id,
       email: payload.email,
       phone: payload.phone ? '***' : null,
@@ -237,7 +235,6 @@ export async function sendReleaseWebhook(
     });
 
     // Enviar para o webhook
-    console.log(`📤 [Webhook] Fazendo requisição POST para: ${WEBHOOK_URL}`);
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -270,7 +267,7 @@ export async function sendLyricsPendingWebhook(
   email: string,
   phone: string | null
 ): Promise<void> {
-  const WEBHOOK_URL = 'https://webhook.automaeia.com.br/webhook/recebimentos-musicas';
+  const WEBHOOK_URL = 'https://webhook.automaeia.com.br/webhook/music-lovely-webhhoks';
 
   try {
     console.log(`📤 [Webhook Lyrics] Preparando dados para webhook - Order: ${order_id}, Email: ${email}`);

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { apiHelpers } from "@/lib/api";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -841,12 +840,19 @@ export default function AdminOrderDetails() {
       setGeneratingLyrics(true);
       toast.info("Gerando letra...");
 
-      // Usar backend Railway em vez de Edge Function
-      const result = await apiHelpers.generateLyrics({ order_id: order.id });
+      const { data, error } = await supabase.functions.invoke('generate-lyrics-for-approval', {
+        body: { order_id: order.id }
+      });
 
-      if (!result.success) {
-        const errorMessage = result.error || 'Erro ao gerar letra';
-        console.error("❌ [AdminOrderDetails] Erro ao gerar letra:", errorMessage);
+      if (error) {
+        console.error("❌ [AdminOrderDetails] Erro ao gerar letra:", error);
+        toast.error(`Erro ao gerar letra: ${error.message || 'Erro desconhecido'}`);
+        return;
+      }
+
+      if (data?.success === false || data?.error) {
+        const errorMessage = data?.error || data?.message || 'Erro ao gerar letra';
+        console.error("❌ [AdminOrderDetails] Erro na função:", errorMessage);
         toast.error(`Erro ao gerar letra: ${errorMessage}`);
         return;
       }
@@ -855,8 +861,8 @@ export default function AdminOrderDetails() {
         <div>
           <p className="font-semibold">✅ Letra sendo gerada!</p>
           <p className="text-sm mt-1">A letra aparecerá em "Pendentes" em alguns segundos.</p>
-          {result.job_id && (
-            <p className="text-xs mt-1 text-muted-foreground">Job ID: {result.job_id}</p>
+          {data?.job_id && (
+            <p className="text-xs mt-1 text-muted-foreground">Job ID: {data.job_id}</p>
           )}
         </div>,
         { duration: 5000 }

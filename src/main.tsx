@@ -74,9 +74,8 @@ if (typeof window !== 'undefined') {
     lastHrefChange = now;
   };
   
-  // ✅ OTIMIZAÇÃO: Usar pagehide ao invés de beforeunload para não bloquear bfcache
-  // pagehide funciona tanto para navegação quanto para fechamento, mas não bloqueia bfcache
-  window.addEventListener('pagehide', () => {
+  // Monitorar recarregamentos via beforeunload
+  window.addEventListener('beforeunload', () => {
     const now = Date.now();
     const timeSinceLastReload = now - lastReloadTime;
     

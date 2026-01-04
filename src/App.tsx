@@ -44,7 +44,6 @@ const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"))
 // AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
 const AdminFinancial = lazyWithRetry(() => import("./pages/admin/AdminFinancial"));
-const AdminAffiliates = lazyWithRetry(() => import("./pages/admin/AdminAffiliates"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
 const Quiz = lazyWithRetry(() => import("./pages/Quiz"));
 const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
@@ -112,10 +111,6 @@ const AppContent = () => {
   const isLoading = false;
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:110',message:'AppContent render',data:{pathname:location.pathname,isLoading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
   
   if (isDevVerbose) {
     devLog.debug('[App] AppContent renderizando...', {
@@ -213,10 +208,9 @@ const AppContent = () => {
 
   // ✅ OTIMIZAÇÃO: Prefetch automático de rotas críticas após carregamento inicial
   // Reduzido para 1 segundo e apenas rotas essenciais para melhorar performance inicial
-  // ✅ OTIMIZAÇÃO: NÃO prefetch componentes admin - carregar apenas quando necessário
   useEffect(() => {
     if (isLoading) return;
-    if (isAdminRoute) return; // Não prefetch se já está em rota admin
+    if (isAdminRoute) return;
 
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
@@ -231,7 +225,6 @@ const AppContent = () => {
     let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     const prefetch = () => {
       if (cancelled) return;
-      // ✅ OTIMIZAÇÃO: Prefetch apenas rotas públicas críticas, não admin
       Promise.all([
         import('./pages/Quiz').catch(() => {}),
         import('./pages/Checkout').catch(() => {})
@@ -297,7 +290,11 @@ const AppContent = () => {
         <Suspense fallback={null}>
           <Routes>
               {/* Rotas públicas - apenas português */}
-              <Route path="/*" element={<PublicRoutes />} />
+              <Route path="/*" element={
+                <Suspense fallback={null}>
+                  <PublicRoutes />
+                </Suspense>
+              } />
             
             {/* Admin sem prefixo */}
             <Route
@@ -429,13 +426,6 @@ const AppContent = () => {
                 <Suspense fallback={null}>
                   <ProtectedAdminRoute requiredPermission="logs">
                     <AdminLogs />
-                  </ProtectedAdminRoute>
-                </Suspense>
-              } />
-              <Route path="afiliados" element={
-                <Suspense fallback={null}>
-                  <ProtectedAdminRoute requiredPermission="orders">
-                    <AdminAffiliates />
                   </ProtectedAdminRoute>
                 </Suspense>
               } />

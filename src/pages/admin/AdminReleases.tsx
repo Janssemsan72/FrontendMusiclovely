@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Music, Calendar, Mail, AlertCircle, Trash2, RefreshCw, Send, Copy, Check, Loader2, Search, X } from "lucide-react";
@@ -19,40 +19,6 @@ import {
 } from "@/components/ui/tooltip";
 import { sendReleaseWebhook } from "@/utils/webhook";
 
-/**
- * Função helper para validar e corrigir URLs de imagens do Supabase Storage
- * Se a URL for um path relativo, tenta gerar a URL pública
- */
-const getValidImageUrl = async (coverUrl: string | null | undefined): Promise<string | null> => {
-  if (!coverUrl) return null;
-  
-  // Se já for uma URL completa (http/https), usar diretamente
-  if (coverUrl.startsWith('http://') || coverUrl.startsWith('https://')) {
-    return coverUrl;
-  }
-  
-  // Se for um path do Supabase Storage, tentar gerar URL pública
-  try {
-    // Extrair o path do bucket (formato: order_id/timestamp_cover.jpg)
-    const path = coverUrl.startsWith('generated-songs/') 
-      ? coverUrl.replace('generated-songs/', '')
-      : coverUrl;
-    
-    const { data } = supabase.storage
-      .from('generated-songs')
-      .getPublicUrl(path);
-    
-    if (data?.publicUrl) {
-      return data.publicUrl;
-    }
-  } catch (error) {
-    console.warn('⚠️ [AdminReleases] Erro ao gerar URL pública para imagem:', coverUrl, error);
-  }
-  
-  // Fallback: retornar URL original
-  return coverUrl;
-};
-
 export default function AdminReleases() {
   // ✅ OTIMIZAÇÃO: Usar React Query para cache automático
   const { data: orders, isLoading: loading, refetch } = useReleases();
@@ -66,8 +32,6 @@ export default function AdminReleases() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // ✅ NOVO: Rastrear cards que foram enviados para remover imediatamente
   const [sentOrderIds, setSentOrderIds] = useState<Set<string>>(new Set());
-  // ✅ NOVO: Rastrear URLs de imagens que falharam ao carregar
-  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
 
   // ✅ OTIMIZAÇÃO: React Query cuida do cache, apenas configurar realtime para updates
   useEffect(() => {
@@ -129,6 +93,7 @@ export default function AdminReleases() {
       }
 
       toast.success(`✅ Música "${songTitle}" deletada com sucesso!`);
+      console.log('✅ Música deletada:', data);
 
       // ✅ OTIMIZAÇÃO: React Query cuida do refetch
       refetch();
@@ -157,6 +122,7 @@ export default function AdminReleases() {
       // 1. Buscar músicas dos pedidos que estão prontas para liberar (mesmo filtro do card)
       // ✅ CORREÇÃO: Buscar apenas músicas com status 'ready', sem released_at e com audio_url
       // Isso garante que só tentamos liberar as músicas que aparecem no card
+      console.log("🔍 [AdminReleases] Buscando músicas para pedidos:", orderIdsArray);
       const { data: songs, error: fetchError } = await supabase
         .from('songs')
         .select('id, variant_number, title, audio_url, status, order_id, released_at')
@@ -169,6 +135,8 @@ export default function AdminReleases() {
         console.error("❌ [AdminReleases] Erro ao buscar músicas:", fetchError);
         throw new Error(`Erro ao buscar músicas: ${fetchError.message || 'Erro desconhecido'}`);
       }
+      
+      console.log(`🔍 [AdminReleases] Query retornou ${songs?.length || 0} música(s) com status 'ready' e sem released_at`);
       
       // ✅ CORREÇÃO: Se não encontrou músicas com status 'ready', verificar se há músicas com outros status válidos
       if (!songs || songs.length === 0) {
@@ -211,6 +179,8 @@ export default function AdminReleases() {
         throw new Error('Nenhuma música encontrada para este pedido. Verifique se há músicas com status "ready" e sem released_at.');
       }
 
+      console.log(`✅ [AdminReleases] ${songs.length} música(s) encontrada(s) (prontas para liberar):`, songs.map(s => ({ id: s.id, title: s.title, status: s.status, has_audio: !!s.audio_url })));
+
       // ✅ CORREÇÃO: Filtrar manualmente músicas sem audio_url (fallback adicional)
       // Mesmo que o filtro do Supabase funcione, garantimos que só processamos músicas com áudio
       const songsWithAudio = songs.filter(s => s.audio_url && s.audio_url.trim() !== '');
@@ -232,6 +202,7 @@ export default function AdminReleases() {
           // Fallback: ordenar por variant_number (maior = mais recente)
           return (b.variant_number || 0) - (a.variant_number || 0);
         }).slice(0, 2); // Pegar apenas as 2 primeiras (mais recentes)
+        console.log(`✅ [AdminReleases] Selecionadas as 2 músicas mais recentes:`, songsToRelease.map(s => ({ id: s.id, title: s.title, variant: s.variant_number })));
       }
       
       // ✅ VALIDAÇÃO: Garantir que temos pelo menos 2 músicas para liberar
@@ -276,9 +247,10 @@ export default function AdminReleases() {
                 .eq('id', song.id);
               
               if (!updateError) {
+                console.log(`   ✅ Song ${song.id} atualizada com audio_url do job`);
                 songsToFix.push(song.id);
               } else {
-                console.error(`❌ Erro ao atualizar song ${song.id}:`, updateError);
+                console.error(`   ❌ Erro ao atualizar song ${song.id}:`, updateError);
               }
             }
           }
@@ -305,6 +277,8 @@ export default function AdminReleases() {
           } else {
             throw new Error(`${stillWithoutAudio.length} música(s) ainda sem áudio: ${missingTitles}. Verifique se o áudio foi gerado corretamente.`);
           }
+        } else {
+          console.log(`✅ [AdminReleases] Todas as músicas foram corrigidas com audio_url dos jobs`);
         }
       }
 
@@ -315,6 +289,7 @@ export default function AdminReleases() {
       }
 
       // 2. Atualizar todas para 'released' (apenas as que estão prontas e não foram liberadas)
+      console.log("📝 [AdminReleases] Atualizando status das músicas...");
       const now = new Date().toISOString();
       
       // ✅ CORREÇÃO: Usar os IDs das músicas que foram validadas (com áudio)
@@ -437,6 +412,7 @@ export default function AdminReleases() {
           // Não bloquear o fluxo se o email falhar - músicas já foram liberadas
           toast.warning(`Músicas liberadas, mas houve erro ao enviar email: ${emailError.message || 'Erro desconhecido'}`);
         } else {
+          console.log("✅ [AdminReleases] Resposta do email:", emailResponse);
           toast.success(`✅ ${updatedSongs.length} música(s) liberada(s) e email enviado!`);
           }
         } else {
@@ -445,7 +421,9 @@ export default function AdminReleases() {
         }
 
         // Processar resultado do webhook (apenas log, não mostrar toast)
-        if (webhookResult.status !== 'fulfilled') {
+        if (webhookResult.status === 'fulfilled') {
+          console.log("✅ [AdminReleases] Webhook enviado com sucesso");
+        } else {
           console.error("❌ [AdminReleases] Erro ao enviar webhook (não bloqueante):", webhookResult.reason);
         }
       } catch (emailException: any) {
@@ -791,6 +769,16 @@ export default function AdminReleases() {
                           }, 60000); // 60 segundos de timeout
                           
                           try {
+                            console.log('🚀 [AdminReleases] ===== INÍCIO DO RELEASE =====');
+                            console.log('🚀 [AdminReleases] Order ID:', orderIdToRelease);
+                            console.log('🚀 [AdminReleases] Order IDs para release:', order.order_ids);
+                            console.log('🚀 [AdminReleases] Songs count:', songsCount);
+                            console.log('🚀 [AdminReleases] Songs disponíveis:', order.songs?.map((s: any) => ({ id: s.id, title: s.title })));
+                            
+                            // ✅ CORREÇÃO CRÍTICA: Passar músicas pré-carregadas para evitar query lenta
+                            console.log('🚀 [AdminReleases] Chamando releaseMutation.mutateAsync...');
+                            console.log('🚀 [AdminReleases] Passando músicas pré-carregadas:', order.songs?.length || 0);
+                            
                             // ✅ CORREÇÃO: Adicionar timeout na mutation para evitar travamento
                             const mutationPromise = releaseMutation.mutateAsync({
                               orderIds: order.order_ids,
@@ -801,17 +789,22 @@ export default function AdminReleases() {
                               setTimeout(() => reject(new Error('Mutation timeout após 30 segundos')), 30000)
                             );
                             
-                            await Promise.race([mutationPromise, mutationTimeout]);
+                            const result = await Promise.race([mutationPromise, mutationTimeout]);
+                            console.log('✅ [AdminReleases] mutateAsync retornou:', result);
                             
                             // ✅ NOVO: Remover card imediatamente da lista local após sucesso da mutation
+                            console.log('🗑️ [AdminReleases] Removendo card da lista local:', orderIdToRelease);
                             setSentOrderIds(prev => new Set(prev).add(orderIdToRelease));
                             
                             // ✅ CORREÇÃO: Forçar refetch imediato após sucesso para atualizar a lista
                             // Aguardar um pouco para garantir que o banco foi atualizado
+                            console.log('🔄 [AdminReleases] Aguardando 300ms antes do refetch...');
                             await new Promise(resolve => setTimeout(resolve, 300));
                             
+                            console.log('🔄 [AdminReleases] Executando refetch...');
                             try {
-                              await refetch();
+                              const refetchResult = await refetch();
+                              console.log('✅ [AdminReleases] Refetch concluído:', refetchResult);
                               
                               // ✅ NOVO: O card já foi removido localmente e o refetch confirmou
                               // Se o refetch trouxer o card de volta (erro no envio), ele aparecerá novamente
@@ -828,15 +821,28 @@ export default function AdminReleases() {
                               // Se o refetch falhar, manter o card removido localmente
                               // O próximo refetch automático ou manual trará o card de volta se necessário
                             }
+                            
+                            console.log('✅ [AdminReleases] Release concluído com sucesso');
+                            console.log('🚀 [AdminReleases] ===== FIM DO RELEASE (sucesso) =====');
                           } catch (error: any) {
-                            // Erro já tratado pelo onError do mutation
-                            console.error('❌ [AdminReleases] Erro ao processar release:', error);
+                            // Erro já tratado pelo onError do mutation, mas log adicional para debug
+                            console.error('❌ [AdminReleases] ===== ERRO NO RELEASE =====');
+                            console.error('❌ [AdminReleases] Erro capturado:', error);
+                            console.error('❌ [AdminReleases] Error message:', error?.message);
+                            console.error('❌ [AdminReleases] Error stack:', error?.stack);
+                            console.error('❌ [AdminReleases] Error toString:', error?.toString());
+                            console.error('❌ [AdminReleases] Error name:', error?.name);
+                            console.error('❌ [AdminReleases] Error cause:', error?.cause);
+                            console.error('🚀 [AdminReleases] ===== FIM DO RELEASE (erro) =====');
                             // Não mostrar toast aqui pois o onError do mutation já mostra
                           } finally {
                             // ✅ CORREÇÃO CRÍTICA: Limpar timeout e resetar estado SEMPRE
                             clearTimeout(timeoutId);
+                            console.log('🔄 [AdminReleases] [Finally] Resetando estado de loading');
+                            console.log('🔄 [AdminReleases] [Finally] Order ID atual:', orderIdToRelease);
                             setReleasingOrderId((current) => {
                               if (current === orderIdToRelease) {
+                                console.log('✅ [AdminReleases] [Finally] Estado de loading resetado');
                                 return null;
                               }
                               console.log('⚠️ [AdminReleases] [Finally] Estado já foi alterado, mantendo:', current);
@@ -878,72 +884,18 @@ export default function AdminReleases() {
                         {/* Capa estilo iPod - Bordas autênticas */}
                         <div className="p-0.5">
                           <div className="relative rounded-lg overflow-hidden border border-gray-800 shadow-md bg-black mx-auto" style={{ width: '100%', aspectRatio: '1' }}>
-                            {song.cover_url && !failedImageUrls.has(song.cover_url) ? (
+                            {song.cover_url ? (
                               <img 
                                 src={song.cover_url} 
                                 alt={song.title}
                                 className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
-                                loading="lazy"
-                                decoding="async"
                                 onClick={() => setSelectedCover(song.cover_url)}
-                                onError={async (e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  const failedUrl = target.src;
-                                  
-                                  console.error('❌ [AdminReleases] Erro ao carregar imagem da capa:', {
-                                    songId: song.id,
-                                    songTitle: song.title,
-                                    coverUrl: song.cover_url,
-                                    attemptedUrl: failedUrl
-                                  });
-                                  
-                                  // Marcar URL como falhada
-                                  setFailedImageUrls(prev => new Set(prev).add(song.cover_url!));
-                                  
-                                  // Tentar gerar URL válida do Supabase Storage
-                                  const validUrl = await getValidImageUrl(song.cover_url);
-                                  if (validUrl && validUrl !== song.cover_url) {
-                                    console.log('🔄 [AdminReleases] Tentando URL alternativa:', validUrl);
-                                    target.src = validUrl;
-                                    // Remover da lista de falhas se a nova URL funcionar
-                                    setFailedImageUrls(prev => {
-                                      const newSet = new Set(prev);
-                                      newSet.delete(song.cover_url!);
-                                      return newSet;
-                                    });
-                                  } else {
-                                    // Se não conseguir URL alternativa, esconder imagem e mostrar placeholder
-                                    target.style.display = 'none';
-                                    const placeholder = target.parentElement?.querySelector('.image-placeholder') as HTMLElement;
-                                    if (placeholder) {
-                                      placeholder.style.display = 'flex';
-                                    }
-                                  }
-                                }}
-                                onLoad={() => {
-                                  // Remover da lista de falhas quando carregar com sucesso
-                                  if (failedImageUrls.has(song.cover_url!)) {
-                                    setFailedImageUrls(prev => {
-                                      const newSet = new Set(prev);
-                                      newSet.delete(song.cover_url!);
-                                      return newSet;
-                                    });
-                                  }
-                                  // Esconder placeholder quando imagem carregar
-                                  const placeholder = document.querySelector(`[data-song-id="${song.id}"] .image-placeholder`) as HTMLElement;
-                                  if (placeholder) {
-                                    placeholder.style.display = 'none';
-                                  }
-                                }}
                               />
-                            ) : null}
-                            {/* Placeholder que aparece quando não há cover_url ou quando há erro */}
-                            <div 
-                              className={`image-placeholder w-full h-full flex items-center justify-center bg-muted ${song.cover_url && !failedImageUrls.has(song.cover_url) ? 'hidden' : ''}`}
-                              data-song-id={song.id}
-                            >
-                              <Music className="h-4 w-4 text-muted-foreground/30" />
-                            </div>
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-muted">
+                                <Music className="h-4 w-4 text-muted-foreground/30" />
+                              </div>
+                            )}
                           </div>
                         </div>
                         
@@ -1054,10 +1006,6 @@ export default function AdminReleases() {
           onPointerDownOutside={() => setSelectedCover(null)}
           onInteractOutside={() => setSelectedCover(null)}
         >
-          <DialogHeader className="sr-only">
-            <DialogTitle>Preview da capa</DialogTitle>
-            <DialogDescription>Visualização ampliada da capa selecionada.</DialogDescription>
-          </DialogHeader>
           <div className="relative">
             {selectedCover && (
               <>
@@ -1067,23 +1015,10 @@ export default function AdminReleases() {
                   src={selectedCover} 
                   alt="Capa ampliada" 
                   className="w-full rounded-2xl shadow-2xl ring-1 ring-white/10" 
-                  onError={async (e) => {
-                    const target = e.target as HTMLImageElement;
-                    console.error('❌ [AdminReleases] Erro ao carregar imagem ampliada:', {
-                      coverUrl: selectedCover,
-                      attemptedUrl: target.src
-                    });
-                    
-                    // Tentar gerar URL válida do Supabase Storage
-                    const validUrl = await getValidImageUrl(selectedCover);
-                    if (validUrl && validUrl !== selectedCover) {
-                      console.log('🔄 [AdminReleases] Tentando URL alternativa para modal:', validUrl);
-                      target.src = validUrl;
-                    } else {
-                      // Se não conseguir URL alternativa, fechar o dialog
-                      console.error('❌ [AdminReleases] Não foi possível carregar a imagem, fechando modal');
-                      setSelectedCover(null);
-                    }
+                  onError={() => {
+                    // Se a imagem falhar ao carregar, fechar o dialog
+                    console.error('❌ [AdminReleases] Erro ao carregar imagem da capa');
+                    setSelectedCover(null);
                   }}
                 />
               </>

@@ -584,17 +584,9 @@ const Quiz = memo(() => {
   }, [step]);
 
   const handleSubmit = useCallback(async () => {
-    // ✅ AUDITORIA: Log de início do submit
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Quiz.tsx:586',message:'handleSubmit iniciado',data:{step,isSubmitting:isSubmittingRef.current,loading},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
-    
     // ✅ CORREÇÃO RACE CONDITION: Marcar como submetendo IMEDIATAMENTE
     if (isSubmittingRef.current || loading) {
       console.log('⚠️ [Quiz] Submit já em andamento, ignorando clique duplicado');
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Quiz.tsx:590',message:'Submit bloqueado - já em andamento',data:{isSubmitting:isSubmittingRef.current,loading},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       return;
     }
     
@@ -603,9 +595,6 @@ const Quiz = memo(() => {
     
     if (!validateCurrentStep()) {
       console.log('❌ [Quiz] Validação do step atual falhou');
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Quiz.tsx:597',message:'Validação falhou',data:{step},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       // Resetar flag se validação falhar
       isSubmittingRef.current = false;
       return;
@@ -615,9 +604,6 @@ const Quiz = memo(() => {
     setLoading(true);
     
     console.log('🚀 [Quiz] Iniciando submit do quiz...');
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Quiz.tsx:606',message:'Submit validado, iniciando salvamento',data:{step,hasRelationship:!!formData.relationship,hasAboutWho:!!formData.aboutWho,hasStyle:!!formData.style},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     
     try {
       const finalRelationship = formData.relationship === t('quiz.relationships.other') 
@@ -723,7 +709,16 @@ const Quiz = memo(() => {
         // ✅ CORREÇÃO: Após atualizar o quiz, navegar para checkout normalmente
         // O usuário clicou em "Continuar para o Pagamento", então deve ir para o checkout
         // Não mostrar mensagem "Quiz atualizado" - apenas navegar diretamente
-        const checkoutPath = '/checkout';
+        const currentPath = window.location.pathname;
+        let checkoutPath = '/pt/checkout'; // fallback para português
+        
+        if (currentPath.startsWith('/en')) {
+          checkoutPath = '/en/checkout';
+        } else if (currentPath.startsWith('/es')) {
+          checkoutPath = '/es/checkout';
+        } else if (currentPath.startsWith('/pt')) {
+          checkoutPath = '/pt/checkout';
+        }
         
         console.log('🔄 [Quiz] Navegando para checkout após atualização:', checkoutPath);
         
@@ -782,23 +777,27 @@ const Quiz = memo(() => {
         timestamp: quizData.timestamp
       });
 
-      // Salvar no localStorage primeiro (sempre tentar, mas não bloquear se falhar)
+      // Salvar no localStorage primeiro
       const saveResult = await saveQuizToStorage(quizData, { retries: 3, delay: 100 });
       
       if (!saveResult.success) {
-        console.warn('⚠️ [Quiz] Erro ao salvar quiz no localStorage, continuando com salvamento em background:', {
+        console.error('❌ [Quiz] Erro ao salvar quiz no localStorage:', {
           error: saveResult.error?.message,
+          errorStack: saveResult.error?.stack,
           formData,
           quizData
         });
-        // Não bloquear - continuar tentando salvar no banco e fila em background
-      } else {
-        console.log('✅ [Quiz] Quiz salvo no localStorage, tentando salvar no banco...');
+        toast.error(`Erro ao salvar quiz: ${saveResult.error?.message || 'Erro desconhecido'}. Por favor, tente novamente.`);
+        setLoading(false);
+        isSubmittingRef.current = false;
+        return;
       }
+      
+      console.log('✅ [Quiz] Quiz salvo no localStorage, tentando salvar no banco...');
 
       // ✅ SALVAMENTO ANTECIPADO: Salvar no banco antes de navegar
-      // Aguardar até 1.5 segundos pelo primeiro save (otimizado para redirect rápido)
-      const MAX_WAIT_TIME = 1500; // 1.5 segundos (otimizado para redirect rápido)
+      // Aguardar até 5-7 segundos pelo primeiro save (não bloquear indefinidamente)
+      const MAX_WAIT_TIME = 6000; // 6 segundos (aumentado para conexões lentas)
       const startTime = Date.now();
 
       // Preparar payload para o banco
@@ -861,54 +860,83 @@ const Quiz = memo(() => {
         await saveQuizToStorage(updatedQuizData, { retries: 1, delay: 50 });
         quizSavedOrQueued = true;
       } else {
-        // ⚠️ FALHOU ou TIMEOUT - marcar para retry em background (não bloquear navegação)
+        // ⚠️ FALHOU ou TIMEOUT - garantir que foi para fila ANTES de navegar
         const error = (saveResult_db as any).timeout ? new Error('Timeout ao salvar quiz') : (saveResult_db as any).error;
-        console.warn('⚠️ [Quiz] Salvamento no banco falhou ou timeout, continuando em background:', {
+        console.warn('⚠️ [Quiz] Salvamento no banco falhou ou timeout:', {
           error: error?.message || 'Timeout',
           timeout: (saveResult_db as any).timeout,
           elapsed_ms: elapsedTime,
           session_id: quizSessionId
         });
 
-        // ✅ OTIMIZAÇÃO: Garantir localStorage com flag de retry (rápido, não bloqueia)
-        // A fila será adicionada em background após navegação
+        // ✅ PRIORIDADE 1: Garantir que foi para fila ANTES de navegar
+        let queueSuccess = false;
         try {
-          const quizWithRetryFlag = {
-            ...quizData,
-            _needsRetry: true,
-            _retryAttempts: 0,
-            _lastRetryError: error?.message || 'Timeout'
-          };
+          queueSuccess = await enqueueQuizToServer(quizPayload, error);
           
-          // Salvar no localStorage imediatamente (síncrono, rápido)
-          localStorage.setItem('musiclovely_quiz', JSON.stringify(quizWithRetryFlag));
-          localStorage.setItem('pending_quiz', JSON.stringify(quizWithRetryFlag));
-          console.log('✅ [Quiz] Quiz marcado para retry no localStorage (navegação não bloqueada)');
-          quizSavedOrQueued = true; // localStorage é suficiente para navegar
-        } catch (storageError) {
-          // Fallback para sessionStorage se localStorage falhar
+          if (queueSuccess) {
+            console.log('📋 [Quiz] Quiz adicionado à fila de retry do servidor');
+            quizSavedOrQueued = true;
+          } else {
+            console.warn('⚠️ [Quiz] Falha ao adicionar quiz à fila do servidor, tentando fallback no localStorage');
+            
+            // ✅ FALLBACK: Se falhar ao adicionar na fila, marcar no localStorage para retry no checkout
+            const quizWithRetryFlag = {
+              ...quizData,
+              _needsRetry: true,
+              _retryAttempts: 0,
+              _lastRetryError: error?.message || 'Failed to enqueue'
+            };
+            
+            try {
+              await saveQuizToStorage(quizWithRetryFlag, { retries: 2, delay: 100 });
+              console.log('✅ [Quiz] Quiz marcado para retry no checkout (fallback)');
+              quizSavedOrQueued = true; // localStorage é aceitável como fallback
+            } catch (fallbackError) {
+              console.error('❌ [Quiz] Falha total: não foi possível salvar nem na fila nem no localStorage:', fallbackError);
+              quizSavedOrQueued = false; // Falhou tudo
+            }
+          }
+        } catch (queueError) {
+          console.error('❌ [Quiz] Exceção ao adicionar à fila do servidor, tentando fallback:', queueError);
+          
+          // Fallback: marcar no localStorage para retry no checkout
           try {
             const quizWithRetryFlag = {
               ...quizData,
               _needsRetry: true,
               _retryAttempts: 0,
-              _lastRetryError: error?.message || 'Timeout'
+              _lastRetryError: queueError instanceof Error ? queueError.message : 'Unknown error'
             };
-            sessionStorage.setItem('musiclovely_quiz', JSON.stringify(quizWithRetryFlag));
-            sessionStorage.setItem('pending_quiz', JSON.stringify(quizWithRetryFlag));
-            console.log('✅ [Quiz] Quiz marcado para retry no sessionStorage');
-            quizSavedOrQueued = true;
-          } catch (sessionError) {
-            // Último recurso: memória
-            (window as any).__musiclovely_quiz_fallback = {
-              ...quizData,
-              _needsRetry: true,
-              _retryAttempts: 0,
-              _lastRetryError: error?.message || 'Timeout'
-            };
-            quizSavedOrQueued = true;
+            await saveQuizToStorage(quizWithRetryFlag, { retries: 2, delay: 100 });
+            console.log('✅ [Quiz] Quiz marcado para retry no checkout (fallback após exceção)');
+            quizSavedOrQueued = true; // localStorage é aceitável como fallback
+          } catch (fallbackError) {
+            console.error('❌ [Quiz] Falha total no fallback:', fallbackError);
+            quizSavedOrQueued = false; // Falhou tudo
           }
         }
+
+        // ✅ REGRA DE OURO: Se não salvou E não foi para fila, NÃO navegar
+        if (!quizSavedOrQueued) {
+          console.error('❌ [Quiz] CRÍTICO: Não foi possível salvar quiz nem na fila. Bloqueando navegação.');
+          toast.error('Erro ao salvar suas respostas. Por favor, tente novamente. Se o problema persistir, entre em contato conosco.');
+          setLoading(false);
+          isSubmittingRef.current = false;
+          return; // NÃO navegar - proteger as respostas do usuário
+        }
+
+        // Se chegou aqui, foi para fila ou localStorage - mostrar mensagem não bloqueante
+        toast.info('Tivemos uma oscilação na conexão, estamos tentando de novo em segundo plano. Você pode continuar normalmente.');
+      }
+
+      // ✅ VALIDAÇÃO FINAL: Só navegar se quiz foi salvo ou foi para fila
+      if (!quizSavedOrQueued) {
+        console.error('❌ [Quiz] CRÍTICO: Validação final falhou - quiz não foi salvo nem foi para fila');
+        toast.error('Erro ao salvar suas respostas. Por favor, tente novamente.');
+        setLoading(false);
+        isSubmittingRef.current = false;
+        return;
       }
 
       console.log('✅ [Quiz] Quiz salvo no localStorage com sucesso e validado:', {
@@ -923,121 +951,41 @@ const Quiz = memo(() => {
         quizData
       });
       
-      // ✅ OTIMIZAÇÃO: Navegar imediatamente após localStorage salvo
-      // Todas as operações não-críticas serão executadas em background
-      const checkoutPath = '/checkout';
+      // Rastrear conclusão do quiz
+      trackEvent('quiz_completed', {
+        quiz_id: saveResult_db.success ? saveResult_db.quizId : quizData.timestamp,
+        session_id: quizSessionId,
+        about_who: quizData.about_who,
+        style: quizData.style,
+        language: quizData.language,
+        relationship: quizData.relationship,
+        has_vocal_gender: !!quizData.vocal_gender,
+        has_qualities: !!quizData.qualities,
+        has_memories: !!quizData.memories,
+        has_message: !!quizData.message,
+        saved_to_db: saveResult_db.success,
+        queued_for_retry: !saveResult_db.success && quizSavedOrQueued
+      });
       
-      console.log('🔄 [Quiz] Navegando para checkout imediatamente (quiz protegido no localStorage):', checkoutPath);
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Quiz.tsx:982',message:'Navegando para checkout',data:{checkoutPath,quizSavedOrQueued,saveResult_db_success:saveResult_db.success},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
+      // ✅ Só navegar se chegou até aqui (quiz foi salvo ou foi para fila)
+      const currentPath = window.location.pathname;
+      let checkoutPath = '/pt/checkout'; // fallback para português
       
-      // ✅ NAVEGAR IMEDIATAMENTE (não esperar por operações não-críticas)
-      navigateWithUtms(checkoutPath);
-      
-      // ✅ OPERAÇÕES EM BACKGROUND: Executar após navegação (não bloqueia redirect)
-      (async () => {
-        try {
-          // 1. Rastrear conclusão do quiz (background)
-          trackEvent('quiz_completed', {
-            quiz_id: saveResult_db.success ? saveResult_db.quizId : quizData.timestamp,
-            session_id: quizSessionId,
-            about_who: quizData.about_who,
-            style: quizData.style,
-            language: quizData.language,
-            relationship: quizData.relationship,
-            has_vocal_gender: !!quizData.vocal_gender,
-            has_qualities: !!quizData.qualities,
-            has_memories: !!quizData.memories,
-            has_message: !!quizData.message,
-            saved_to_db: saveResult_db.success,
-            queued_for_retry: !saveResult_db.success && quizSavedOrQueued
-          });
-          
-          // 2. Continuar salvamento em background se necessário
-          if (!saveResult_db.success) {
-            console.log('🔄 [Quiz] Continuando salvamento em background após navegação...');
-            
-            // Tentar adicionar à fila primeiro (mais rápido que salvar no banco)
-            const error = (saveResult_db as any).timeout ? new Error('Timeout ao salvar quiz') : (saveResult_db as any).error;
-            const queueResult = await enqueueQuizToServer(quizPayload, error);
-            
-            if (queueResult) {
-              console.log('✅ [Quiz] Quiz adicionado à fila em background');
-            } else {
-              // Se fila falhar, tentar salvar no banco novamente
-              console.log('🔄 [Quiz] Fila falhou, tentando salvar no banco em background...');
-              const backgroundResult = await insertQuizWithRetry(quizPayload, {
-                maxRetries: 5,
-                initialDelay: 1000,
-                maxDelay: 10000
-              });
-              
-              if (backgroundResult.success) {
-                console.log('✅ [Quiz] Quiz salvo em background com sucesso:', backgroundResult.data?.id);
-              } else {
-                console.warn('⚠️ [Quiz] Todas as tentativas em background falharam, mas quiz está no localStorage');
-              }
-            }
-          }
-        } catch (bgError) {
-          console.warn('⚠️ [Quiz] Erro em operações de background (não crítico):', bgError);
-          // Não mostrar erro - quiz está no localStorage e pode ser recuperado
-        }
-      })();
-    } catch (error: any) {
-      console.warn('⚠️ [Quiz] Erro ao processar quiz, mas permitindo continuar:', error);
-      
-      // ✅ ÚLTIMA ESTRATÉGIA: Garantir que quiz está no localStorage antes de navegar
-      try {
-        // Tentar usar quizData se disponível, senão construir a partir do formData
-        const quizDataToSave = typeof quizData !== 'undefined' ? quizData : {
-          relationship: formData.relationship || '',
-          about_who: formData.aboutWho || '',
-          style: formData.style || '',
-          language: currentLanguage,
-          vocal_gender: formData.vocalGender || null,
-          qualities: formData.qualities,
-          memories: formData.memories,
-          message: formData.message || null,
-          timestamp: new Date().toISOString(),
-          session_id: getOrCreateQuizSessionId()
-        };
-        
-        const quizWithRetryFlag = {
-          ...quizDataToSave,
-          _needsRetry: true,
-          _retryAttempts: 0,
-          _lastRetryError: error?.message || 'Unknown error'
-        };
-        
-        // Tentar salvar em todos os storages disponíveis
-        try {
-          localStorage.setItem('musiclovely_quiz', JSON.stringify(quizWithRetryFlag));
-          localStorage.setItem('pending_quiz', JSON.stringify(quizWithRetryFlag));
-        } catch (e1) {
-          try {
-            sessionStorage.setItem('musiclovely_quiz', JSON.stringify(quizWithRetryFlag));
-            sessionStorage.setItem('pending_quiz', JSON.stringify(quizWithRetryFlag));
-          } catch (e2) {
-            (window as any).__musiclovely_quiz_fallback = quizWithRetryFlag;
-          }
-        }
-        
-        console.log('✅ [Quiz] Quiz salvo como fallback final antes de navegar');
-        // Mensagem removida - navegação ocorre silenciosamente
-        
-        // Sempre permitir navegar - quiz está protegido
-        navigateWithUtms('/checkout');
-      } catch (finalError) {
-        // Mesmo se tudo falhar, permitir continuar
-        console.warn('⚠️ [Quiz] Erro no fallback final, mas permitindo continuar:', finalError);
-        // Mensagem removida - navegação ocorre silenciosamente
-        navigateWithUtms('/checkout');
+      if (currentPath.startsWith('/en')) {
+        checkoutPath = '/en/checkout';
+      } else if (currentPath.startsWith('/es')) {
+        checkoutPath = '/es/checkout';
+      } else if (currentPath.startsWith('/pt')) {
+        checkoutPath = '/pt/checkout';
       }
       
+      console.log('🔄 [Quiz] Navegando para checkout (quiz protegido):', checkoutPath);
+      navigateWithUtms(checkoutPath);
+    } catch (error: any) {
+      console.error('❌ [Quiz] Erro ao salvar quiz:', error);
+      toast.error(t('quiz.messages.errorSaving'));
       setLoading(false);
-      isSubmittingRef.current = false;
+      isSubmittingRef.current = false; // ✅ Resetar flag em caso de erro
     }
     // ✅ NÃO usar finally aqui - se navegou com sucesso, o componente será desmontado
     // Se houve erro, já resetamos o loading e a flag acima

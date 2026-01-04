@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import PublicRoutes from '../PublicRoutes';
+import PublicRoutes from './PublicRoutes';
 import { detectLanguage, type SupportedLocale } from '@/lib/language-detection';
 import { getCurrentLocale, removeLocalePrefix } from '@/lib/i18nRoutes';
 import { detectLocaleAtEdge, normalizeSimpleLocale } from '@/lib/edgeLocale';
@@ -63,3 +63,4 @@ export default function LanguageRouter() {
   if (needsRedirect || isResolving) return null;
   return <PublicRoutes />;
 }
+

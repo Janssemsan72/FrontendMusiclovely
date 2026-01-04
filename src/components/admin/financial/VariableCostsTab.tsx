@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useVariableCosts, useCreateVariableCost, useUpdateVariableCost, useDeleteVariableCost, useFinancialCategories } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,10 +58,7 @@ export function VariableCostsTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingCost(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo Custo</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingCost ? "Editar" : "Novo"} Custo Variável</DialogTitle>
-              <DialogDescription>Registre um custo variável e, se necessário, adicione comprovante.</DialogDescription>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>{editingCost ? "Editar" : "Novo"} Custo Variável</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label htmlFor="name">Nome *</Label><Input id="name" name="name" required defaultValue={editingCost?.name} /></div>

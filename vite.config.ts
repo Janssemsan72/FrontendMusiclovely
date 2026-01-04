@@ -8,7 +8,6 @@ export default defineConfig(({ mode }) => {
   const isDev = mode !== 'production';
 
   return {
-    envDir: path.resolve(__dirname, '..'),
     // ✅ CRÍTICO: Base path explícito para garantir que funciona no Vercel
     base: '/',
     // ✅ CORREÇÃO: Garantir que a pasta public seja servida corretamente
@@ -42,8 +41,8 @@ export default defineConfig(({ mode }) => {
         // CSP de desenvolvimento - amigável ao Vite/HMR
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com",
-          "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net",  // UTMify, Stripe, Facebook
+          "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net",  // Para elementos <script>
           "worker-src 'self' blob:",  // Permitir workers de blob
           "style-src 'self' 'unsafe-inline'",    // ok para Tailwind dev
           "img-src 'self' data: blob: https:",
@@ -54,7 +53,7 @@ export default defineConfig(({ mode }) => {
           "base-uri 'self'",
           "frame-ancestors 'none'",
           "child-src 'self' blob: data: https:",  // Permitir iframes e workers filhos
-          "frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://www.facebook.com https://safeframe.googlesyndication.com",  // Stripe, Facebook e Google AdSense (UTMify)
+          "frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://safeframe.googlesyndication.com",  // Stripe, Facebook e Google AdSense (UTMify)
         ].join('; ')
       } : undefined
     },
@@ -110,7 +109,6 @@ export default defineConfig(({ mode }) => {
             }
             // Agrupar outras dependências grandes
             if (id.includes('node_modules')) {
-              // Separar por tamanho e frequência de uso
               if (id.includes('@radix-ui')) {
                 return 'vendor-radix';
               }
@@ -119,14 +117,6 @@ export default defineConfig(({ mode }) => {
               }
               if (id.includes('recharts')) {
                 return 'vendor-recharts';
-              }
-              // Separar Supabase em chunk próprio (usado em muitas páginas)
-              if (id.includes('@supabase')) {
-                return 'vendor-supabase';
-              }
-              // Separar React Router em chunk próprio
-              if (id.includes('react-router')) {
-                return 'vendor-router';
               }
               // Outras dependências em um chunk separado
               return 'vendor';
@@ -140,11 +130,6 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1500, // ✅ OTIMIZAÇÃO: Aumentado para 1500KB
       // Enable minification - usando esbuild para builds mais rápidos
       minify: 'esbuild', // Mais rápido que terser, especialmente em builds grandes
-      // ✅ OTIMIZAÇÃO: Remover console.log em produção para reduzir bundle size
-      esbuild: {
-        drop: mode === 'production' ? ['console', 'debugger'] : [],
-        legalComments: 'none', // Remover comentários legais para reduzir tamanho
-      },
       // Alternativa: se precisar de terser, usar configuração mais leve
       // minify: 'terser',
       // terserOptions: {
@@ -157,10 +142,10 @@ export default defineConfig(({ mode }) => {
       //     comments: false
       //   }
       // },
-      // ✅ OTIMIZAÇÃO: Usar ES2022 para reduzir polyfills e melhorar performance
-      // ES2022 suporta: Chrome 92+, Firefox 91+, Safari 15.4+, Edge 92+
-      // Reduz JavaScript legacy e melhora performance
-      target: 'es2022',
+      // ✅ COMPATIBILIDADE: Usar ES2020 para suportar navegadores mais antigos
+      // ES2020 suporta: Chrome 80+, Firefox 74+, Safari 13.1+, Edge 80+
+      // Inclui suporte para: optional chaining, nullish coalescing, dynamic import
+      target: 'es2020',
       cssCodeSplit: true,
       reportCompressedSize: false // Acelera build
     },

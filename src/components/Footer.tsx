@@ -17,8 +17,6 @@ export default function Footer() {
   // Função para gerar links (apenas português)
   const getLocalizedLink = (path: string) => path;
 
-  const homePath = '/';
-
   // Handler para navegação para seções da home
   const handleSectionClick = (sectionId: string) => {
     const isOnHomePage = location.pathname === '/';

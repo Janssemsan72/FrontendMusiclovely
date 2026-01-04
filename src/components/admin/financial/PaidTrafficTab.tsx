@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usePaidTraffic, useCreatePaidTraffic, useUpdatePaidTraffic, useDeletePaidTraffic } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -59,10 +59,7 @@ export function PaidTrafficTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingTraffic(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo Registro</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingTraffic ? "Editar" : "Novo"} Tráfego Pago</DialogTitle>
-              <DialogDescription>Registre investimento e métricas do tráfego pago do dia.</DialogDescription>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>{editingTraffic ? "Editar" : "Novo"} Tráfego Pago</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label htmlFor="platform">Plataforma *</Label>

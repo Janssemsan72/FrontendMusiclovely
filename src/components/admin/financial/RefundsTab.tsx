@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRefunds, useCreateRefund, useUpdateRefund } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,10 +60,7 @@ export function RefundsTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingRefund(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo Reembolso</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingRefund ? "Editar" : "Novo"} Reembolso</DialogTitle>
-              <DialogDescription>Registre um reembolso e vincule ao pedido.</DialogDescription>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>{editingRefund ? "Editar" : "Novo"} Reembolso</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div><Label htmlFor="order_id">Pedido *</Label>
                 <Select name="order_id" defaultValue={editingRefund?.order_id || ""}>

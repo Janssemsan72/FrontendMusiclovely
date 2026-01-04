@@ -67,9 +67,22 @@ interface CheckoutDraft {
   timestamp: number;
 }
 
-// ✅ Configuração de preços - Todos os domínios usam R$ 47,90
+// ✅ Configuração de preços por domínio
+// .com.br / localhost = R$ 67,00 (URL nova: k63z5ui)
+// .com = R$ 47,90 (URL antiga: d877u4t_665160)
 const getCaktoConfigByDomain = () => {
-  // Todos os domínios = R$ 47,90
+  const hostname = window.location.hostname;
+  
+  // .com.br ou localhost = R$ 67,00 (URL nova)
+  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
+    return {
+      url: 'https://pay.cakto.com.br/k63z5ui',
+      amount_cents: 6700,
+      price_display: 6700
+    };
+  }
+  
+  // .com ou qualquer outro domínio = R$ 47,90 (URL antiga)
   return {
     url: 'https://pay.cakto.com.br/d877u4t_665160',
     amount_cents: 4790,
@@ -159,7 +172,8 @@ export default function Checkout() {
   
   // ✅ Função helper para obter caminho do quiz com prefixo de idioma
   const getQuizPath = () => {
-    return '/quiz';
+    const language = getCurrentLanguage();
+    return `/${language}/quiz`;
   };
   
   const currentLanguage = getCurrentLanguage();
@@ -193,8 +207,8 @@ export default function Checkout() {
     const CAKTO_PAYMENT_URL = caktoConfig.url;
     const origin = window.location.origin;
     const utmQuery = getUtmQueryString(false);
-    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success
-    const redirectUrl = `${origin}/payment-success?order_id=${orderId}${utmQuery}`;
+    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success (sem barra antes de success)
+    const redirectUrl = `${origin}/${language}/payment-success?order_id=${orderId}${utmQuery}`;
     
     // Normalizar WhatsApp para formato correto (55XXXXXXXXXXX)
     const normalizedWhatsapp = formatWhatsappForCakto(whatsapp);
@@ -252,17 +266,10 @@ export default function Checkout() {
 
       // Verificar se já existe URL da Cakto salva
       let caktoUrl = orderData.cakto_payment_url;
-
-      const needsCaktoUrlRegeneration =
-        !caktoUrl ||
-        caktoUrl.trim() === '' ||
-        !caktoUrl.startsWith('https://pay.cakto.com.br') ||
-        caktoUrl.includes('%2Fpt%2Fpayment-success') ||
-        caktoUrl.includes('%2Fen%2Fpayment-success') ||
-        caktoUrl.includes('%2Fes%2Fpayment-success');
       
-      if (needsCaktoUrlRegeneration) {
-        logger.debug('redirectToCakto: Gerando nova URL da Cakto (ausente ou desatualizada)...');
+      if (!caktoUrl || caktoUrl.trim() === '') {
+        // Gerar nova URL da Cakto
+        logger.debug('redirectToCakto: Gerando nova URL da Cakto...');
         const safeUtms = utmsParam || utms || {};
         caktoUrl = generateCaktoUrl(
           orderData.id,
@@ -300,9 +307,6 @@ export default function Checkout() {
       // Redirecionar
       setTimeout(() => {
         logger.debug('redirectToCakto: Executando redirecionamento agora');
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:301',message:'Redirecionando para Cakto',data:{orderId:orderData.id,caktoUrlLength:caktoUrl.length,urlPreview:caktoUrl.substring(0,100)},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'F'})}).catch(()=>{});
-        // #endregion
         window.location.href = caktoUrl;
       }, 100);
       
@@ -394,7 +398,7 @@ export default function Checkout() {
   const [whatsappError, setWhatsappError] = useState('');
   const [buttonError, setButtonError] = useState(false);
   const [cameFromRestore, setCameFromRestore] = useState(false); // ✅ Flag para detectar se veio do restore
-  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'express'>(() => {
+  const [selectedPlan, setSelectedPlan] = useState(() => {
     // Selecionar plano padrão baseado no idioma
     if (currentLanguage === 'pt') {
       return 'express'; // Único plano disponível
@@ -429,92 +433,6 @@ export default function Checkout() {
   // ⚠️ NOTA: Scripts UTMify são carregados globalmente no index.html
   // Não é necessário carregar novamente aqui para evitar duplicação
   // Os scripts já estão configurados no <head> do index.html
-
-  // ✅ RETRY AUTOMÁTICO EM BACKGROUND: Tentar salvar quiz com flag _needsRetry
-  useEffect(() => {
-    const retryQuizInBackground = async () => {
-      if (!quiz || typeof quiz !== 'object') return;
-      
-      const needsRetry = (quiz as any)?._needsRetry === true;
-      if (!needsRetry) return;
-      
-      console.log('🔄 [Checkout] Quiz com flag de retry detectado, tentando salvar em background...');
-      
-      try {
-        // Preparar payload do quiz
-        const quizPayload: QuizPayload = {
-          user_id: null,
-          customer_email: email || null,
-          customer_whatsapp: whatsapp || null,
-          about_who: quiz.about_who,
-          relationship: quiz.relationship,
-          style: quiz.style,
-          language: quiz.language || 'pt',
-          vocal_gender: quiz.vocal_gender || null,
-          qualities: quiz.qualities,
-          memories: quiz.memories,
-          message: quiz.message || null,
-          key_moments: (quiz as any).key_moments || null,
-          occasion: (quiz as any).occasion || null,
-          desired_tone: (quiz as any).desired_tone || null,
-          answers: quiz,
-          session_id: (quiz as any).session_id || null
-        };
-        
-        // Tentar salvar no banco em background (não bloqueia UI)
-        const insertResult = await insertQuizWithRetry(quizPayload, {
-          maxRetries: 5,
-          initialDelay: 1000,
-          maxDelay: 10000
-        });
-        
-        if (insertResult.success && insertResult.data?.id) {
-          console.log('✅ [Checkout] Quiz salvo em background com sucesso:', insertResult.data.id);
-          
-          // Atualizar quiz local removendo flag de retry
-          const updatedQuiz = {
-            ...quiz,
-            id: insertResult.data.id
-          };
-          delete (updatedQuiz as any)._needsRetry;
-          delete (updatedQuiz as any)._retryAttempts;
-          delete (updatedQuiz as any)._lastRetryError;
-          
-          setQuiz(updatedQuiz);
-          
-          // Atualizar localStorage
-          try {
-            localStorage.setItem('pending_quiz', JSON.stringify(updatedQuiz));
-            localStorage.setItem('musiclovely_quiz', JSON.stringify(updatedQuiz));
-          } catch (e) {
-            console.warn('⚠️ [Checkout] Erro ao atualizar localStorage (não crítico):', e);
-          }
-        } else {
-          // Se falhar, tentar adicionar à fila
-          console.log('🔄 [Checkout] Salvamento direto falhou, tentando fila em background...');
-          const queueResult = await enqueueQuizToServer(quizPayload, insertResult.error);
-          
-          if (queueResult) {
-            console.log('✅ [Checkout] Quiz adicionado à fila em background');
-            // Manter flag de retry, mas marcar que foi para fila
-            (quiz as any)._queued = true;
-          } else {
-            console.warn('⚠️ [Checkout] Todas as tentativas em background falharam, mantendo no localStorage');
-          }
-        }
-      } catch (bgError) {
-        console.warn('⚠️ [Checkout] Erro no retry em background (não crítico):', bgError);
-        // Não mostrar erro - quiz está no localStorage e pode ser recuperado
-      }
-    };
-    
-    // Aguardar um pouco antes de iniciar retry (dar tempo para página carregar)
-    const timer = setTimeout(() => {
-      retryQuizInBackground();
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [quiz, email, whatsapp]);
 
   // FASE 2 & 3: Carregar quiz do banco (se vier da URL) ou do localStorage
   useEffect(() => {
@@ -574,19 +492,6 @@ export default function Checkout() {
       const token = urlParams.get('token');
       const messageId = urlParams.get('message_id');
       const auto = urlParams.get('auto');
-      
-      // ✅ SISTEMA DE AFILIADOS: Capturar código do afiliado
-      const affiliateRef = urlParams.get('ref');
-      if (affiliateRef) {
-        // Salvar no localStorage com expiração de 30 dias
-        const affiliateData = {
-          slug: affiliateRef,
-          savedAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
-        };
-        localStorage.setItem('affiliate_ref', JSON.stringify(affiliateData));
-        logger.debug('Código de afiliado capturado e salvo', { affiliateRef });
-      }
       
       // ⚠️ CRÍTICO: Se a URL contém message_id (veio do WhatsApp), redirecionar IMEDIATAMENTE para Cakto
       // Isso evita que o React Router processe como checkout interno
@@ -1790,11 +1695,6 @@ export default function Checkout() {
 
   // Checkout com Stripe ou Cakto (baseado no locale)
   const handleCheckout = async (isRetry = false) => {
-    // ✅ AUDITORIA: Log de início do checkout
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:1703',message:'handleCheckout iniciado',data:{isRetry,hasEmail:!!email,hasWhatsapp:!!whatsapp,hasQuiz:!!quiz,selectedPlan},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
-    
     // Criar logger local ANTES de usar qualquer logger
     const checkoutLogger = createCheckoutLogger();
     const transactionId = checkoutLogger.getTransactionId();
@@ -1872,7 +1772,8 @@ export default function Checkout() {
     }
     
 
-    const isPortuguese = currentLanguage === 'pt';
+    // Detectar se usuário está em rota portuguesa (Brasil)
+    const isPortuguese = window.location.pathname.startsWith('/pt');
     
     const caktoConfig = getCaktoConfigByDomain();
     const CAKTO_PAYMENT_URL = caktoConfig.url;
@@ -1944,7 +1845,7 @@ export default function Checkout() {
       let quizData;
       
       // ✅ PRIORIDADE 1: Buscar por session_id se disponível
-      const quizSessionId: string = (quiz.session_id as string | undefined) || ((quiz.answers as any)?.session_id as string | undefined) || getOrCreateQuizSessionId();
+      const quizSessionId = quiz.session_id || quiz.answers?.session_id || getOrCreateQuizSessionId();
       
       if (quizSessionId && !quiz.id) {
         // Tentar buscar quiz no banco por session_id
@@ -2153,11 +2054,6 @@ export default function Checkout() {
       try {
         checkoutLogger.log('order_creation_started', { quiz_id: quizData.id, using_create_checkout: true });
 
-        // ✅ AUDITORIA: Log antes de chamar createCheckout
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2154',message:'Chamando createCheckout',data:{quiz_id:quizData.id,hasEmail:!!normalizedEmail,hasWhatsapp:!!normalizedWhatsApp,plan:selectedPlan,amountCents},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
-        
         // Usar backend API ao invés de Edge Function
         const checkoutResult = await apiHelpers.createCheckout({
           session_id: quizSessionId,
@@ -2203,9 +2099,6 @@ export default function Checkout() {
               quiz_id: returnedQuizId,
               order_id: order.id
             });
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2187',message:'Pedido criado com sucesso',data:{quiz_id:returnedQuizId,order_id:order.id,order_status:order.status},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
-            // #endregion
             
             // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso
             // Isso garante que o próximo pedido terá um novo session_id
@@ -2291,60 +2184,6 @@ export default function Checkout() {
           });
         }
 
-        // ✅ SISTEMA DE AFILIADOS: Buscar affiliate_id se houver código salvo
-        let affiliateId: string | null = null;
-        let affiliateLinkId: string | null = null;
-        
-        try {
-          const affiliateDataStr = localStorage.getItem('affiliate_ref');
-          if (affiliateDataStr) {
-            const affiliateData = JSON.parse(affiliateDataStr);
-            const expiresAt = new Date(affiliateData.expiresAt);
-            
-            // Verificar se não expirou
-            if (expiresAt > new Date() && affiliateData.slug) {
-              // Buscar affiliate_link pelo slug
-              const { data: affiliateLink, error: linkError } = await supabase
-                .from('affiliate_links')
-                .select('id, affiliate_id, is_active')
-                .eq('slug', affiliateData.slug)
-                .eq('is_active', true)
-                .single();
-              
-              if (!linkError && affiliateLink) {
-                // Verificar se o afiliado está ativo
-                const { data: affiliate, error: affiliateError } = await supabase
-                  .from('affiliates')
-                  .select('id, is_active')
-                  .eq('id', affiliateLink.affiliate_id)
-                  .eq('is_active', true)
-                  .single();
-                
-                if (!affiliateError && affiliate) {
-                  affiliateId = affiliate.id;
-                  affiliateLinkId = affiliateLink.id;
-                  logger.debug('Afiliado encontrado e vinculado à order', {
-                    affiliateId,
-                    affiliateLinkId,
-                    slug: affiliateData.slug
-                  });
-                } else {
-                  logger.debug('Afiliado não encontrado ou inativo', { affiliateError });
-                }
-              } else {
-                logger.debug('Link de afiliado não encontrado ou inativo', { linkError });
-              }
-            } else {
-              // Expirou, remover do localStorage
-              localStorage.removeItem('affiliate_ref');
-              logger.debug('Código de afiliado expirado, removido do localStorage');
-            }
-          }
-        } catch (affiliateError) {
-          logger.warn('Erro ao processar código de afiliado', affiliateError);
-          // Não bloquear o checkout se houver erro com afiliado
-        }
-
         // Criar pedido (fluxo antigo)
         const orderPayload = {
           quiz_id: quizData.id,
@@ -2356,9 +2195,7 @@ export default function Checkout() {
           payment_provider: (isPortuguese ? 'cakto' : 'stripe') as 'cakto' | 'stripe',
           customer_email: normalizedEmail,
           customer_whatsapp: normalizedWhatsApp as string,
-          transaction_id: transactionId,
-          ...(affiliateId && { affiliate_id: affiliateId }),
-          ...(affiliateLinkId && { affiliate_link_id: affiliateLinkId })
+          transaction_id: transactionId
         } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
 
         const { data: orderData, error: orderError } = await supabase
@@ -2403,7 +2240,7 @@ export default function Checkout() {
 
       // PASSO 3: Processar pagamento (Stripe ou Cakto)
       // ✅ CRÍTICO: Verificar isPortuguese ANTES de qualquer coisa
-      const isPortugueseCheck = currentLanguage === 'pt';
+      const isPortugueseCheck = window.location.pathname.startsWith('/pt');
       console.log('🌍 [Checkout] Verificando fluxo de pagamento:', {
         isPortuguese,
         isPortugueseCheck,
@@ -2729,7 +2566,7 @@ export default function Checkout() {
       const actualErrorMessage = extractErrorMessage(error);
       
       // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
-      const isPortuguese = currentLanguage === 'pt';
+      const isPortuguese = window.location.pathname.startsWith('/pt');
       if (isPortuguese && orderCreated && orderCreated.id) {
         console.log('⚠️ [Cakto] Erro ocorreu mas pedido foi criado, tentando redirecionar mesmo assim...', {
           orderId: orderCreated.id,
