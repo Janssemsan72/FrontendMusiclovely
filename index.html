@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#C7855E" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>MusicLovely — Músicas Personalizadas Profissionais</title>
+    <meta name="description" content="Surpreenda alguém com uma música personalizada criada por profissionais. Qualidade de estúdio, entrega rápida e 100% original." />
+    <meta name="author" content="MusicLovely" />
+    
+    <!-- Facebook Domain Verification -->
+    <meta name="facebook-domain-verification" content="ietm0enn4ii3n3ird379eh0gzlia9x" />
+    
+    <!-- Open Graph (WhatsApp, Facebook, Telegram, iMessage) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MusicLovely" />
+    <meta property="og:title" content="MusicLovely — Músicas Personalizadas Profissionais" />
+    <meta property="og:description" content="Surpreenda alguém com uma música personalizada criada por profissionais. Qualidade de estúdio, entrega rápida e 100% original." />
+    <meta property="og:url" content="https://www.musiclovely.com/" />
+    <meta property="og:image" content="https://www.musiclovely.com/og/musiclovely-og-1200x630.png" />
+    <meta property="og:image:secure_url" content="https://www.musiclovely.com/og/musiclovely-og-1200x630.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Music Lovely - Logo com coração e nota musical em laranja sobre fundo gradiente amarelo" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@musiclovely" />
+    <meta name="twitter:creator" content="@musiclovely" />
+    <meta name="twitter:title" content="MusicLovely — Músicas Personalizadas Profissionais" />
+    <meta name="twitter:description" content="Crie uma música única para presentear. Produção profissional e artística." />
+    <meta name="twitter:image" content="https://www.musiclovely.com/og/musiclovely-og-1200x630.png" />
+    <meta name="twitter:image:alt" content="Music Lovely - Logo com coração e nota musical em laranja sobre fundo gradiente amarelo" />
+    
+    <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://zagkvtxarndluusiluhb.supabase.co" />
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
+    <link rel="dns-prefetch" href="https://cdn.utmify.com.br" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <link rel="preload" as="image" href="/images/collage-memories-new.webp" fetchpriority="high" type="image/webp" />
+  </head>
+
+  <body>
+    <div id="root">
+      <div id="app-root"></div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Pixel UTMify -->
+    <script>
+      if ('%PROD%' === 'true') {
+        const shouldSkip =
+          location.pathname.startsWith('/admin') ||
+          location.pathname.startsWith('/app/admin');
+        const isLocal =
+          location.hostname === 'localhost' ||
+          location.hostname === '127.0.0.1' ||
+          location.hostname === '0.0.0.0';
+
+        if (!shouldSkip && !isLocal) {
+          const loadPixels = () => {
+            window.pixelId = "68f98a3f196fbe7f0e5683c7";
+            window.tikTokPixelId = "693c50472e9b1020b6ac57d4";
+
+            const scripts = [
+              "https://cdn.utmify.com.br/scripts/pixel/pixel.js",
+              "https://cdn.utmify.com.br/scripts/pixel/pixel-tiktok.js",
+            ];
+
+            for (const src of scripts) {
+              const el = document.createElement("script");
+              el.async = true;
+              el.src = src;
+              document.head.appendChild(el);
+            }
+
+            const utms = document.createElement("script");
+            utms.async = true;
+            utms.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+            utms.setAttribute("data-utmify-prevent-xcod-sck", "");
+            utms.setAttribute("data-utmify-prevent-subids", "");
+            document.head.appendChild(utms);
+          };
+
+          window.addEventListener(
+            'load',
+            () => {
+              if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(loadPixels, { timeout: 8000 });
+              } else {
+                setTimeout(loadPixels, 4000);
+              }
+            },
+            { once: true }
+          );
+        }
+      }
+    </script>
+  </body>
+</html>
