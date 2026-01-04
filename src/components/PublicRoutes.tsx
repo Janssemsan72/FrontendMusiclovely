@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Suspense } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
@@ -19,6 +19,14 @@ const PaymentSuccess = lazyWithRetry(() => import("../pages/PaymentSuccess"));
 const SongDownload = lazyWithRetry(() => import("../pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("../pages/ApproveLyrics"));
 const NotFound = lazyWithRetry(() => import("../pages/NotFound"));
+
+function LocalePrefixRedirect({ locale }: { locale: string }) {
+  const { pathname, search, hash } = useLocation();
+  const escapedLocale = locale.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const nextPath = pathname.replace(new RegExp(`^/${escapedLocale}(?=/|$)`), "");
+  const normalizedNextPath = nextPath === "" ? "/" : nextPath;
+  return <Navigate to={`${normalizedNextPath}${search}${hash}`} replace />;
+}
 
 const RouteFallback = () => {
   return (
@@ -70,6 +78,11 @@ export default function PublicRoutes() {
     <CheckoutRedirectWrapper>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
+          <Route path="pt/*" element={<LocalePrefixRedirect locale="pt" />} />
+          <Route path="pt-br/*" element={<LocalePrefixRedirect locale="pt-br" />} />
+          <Route path="pt-BR/*" element={<LocalePrefixRedirect locale="pt-BR" />} />
+          <Route path="en/*" element={<LocalePrefixRedirect locale="en" />} />
+          <Route path="es/*" element={<LocalePrefixRedirect locale="es" />} />
           {/* Para musiclovely.shop e music-lovely-novo, a página inicial é a Company (sem Header/Footer) */}
           <Route path="" element={isCompanyPage ? <IndexCompany /> : <Index />} />
           <Route path="about" element={<About />} />
