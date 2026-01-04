@@ -106,6 +106,13 @@ const App = () => {
   );
 };
 
+const LocalePrefixRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  const nextPath = pathname.replace(/^\/(pt|pt-BR|pt-br|en|es)(?=\/|$)/, "");
+  const normalizedNextPath = nextPath === "" ? "/" : nextPath;
+  return <Navigate to={`${normalizedNextPath}${search}${hash}`} replace />;
+};
+
 const AppContent = () => {
   // ✅ CORREÇÃO LOADING INFINITO: Logs de diagnóstico no início do AppContent
   const isLoading = false;
@@ -289,6 +296,7 @@ const AppContent = () => {
       <PublicErrorBoundary>
         <Suspense fallback={null}>
           <Routes>
+            <Route path="/:locale(pt|pt-BR|pt-br|en|es)/*" element={<LocalePrefixRedirect />} />
               {/* Rotas públicas - apenas português */}
               <Route path="/*" element={
                 <Suspense fallback={null}>
