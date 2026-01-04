@@ -8,7 +8,7 @@
       "destination": "/download.html"
     },
     {
-      "source": "/((?!assets|images|video|audio|testimonials|favicon.ico|robots.txt|manifest.*\\.json|.*\\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot|mp3|mp4|webm)).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
@@ -51,4 +51,3 @@
     }
   ]
 }
->>>>>>> 9653054 (feat: inicializar repositÃ³rio frontend limpo com apenas arquivos essenciais)
