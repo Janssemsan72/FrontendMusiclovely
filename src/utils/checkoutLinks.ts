@@ -16,7 +16,7 @@ export function generateCaktoUrl(
   language: string = 'pt',
   utms?: Record<string, string>
 ): string {
-  const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/k63z5ui';
+  const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
   
   // Normalizar WhatsApp (apenas números)
   let normalizedWhatsapp = whatsapp.replace(/\D/g, '');

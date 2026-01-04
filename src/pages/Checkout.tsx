@@ -67,24 +67,13 @@ interface CheckoutDraft {
   timestamp: number;
 }
 
-// ✅ Configuração de preços por domínio
-// ✅ IMPORTANTE: URL antiga d877u4t_665160 está indisponível, usar apenas a URL ativa.
+// ✅ Configuração de preços - Todos os domínios usam R$ 47,90
 const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-
+  // Todos os domínios = R$ 47,90
   return {
-    url: 'https://pay.cakto.com.br/k63z5ui',
-    amount_cents: 6700,
-    price_display: 6700
+    url: 'https://pay.cakto.com.br/d877u4t_665160',
+    amount_cents: 4790,
+    price_display: 4790
   };
 };
 
@@ -268,7 +257,6 @@ export default function Checkout() {
         !caktoUrl ||
         caktoUrl.trim() === '' ||
         !caktoUrl.startsWith('https://pay.cakto.com.br') ||
-        caktoUrl.includes('d877u4t_665160') ||
         caktoUrl.includes('%2Fpt%2Fpayment-success') ||
         caktoUrl.includes('%2Fen%2Fpayment-success') ||
         caktoUrl.includes('%2Fes%2Fpayment-success');

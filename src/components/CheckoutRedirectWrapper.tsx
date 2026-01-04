@@ -67,7 +67,7 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
         .single()
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
-            const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/k63z5ui';
+            const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
             const locale = 'pt';
             
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55

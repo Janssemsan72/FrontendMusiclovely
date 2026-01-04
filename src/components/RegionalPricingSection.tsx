@@ -10,25 +10,13 @@ import { getLocalizedPath } from '@/lib/i18nRoutes';
 import { useUtmParams } from '@/hooks/useUtmParams';
 // formatDateTime removido - não é mais usado
 
-// ✅ Configuração de preços por domínio
-// .com.br / localhost = R$ 67,00 (URL nova: k63z5ui)
-// ✅ IMPORTANTE: URL antiga d877u4t_665160 está indisponível, usar apenas a URL ativa.
+// ✅ Configuração de preços - Todos os domínios usam R$ 47,90
 const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-
+  // Todos os domínios = R$ 47,90
   return {
-    url: 'https://pay.cakto.com.br/k63z5ui',
-    amount_cents: 6700,
-    price_display: 6700
+    url: 'https://pay.cakto.com.br/d877u4t_665160',
+    amount_cents: 4790,
+    price_display: 4790
   };
 };
 
