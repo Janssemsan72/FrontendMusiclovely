@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Mail, Clock, Shield, Instagram, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Mail, Clock, Shield, Instagram, ChevronDown, MessageCircle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUtmParams } from '@/hooks/useUtmParams';
 import { useUtmifyTracking } from '@/hooks/useUtmifyTracking';
@@ -14,6 +14,11 @@ export default function PaymentSuccess() {
   // Preservar UTMs na página de sucesso
   const { utms, hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
+
+  const whatsappHref =
+    'https://wa.me/5585994377151?text=Ol%C3%A1%2C%20Music%20Lovely%2C%20acabei%20de%20fazer%20meu%20pedido%20musical.';
+
+  const [redirectSecondsLeft, setRedirectSecondsLeft] = useState(8);
   
   useEffect(() => {
     if (hasUtms) {
@@ -82,6 +87,23 @@ export default function PaymentSuccess() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    setRedirectSecondsLeft(8);
+
+    const intervalId = window.setInterval(() => {
+      setRedirectSecondsLeft((prev) => {
+        if (prev <= 1) {
+          window.location.href = whatsappHref;
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [whatsappHref]);
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center p-2 sm:p-4" style={{ background: '#F5F0EB' }}>
@@ -255,6 +277,20 @@ export default function PaymentSuccess() {
             </div>
             <div className="flex flex-col gap-2 sm:gap-2.5">
               <Button
+                onClick={() => {
+                  window.location.href = whatsappHref;
+                }}
+                className="w-full hover:scale-[1.02] transition-all duration-300 animate-in zoom-in-95 duration-500 text-white font-semibold shadow-md hover:shadow-xl rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                  border: 'none',
+                  animationDelay: '1.1s'
+                }}
+              >
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                {t('paymentSuccess.socialMedia.whatsapp')}
+              </Button>
+              <Button
                 onClick={() => window.open('https://instagram.com/musiclovely.oficial', '_blank')}
                 className="w-full hover:scale-[1.02] transition-all duration-300 animate-in zoom-in-95 duration-500 text-white font-semibold shadow-md hover:shadow-xl rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm"
                 style={{ 
@@ -267,6 +303,9 @@ export default function PaymentSuccess() {
                 {t('paymentSuccess.socialMedia.instagram')}
               </Button>
             </div>
+            <p className="text-[11px] sm:text-xs text-center mt-2" style={{ color: '#8B7355' }}>
+              {t('paymentSuccess.redirecting', { countdown: redirectSecondsLeft })}
+            </p>
           </div>
         </CardContent>
       </Card>
