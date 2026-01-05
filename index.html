@@ -50,9 +50,8 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Pixel UTMify -->
     <script>
-      if ('%PROD%' === 'true') {
+      if ('%MODE%' === 'production') {
         const shouldSkip =
           location.pathname.startsWith('/admin') ||
           location.pathname.startsWith('/app/admin');
@@ -62,41 +61,63 @@
           location.hostname === '0.0.0.0';
 
         if (!shouldSkip && !isLocal) {
+          let didLoad = false;
+
           const loadPixels = () => {
-            window.pixelId = "68f98a3f196fbe7f0e5683c7";
-            window.tikTokPixelId = "693c50472e9b1020b6ac57d4";
+            if (didLoad) return;
+            didLoad = true;
+
+            window.pixelId = '68f98a3f196fbe7f0e5683c7';
+            window.tikTokPixelId = '693c50472e9b1020b6ac57d4';
 
             const scripts = [
-              "https://cdn.utmify.com.br/scripts/pixel/pixel.js",
-              "https://cdn.utmify.com.br/scripts/pixel/pixel-tiktok.js",
+              'https://cdn.utmify.com.br/scripts/pixel/pixel.js',
+              'https://cdn.utmify.com.br/scripts/pixel/pixel-tiktok.js',
             ];
 
             for (const src of scripts) {
-              const el = document.createElement("script");
+              const el = document.createElement('script');
               el.async = true;
               el.src = src;
               document.head.appendChild(el);
             }
 
-            const utms = document.createElement("script");
+            const utms = document.createElement('script');
             utms.async = true;
-            utms.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
-            utms.setAttribute("data-utmify-prevent-xcod-sck", "");
-            utms.setAttribute("data-utmify-prevent-subids", "");
+            utms.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+            utms.setAttribute('data-utmify-prevent-xcod-sck', '');
+            utms.setAttribute('data-utmify-prevent-subids', '');
             document.head.appendChild(utms);
           };
 
-          window.addEventListener(
-            'load',
-            () => {
-              if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(loadPixels, { timeout: 8000 });
-              } else {
-                setTimeout(loadPixels, 4000);
-              }
-            },
-            { once: true }
-          );
+          const scheduleLoad = () => {
+            if ('requestIdleCallback' in window) {
+              window.requestIdleCallback(loadPixels, { timeout: 8000 });
+            } else {
+              setTimeout(loadPixels, 4000);
+            }
+          };
+
+          const pathname = location.pathname || '';
+          const loadOnInit =
+            pathname.startsWith('/quiz') ||
+            pathname.startsWith('/checkout') ||
+            pathname.includes('/payment');
+
+          if (loadOnInit) {
+            window.addEventListener('load', scheduleLoad, { once: true });
+          } else {
+            const onFirstInteraction = () => {
+              scheduleLoad();
+              window.removeEventListener('pointerdown', onFirstInteraction);
+              window.removeEventListener('keydown', onFirstInteraction);
+              window.removeEventListener('scroll', onFirstInteraction);
+            };
+
+            window.addEventListener('pointerdown', onFirstInteraction, { once: true, passive: true });
+            window.addEventListener('keydown', onFirstInteraction, { once: true });
+            window.addEventListener('scroll', onFirstInteraction, { once: true, passive: true });
+          }
         }
       }
     </script>

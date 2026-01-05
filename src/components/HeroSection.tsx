@@ -2,9 +2,9 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
 // ✅ OTIMIZAÇÃO: WebP para imagens menores (~12KB vs ~24KB)
-import testimonial1 from "@/assets/testimonial-1.webp";
-import testimonial2 from "@/assets/testimonial-2.webp";
-import testimonial3 from "@/assets/testimonial-3.webp";
+import testimonial1 from "@/assets/testimonial-1-96.webp";
+import testimonial2 from "@/assets/testimonial-2-96.webp";
+import testimonial3 from "@/assets/testimonial-3-96.webp";
 import { useTranslation } from "@/hooks/useTranslation";
 
 // Lista de vídeos em ordem de prioridade (fallbacks)
@@ -20,6 +20,8 @@ import { useUtmParams } from "@/hooks/useUtmParams";
 export default function HeroSection() {
   const { t } = useTranslation();
   const { navigateWithUtms } = useUtmParams();
+
+  const isDev = import.meta.env.DEV;
 
   const [videoReady, setVideoReady] = React.useState(false);
   const [videoError, setVideoError] = React.useState(false);
@@ -67,7 +69,9 @@ export default function HeroSection() {
                 }
               }}
               onLoad={() => {
-                console.log('✅ [HeroSection] Poster carregado com sucesso:', heroPoster);
+                if (isDev) {
+                  console.log('✅ [HeroSection] Poster carregado com sucesso:', heroPoster);
+                }
               }}
             />
             {!videoError ? (
@@ -81,12 +85,16 @@ export default function HeroSection() {
                 playsInline
                 preload="auto"
                 onLoadedData={() => {
-                  console.log('✅ [HeroSection] Vídeo carregado com sucesso:', currentVideoSrc);
+                  if (isDev) {
+                    console.log('✅ [HeroSection] Vídeo carregado com sucesso:', currentVideoSrc);
+                  }
                   setVideoReady(true);
                   setVideoError(false);
                 }}
                 onCanPlay={() => {
-                  console.log('✅ [HeroSection] Vídeo pode ser reproduzido:', currentVideoSrc);
+                  if (isDev) {
+                    console.log('✅ [HeroSection] Vídeo pode ser reproduzido:', currentVideoSrc);
+                  }
                   setVideoReady(true);
                   setVideoError(false);
                 }}
@@ -153,13 +161,19 @@ export default function HeroSection() {
                   }
                 }}
                 onLoadStart={() => {
-                  console.log('📹 [HeroSection] Iniciando carregamento do vídeo:', currentVideoSrc);
+                  if (isDev) {
+                    console.log('📹 [HeroSection] Iniciando carregamento do vídeo:', currentVideoSrc);
+                  }
                 }}
                 onStalled={() => {
-                  console.warn('⚠️ [HeroSection] Vídeo travado durante carregamento');
+                  if (isDev) {
+                    console.warn('⚠️ [HeroSection] Vídeo travado durante carregamento');
+                  }
                 }}
                 onWaiting={() => {
-                  console.warn('⚠️ [HeroSection] Vídeo aguardando dados');
+                  if (isDev) {
+                    console.warn('⚠️ [HeroSection] Vídeo aguardando dados');
+                  }
                 }}
               />
             ) : (
@@ -214,13 +228,13 @@ export default function HeroSection() {
         <div className="flex items-center justify-center gap-2 sm:gap-4 px-2">
           <div className="flex -space-x-2 sm:-space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial1} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial2} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial3} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} decoding="async" />
             </div>
           </div>
           <div className="text-left">

@@ -33,6 +33,12 @@ function isUnexpectedEndOfInputError(message: string): boolean {
   return msg.includes('unexpected end of input');
 }
 
+function isFbqMissingError(message: string): boolean {
+  const msg = (message || '').toLowerCase();
+  if (!msg.includes('fbq')) return false;
+  return msg.includes('not defined') || msg.includes("can't find variable");
+}
+
 /**
  * Verifica se o erro é relacionado ao UTMify tentando conectar em localhost:3001
  */
@@ -88,6 +94,8 @@ function isKnownTrackingNoiseError(input: any): boolean {
   if (isMetaTrafficPermissionError(message)) return true;
 
   if (isUnexpectedEndOfInputError(message)) return true;
+
+  if (isFbqMissingError(message)) return true;
 
   return false;
 }
