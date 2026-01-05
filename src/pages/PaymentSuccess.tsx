@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Mail, Clock, Shield, Instagram, ChevronDown, MessageCircle } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { CheckCircle2, ChevronDown, MessageCircle } from 'lucide-react';
 import { useUtmParams } from '@/hooks/useUtmParams';
 import { useUtmifyTracking } from '@/hooks/useUtmifyTracking';
 import { clearQuizSessionId } from '@/utils/quizSync';
@@ -10,7 +9,6 @@ import confetti from 'canvas-confetti';
 import Logo from '@/components/Logo';
 
 export default function PaymentSuccess() {
-  const { t } = useTranslation();
   // Preservar UTMs na página de sucesso
   const { utms, hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
@@ -139,6 +137,14 @@ export default function PaymentSuccess() {
             background-position: 200% center;
           }
         }
+        @keyframes ctaPulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.03);
+          }
+        }
         .success-circle {
           animation: successPulse 2s ease-in-out infinite;
           background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
@@ -167,7 +173,7 @@ export default function PaymentSuccess() {
           {/* Logo */}
           <div className="flex justify-center mb-2 sm:mb-5">
             <div className="animate-in fade-in zoom-in-95 duration-700" style={{ animationDelay: '0s' }}>
-              <Logo size={60} className="w-[60px] sm:w-[100px]" />
+              <Logo size={202} />
             </div>
           </div>
 
@@ -193,119 +199,46 @@ export default function PaymentSuccess() {
             className="text-lg sm:text-2xl font-bold text-center mb-3 sm:mb-5 animate-in slide-in-from-bottom-4 fade-in duration-700" 
             style={{ color: '#22c55e', animationDelay: '0.2s', textShadow: '0 2px 4px rgba(34, 197, 94, 0.1)' }}
           >
-            {t('paymentSuccess.title')}
+            Pagamento Confirmado!
           </h1>
 
-          {/* Seção 1: Pagamento Processado (Verde) - Animação de entrada */}
-          <div 
-            className="p-2.5 sm:p-3.5 rounded-xl border-2 animate-in slide-in-from-left-4 fade-in duration-700 hover:scale-[1.02] hover:shadow-md transition-all shadow-sm backdrop-blur-sm" 
+          <div
+            className="p-3 sm:p-4 rounded-xl border-2 animate-in slide-in-from-bottom-4 fade-in duration-700 hover:scale-[1.01] hover:shadow-md transition-all shadow-sm backdrop-blur-sm"
             style={{ borderColor: '#86efac', backgroundColor: '#f0fdf4', animationDelay: '0.4s' }}
           >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1 sm:p-1.5 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}>
-                <Shield 
-                  className="w-4 h-4 sm:w-5 sm:h-5 animate-in zoom-in-95 duration-500" 
-                  style={{ color: '#22c55e', animationDelay: '0.6s' }} 
-                />
-              </div>
-              <p className="text-xs leading-relaxed font-medium" style={{ color: '#166534' }}>
-                {t('paymentSuccess.paymentProcessed')}
-              </p>
-            </div>
+            <p className="text-xs sm:text-sm leading-relaxed font-medium text-center" style={{ color: '#166534' }}>
+              Seu pagamento foi processado. Clique no botão abaixo e acompanhe o seu pedido pelo WhatsApp.
+            </p>
           </div>
 
-          {/* Seção 2: Tempo de Entrega (Laranja) - Animação de entrada */}
-          <div 
-            className="p-2.5 sm:p-3.5 rounded-xl border-2 animate-in slide-in-from-right-4 fade-in duration-700 hover:scale-[1.02] hover:shadow-md transition-all shadow-sm backdrop-blur-sm" 
-            style={{ borderColor: '#fed7aa', backgroundColor: '#fff7ed', animationDelay: '0.6s' }}
-          >
-            <div className="flex items-start gap-2 sm:gap-3">
-              <div className="p-1 sm:p-1.5 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}>
-                <Clock 
-                  className="w-4 h-4 sm:w-5 sm:h-5 animate-in zoom-in-95 duration-500" 
-                  style={{ color: '#f97316', animationDelay: '0.8s' }} 
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-xs mb-0.5 sm:mb-1" style={{ color: '#f97316' }}>
-                  {t('paymentSuccess.deliveryTime.title')}
-                </h3>
-                <p className="text-xs font-bold mb-1 sm:mb-1.5" style={{ color: '#ea580c' }}>
-                  {t('paymentSuccess.deliveryTime.mainMessage')}
-                </p>
-                <p className="text-xs leading-relaxed" style={{ color: '#9a3412' }}>
-                  {t('paymentSuccess.deliveryTime.description')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Seção 3: Acompanhe seu pedido (Azul) - Animação de entrada */}
-          <div 
-            className="p-2.5 sm:p-3.5 rounded-xl border-2 animate-in slide-in-from-left-4 fade-in duration-700 hover:scale-[1.02] hover:shadow-md transition-all shadow-sm backdrop-blur-sm" 
-            style={{ borderColor: '#bfdbfe', backgroundColor: '#eff6ff', animationDelay: '0.8s' }}
-          >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1 sm:p-1.5 rounded-lg flex-shrink-0" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
-                <Mail 
-                  className="w-4 h-4 sm:w-5 sm:h-5 animate-in zoom-in-95 duration-500" 
-                  style={{ color: '#3b82f6', animationDelay: '1s' }} 
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-xs mb-0.5 sm:mb-1" style={{ color: '#3b82f6' }}>
-                  {t('paymentSuccess.emailTracking.title')}
-                </h3>
-                <p className="text-xs leading-relaxed" style={{ color: '#1e40af' }}>
-                  {t('paymentSuccess.emailTracking.description')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Seção Redes Sociais - Animação de entrada */}
-          <div className="animate-in slide-in-from-bottom-4 fade-in duration-700" style={{ animationDelay: '1s' }}>
-            <h3 className="text-center font-semibold mb-1 sm:mb-2 text-xs sm:text-sm" style={{ color: '#8B7355' }}>
-              {t('paymentSuccess.socialMedia.title')}
-            </h3>
-            {/* Seta animada apontando para o botão */}
-            <div className="flex justify-center mb-1 sm:mb-2">
-              <ChevronDown 
-                className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce" 
+          <div className="animate-in slide-in-from-bottom-4 fade-in duration-700" style={{ animationDelay: '0.6s' }}>
+            <div className="flex justify-center mb-2 sm:mb-3">
+              <ChevronDown
+                className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce"
                 style={{ color: '#8B7355', animation: 'bounce 1.5s ease-in-out infinite' }}
               />
             </div>
             <div className="flex flex-col gap-2 sm:gap-2.5">
               <Button
-                onClick={() => {
-                  window.location.href = whatsappHref;
-                }}
-                className="w-full hover:scale-[1.02] transition-all duration-300 animate-in zoom-in-95 duration-500 text-white font-semibold shadow-md hover:shadow-xl rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm"
+                asChild
+                className="w-full hover:scale-[1.02] transition-all duration-300 text-white font-semibold shadow-md hover:shadow-xl rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm"
                 style={{
                   background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
                   border: 'none',
-                  animationDelay: '1.1s'
+                  animation: 'ctaPulse 2.2s ease-in-out infinite',
+                  animationDelay: '0.8s'
                 }}
               >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                {t('paymentSuccess.socialMedia.whatsapp')}
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                  Falar no WhatsApp
+                </a>
               </Button>
-              <Button
-                onClick={() => window.open('https://instagram.com/musiclovely.oficial', '_blank')}
-                className="w-full hover:scale-[1.02] transition-all duration-300 animate-in zoom-in-95 duration-500 text-white font-semibold shadow-md hover:shadow-xl rounded-xl py-2 sm:py-2.5 text-xs sm:text-sm"
-                style={{ 
-                  background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-                  border: 'none',
-                  animationDelay: '1.2s'
-                }}
-              >
-                <Instagram className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
-                {t('paymentSuccess.socialMedia.instagram')}
-              </Button>
+              <p className="text-[11px] sm:text-xs text-center" style={{ color: '#8B7355' }}>
+                Redirecionando para o WhatsApp em{' '}
+                {redirectSecondsLeft === 1 ? '1 segundo' : `${redirectSecondsLeft} segundos`}...
+              </p>
             </div>
-            <p className="text-[11px] sm:text-xs text-center mt-2" style={{ color: '#8B7355' }}>
-              {t('paymentSuccess.redirecting', { countdown: redirectSecondsLeft })}
-            </p>
           </div>
         </CardContent>
       </Card>
