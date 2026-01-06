@@ -48,8 +48,7 @@ export default function HeroSection() {
               className="absolute inset-0 w-full h-full object-cover"
               src={heroPoster}
               alt="Memórias especiais"
-              loading="eager"
-              {...({ fetchpriority: "high" } as any)}
+              loading="lazy"
               decoding="async"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -67,7 +66,7 @@ export default function HeroSection() {
                 }
               }}
               onLoad={() => {
-                console.log('✅ [HeroSection] Poster carregado com sucesso:', heroPoster);
+                // Poster carregado com sucesso
               }}
             />
             {!videoError ? (
@@ -81,12 +80,10 @@ export default function HeroSection() {
                 playsInline
                 preload="auto"
                 onLoadedData={() => {
-                  console.log('✅ [HeroSection] Vídeo carregado com sucesso:', currentVideoSrc);
                   setVideoReady(true);
                   setVideoError(false);
                 }}
                 onCanPlay={() => {
-                  console.log('✅ [HeroSection] Vídeo pode ser reproduzido:', currentVideoSrc);
                   setVideoReady(true);
                   setVideoError(false);
                 }}
@@ -120,9 +117,6 @@ export default function HeroSection() {
                   
                   // Verificar se o arquivo existe
                   fetch(currentSrc, { method: 'HEAD', mode: 'no-cors' })
-                    .then(() => {
-                      console.log('✅ [HeroSection] Arquivo existe mas pode ter problema de CORS ou formato');
-                    })
                     .catch((fetchError) => {
                       console.error('❌ [HeroSection] Erro ao verificar arquivo:', fetchError);
                     });
@@ -130,7 +124,6 @@ export default function HeroSection() {
                   // Tentar próximo fallback
                   if (currentIndex < heroVideoSources.length - 1) {
                     const nextVideo = heroVideoSources[currentIndex + 1];
-                    console.log('🔄 [HeroSection] Tentando fallback de vídeo:', nextVideo);
                     // Forçar recarregamento com timestamp para evitar cache
                     setCurrentVideoSrc(`${nextVideo}?t=${Date.now()}`);
                     setVideoErrorCount(prev => prev + 1);
@@ -138,7 +131,6 @@ export default function HeroSection() {
                   } else {
                     // Todos os fallbacks falharam - tentar recarregar o primeiro com timestamp
                     if (videoErrorCount < 3) {
-                      console.log('🔄 [HeroSection] Retentando primeiro vídeo com timestamp');
                       setTimeout(() => {
                         const retryUrl = `${heroVideoSources[0]}?t=${Date.now()}&retry=${videoErrorCount + 1}`;
                         setCurrentVideoSrc(retryUrl);
@@ -153,7 +145,7 @@ export default function HeroSection() {
                   }
                 }}
                 onLoadStart={() => {
-                  console.log('📹 [HeroSection] Iniciando carregamento do vídeo:', currentVideoSrc);
+                  // Iniciando carregamento do vídeo
                 }}
                 onStalled={() => {
                   console.warn('⚠️ [HeroSection] Vídeo travado durante carregamento');
