@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   const isDev = mode !== 'production';
 
   return {
+    envDir: path.resolve(__dirname, '..'),
     // ✅ CRÍTICO: Base path explícito para garantir que funciona no Vercel
     base: '/',
     // ✅ CORREÇÃO: Garantir que a pasta public seja servida corretamente
