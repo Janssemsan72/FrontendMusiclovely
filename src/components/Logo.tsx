@@ -1,6 +1,6 @@
 import React from "react";
-// ✅ NOVO: Import direto do asset como fallback
-import logoAsset from "@/assets/logo.png";
+// ✅ OTIMIZAÇÃO: Usar WebP ao invés de PNG para melhor performance
+import logoAsset from "@/assets/logo.webp";
 
 interface LogoProps {
   className?: string;

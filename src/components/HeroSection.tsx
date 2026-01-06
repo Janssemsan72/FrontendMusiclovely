@@ -1,10 +1,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "lucide-react";
-// ✅ OTIMIZAÇÃO: WebP para imagens menores (~12KB vs ~24KB)
-import testimonial1 from "@/assets/testimonial-1.webp";
-import testimonial2 from "@/assets/testimonial-2.webp";
-import testimonial3 from "@/assets/testimonial-3.webp";
+// ✅ OTIMIZAÇÃO: Usar versões otimizadas 96x96 para reduzir tamanho (de 512x512 para 96x96)
+import testimonial1 from "@/assets/testimonial-1-96.webp";
+import testimonial2 from "@/assets/testimonial-2-96.webp";
+import testimonial3 from "@/assets/testimonial-3-96.webp";
 import { useTranslation } from "@/hooks/useTranslation";
 
 // Lista de vídeos em ordem de prioridade (fallbacks)

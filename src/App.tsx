@@ -209,9 +209,10 @@ const AppContent = () => {
 
   // ✅ OTIMIZAÇÃO: Prefetch automático de rotas críticas após carregamento inicial
   // Reduzido para 1 segundo e apenas rotas essenciais para melhorar performance inicial
+  // ✅ OTIMIZAÇÃO: NÃO prefetch componentes admin - carregar apenas quando necessário
   useEffect(() => {
     if (isLoading) return;
-    if (isAdminRoute) return;
+    if (isAdminRoute) return; // Não prefetch se já está em rota admin
 
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
@@ -226,6 +227,7 @@ const AppContent = () => {
     let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     const prefetch = () => {
       if (cancelled) return;
+      // ✅ OTIMIZAÇÃO: Prefetch apenas rotas públicas críticas, não admin
       Promise.all([
         import('./pages/Quiz').catch(() => {}),
         import('./pages/Checkout').catch(() => {})

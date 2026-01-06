@@ -883,6 +883,8 @@ export default function AdminReleases() {
                                 src={song.cover_url} 
                                 alt={song.title}
                                 className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                                decoding="async"
                                 onClick={() => setSelectedCover(song.cover_url)}
                                 onError={async (e) => {
                                   const target = e.target as HTMLImageElement;
