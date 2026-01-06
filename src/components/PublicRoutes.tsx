@@ -18,14 +18,14 @@ const CheckoutProcessing = lazyWithRetry(() => import("../pages/CheckoutProcessi
 const PaymentSuccess = lazyWithRetry(() => import("../pages/PaymentSuccess"));
 const SongDownload = lazyWithRetry(() => import("../pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("../pages/ApproveLyrics"));
+const AffiliateLogin = lazyWithRetry(() => import("../pages/AffiliateLogin"));
+const AffiliateDashboard = lazyWithRetry(() => import("../pages/AffiliateDashboard"));
 const NotFound = lazyWithRetry(() => import("../pages/NotFound"));
 
-function LocalePrefixRedirect({ locale }: { locale: string }) {
-  const { pathname, search, hash } = useLocation();
-  const escapedLocale = locale.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const nextPath = pathname.replace(new RegExp(`^/${escapedLocale}(?=/|$)`), "");
-  const normalizedNextPath = nextPath === "" ? "/" : nextPath;
-  return <Navigate to={`${normalizedNextPath}${search}${hash}`} replace />;
+function StripLocalePrefixRedirect() {
+  const location = useLocation();
+  const targetPathname = location.pathname.replace(/^\/(pt|en|es)(?=\/|$)/, "") || "/";
+  return <Navigate to={`${targetPathname}${location.search}${location.hash}`} replace />;
 }
 
 const RouteFallback = () => {
@@ -78,12 +78,7 @@ export default function PublicRoutes() {
     <CheckoutRedirectWrapper>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path="pt/*" element={<LocalePrefixRedirect locale="pt" />} />
-          <Route path="pt-br/*" element={<LocalePrefixRedirect locale="pt-br" />} />
-          <Route path="pt-BR/*" element={<LocalePrefixRedirect locale="pt-BR" />} />
-          <Route path="en/*" element={<LocalePrefixRedirect locale="en" />} />
-          <Route path="es/*" element={<LocalePrefixRedirect locale="es" />} />
-          {/* Para musiclovely.shop e music-lovely-novo, a página inicial é a Company (sem Header/Footer) */}
+          <Route path=":locale(pt|en|es)/*" element={<StripLocalePrefixRedirect />} />
           <Route path="" element={isCompanyPage ? <IndexCompany /> : <Index />} />
           <Route path="about" element={<About />} />
           <Route path="company" element={<Company />} />
@@ -95,7 +90,6 @@ export default function PublicRoutes() {
           <Route path="quiz" element={<Quiz />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="checkout-processing" element={<CheckoutProcessing />} />
-          {/* Rotas de sucesso - cobrindo todas as variações possíveis */}
           <Route path="payment/success" element={<PaymentSuccess />} />
           <Route path="payment-success" element={<PaymentSuccess />} />
           <Route path="success" element={<PaymentSuccess />} />
@@ -103,6 +97,8 @@ export default function PublicRoutes() {
           <Route path="download/:id" element={<SongDownload />} />
           <Route path="download/:id/:token" element={<SongDownload />} />
           <Route path="approve-lyrics" element={<ApproveLyrics />} />
+          <Route path="afiliado/login" element={<AffiliateLogin />} />
+          <Route path="afiliado" element={<AffiliateDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

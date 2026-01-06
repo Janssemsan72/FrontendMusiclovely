@@ -44,6 +44,7 @@ const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"))
 // AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
 const AdminFinancial = lazyWithRetry(() => import("./pages/admin/AdminFinancial"));
+const AdminAffiliates = lazyWithRetry(() => import("./pages/admin/AdminAffiliates"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
 const Quiz = lazyWithRetry(() => import("./pages/Quiz"));
 const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
@@ -426,6 +427,13 @@ const AppContent = () => {
                 <Suspense fallback={null}>
                   <ProtectedAdminRoute requiredPermission="logs">
                     <AdminLogs />
+                  </ProtectedAdminRoute>
+                </Suspense>
+              } />
+              <Route path="afiliados" element={
+                <Suspense fallback={null}>
+                  <ProtectedAdminRoute requiredPermission="orders">
+                    <AdminAffiliates />
                   </ProtectedAdminRoute>
                 </Suspense>
               } />

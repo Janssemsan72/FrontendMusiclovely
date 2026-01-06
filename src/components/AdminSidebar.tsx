@@ -41,6 +41,7 @@ const adminMenuItems: MenuItem[] = [
   { title: "Gerenciar Letras", url: "/admin/lyrics", icon: CheckSquare, permissionKey: "lyrics" },
   { title: "Liberações", url: "/admin/releases", icon: Clock, permissionKey: "releases" },
   { title: "Gestão Financeira", url: "/admin/financial", icon: DollarSign, permissionKey: "financial_management" },
+  { title: "Afiliados", url: "/admin/afiliados", icon: Users, permissionKey: "orders" },
   { title: "Colaboradores", url: "/admin/collaborators", icon: Users, permissionKey: "collaborators" },
   { title: "Emails", url: "/admin/emails", icon: Mail, permissionKey: "emails" },
   { title: "Logs de Emails", url: "/admin/email-logs", icon: Mail, permissionKey: "email_logs" },

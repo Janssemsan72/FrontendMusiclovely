@@ -67,22 +67,9 @@ interface CheckoutDraft {
   timestamp: number;
 }
 
-// ✅ Configuração de preços por domínio
-// .com.br / localhost = R$ 67,00 (URL nova: k63z5ui)
-// .com = R$ 47,90 (URL antiga: d877u4t_665160)
+// ✅ Configuração de preços - Todos os domínios usam R$ 47,90
 const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-  
-  // .com ou qualquer outro domínio = R$ 47,90 (URL antiga)
+  // Todos os domínios = R$ 47,90
   return {
     url: 'https://pay.cakto.com.br/d877u4t_665160',
     amount_cents: 4790,
@@ -172,8 +159,7 @@ export default function Checkout() {
   
   // ✅ Função helper para obter caminho do quiz com prefixo de idioma
   const getQuizPath = () => {
-    const language = getCurrentLanguage();
-    return `/${language}/quiz`;
+    return '/quiz';
   };
   
   const currentLanguage = getCurrentLanguage();
@@ -207,8 +193,8 @@ export default function Checkout() {
     const CAKTO_PAYMENT_URL = caktoConfig.url;
     const origin = window.location.origin;
     const utmQuery = getUtmQueryString(false);
-    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success (sem barra antes de success)
-    const redirectUrl = `${origin}/${language}/payment-success?order_id=${orderId}${utmQuery}`;
+    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success
+    const redirectUrl = `${origin}/payment-success?order_id=${orderId}${utmQuery}`;
     
     // Normalizar WhatsApp para formato correto (55XXXXXXXXXXX)
     const normalizedWhatsapp = formatWhatsappForCakto(whatsapp);
@@ -266,10 +252,17 @@ export default function Checkout() {
 
       // Verificar se já existe URL da Cakto salva
       let caktoUrl = orderData.cakto_payment_url;
+
+      const needsCaktoUrlRegeneration =
+        !caktoUrl ||
+        caktoUrl.trim() === '' ||
+        !caktoUrl.startsWith('https://pay.cakto.com.br') ||
+        caktoUrl.includes('%2Fpt%2Fpayment-success') ||
+        caktoUrl.includes('%2Fen%2Fpayment-success') ||
+        caktoUrl.includes('%2Fes%2Fpayment-success');
       
-      if (!caktoUrl || caktoUrl.trim() === '') {
-        // Gerar nova URL da Cakto
-        logger.debug('redirectToCakto: Gerando nova URL da Cakto...');
+      if (needsCaktoUrlRegeneration) {
+        logger.debug('redirectToCakto: Gerando nova URL da Cakto (ausente ou desatualizada)...');
         const safeUtms = utmsParam || utms || {};
         caktoUrl = generateCaktoUrl(
           orderData.id,
@@ -492,6 +485,19 @@ export default function Checkout() {
       const token = urlParams.get('token');
       const messageId = urlParams.get('message_id');
       const auto = urlParams.get('auto');
+      
+      // ✅ SISTEMA DE AFILIADOS: Capturar código do afiliado
+      const affiliateRef = urlParams.get('ref');
+      if (affiliateRef) {
+        // Salvar no localStorage com expiração de 30 dias
+        const affiliateData = {
+          slug: affiliateRef,
+          savedAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
+        };
+        localStorage.setItem('affiliate_ref', JSON.stringify(affiliateData));
+        logger.debug('Código de afiliado capturado e salvo', { affiliateRef });
+      }
       
       // ⚠️ CRÍTICO: Se a URL contém message_id (veio do WhatsApp), redirecionar IMEDIATAMENTE para Cakto
       // Isso evita que o React Router processe como checkout interno
@@ -1772,8 +1778,7 @@ export default function Checkout() {
     }
     
 
-    // Detectar se usuário está em rota portuguesa (Brasil)
-    const isPortuguese = window.location.pathname.startsWith('/pt');
+    const isPortuguese = currentLanguage === 'pt';
     
     const caktoConfig = getCaktoConfigByDomain();
     const CAKTO_PAYMENT_URL = caktoConfig.url;
@@ -2184,6 +2189,60 @@ export default function Checkout() {
           });
         }
 
+        // ✅ SISTEMA DE AFILIADOS: Buscar affiliate_id se houver código salvo
+        let affiliateId: string | null = null;
+        let affiliateLinkId: string | null = null;
+        
+        try {
+          const affiliateDataStr = localStorage.getItem('affiliate_ref');
+          if (affiliateDataStr) {
+            const affiliateData = JSON.parse(affiliateDataStr);
+            const expiresAt = new Date(affiliateData.expiresAt);
+            
+            // Verificar se não expirou
+            if (expiresAt > new Date() && affiliateData.slug) {
+              // Buscar affiliate_link pelo slug
+              const { data: affiliateLink, error: linkError } = await supabase
+                .from('affiliate_links')
+                .select('id, affiliate_id, is_active')
+                .eq('slug', affiliateData.slug)
+                .eq('is_active', true)
+                .single();
+              
+              if (!linkError && affiliateLink) {
+                // Verificar se o afiliado está ativo
+                const { data: affiliate, error: affiliateError } = await supabase
+                  .from('affiliates')
+                  .select('id, is_active')
+                  .eq('id', affiliateLink.affiliate_id)
+                  .eq('is_active', true)
+                  .single();
+                
+                if (!affiliateError && affiliate) {
+                  affiliateId = affiliate.id;
+                  affiliateLinkId = affiliateLink.id;
+                  logger.debug('Afiliado encontrado e vinculado à order', {
+                    affiliateId,
+                    affiliateLinkId,
+                    slug: affiliateData.slug
+                  });
+                } else {
+                  logger.debug('Afiliado não encontrado ou inativo', { affiliateError });
+                }
+              } else {
+                logger.debug('Link de afiliado não encontrado ou inativo', { linkError });
+              }
+            } else {
+              // Expirou, remover do localStorage
+              localStorage.removeItem('affiliate_ref');
+              logger.debug('Código de afiliado expirado, removido do localStorage');
+            }
+          }
+        } catch (affiliateError) {
+          logger.warn('Erro ao processar código de afiliado', affiliateError);
+          // Não bloquear o checkout se houver erro com afiliado
+        }
+
         // Criar pedido (fluxo antigo)
         const orderPayload = {
           quiz_id: quizData.id,
@@ -2195,7 +2254,9 @@ export default function Checkout() {
           payment_provider: (isPortuguese ? 'cakto' : 'stripe') as 'cakto' | 'stripe',
           customer_email: normalizedEmail,
           customer_whatsapp: normalizedWhatsApp as string,
-          transaction_id: transactionId
+          transaction_id: transactionId,
+          ...(affiliateId && { affiliate_id: affiliateId }),
+          ...(affiliateLinkId && { affiliate_link_id: affiliateLinkId })
         } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
 
         const { data: orderData, error: orderError } = await supabase
@@ -2240,7 +2301,7 @@ export default function Checkout() {
 
       // PASSO 3: Processar pagamento (Stripe ou Cakto)
       // ✅ CRÍTICO: Verificar isPortuguese ANTES de qualquer coisa
-      const isPortugueseCheck = window.location.pathname.startsWith('/pt');
+      const isPortugueseCheck = currentLanguage === 'pt';
       console.log('🌍 [Checkout] Verificando fluxo de pagamento:', {
         isPortuguese,
         isPortugueseCheck,
@@ -2566,7 +2627,7 @@ export default function Checkout() {
       const actualErrorMessage = extractErrorMessage(error);
       
       // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
-      const isPortuguese = window.location.pathname.startsWith('/pt');
+      const isPortuguese = currentLanguage === 'pt';
       if (isPortuguese && orderCreated && orderCreated.id) {
         console.log('⚠️ [Cakto] Erro ocorreu mas pedido foi criado, tentando redirecionar mesmo assim...', {
           orderId: orderCreated.id,
