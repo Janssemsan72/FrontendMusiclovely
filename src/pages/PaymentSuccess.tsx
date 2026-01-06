@@ -8,6 +8,8 @@ import { clearQuizSessionId } from '@/utils/quizSync';
 import confetti from 'canvas-confetti';
 import Logo from '@/components/Logo';
 
+const WHATSAPP_REDIRECT_SECONDS = 20;
+
 export default function PaymentSuccess() {
   // Preservar UTMs na página de sucesso
   const { utms, hasUtms } = useUtmParams();
@@ -16,7 +18,7 @@ export default function PaymentSuccess() {
   const whatsappHref =
     'https://wa.me/5585994377151?text=Ol%C3%A1%2C%20Music%20Lovely%2C%20acabei%20de%20fazer%20meu%20pedido%20musical.';
 
-  const [redirectSecondsLeft, setRedirectSecondsLeft] = useState(8);
+  const [redirectSecondsLeft, setRedirectSecondsLeft] = useState(WHATSAPP_REDIRECT_SECONDS);
   
   useEffect(() => {
     if (hasUtms) {
@@ -87,7 +89,7 @@ export default function PaymentSuccess() {
   }, []);
 
   useEffect(() => {
-    setRedirectSecondsLeft(8);
+    setRedirectSecondsLeft(WHATSAPP_REDIRECT_SECONDS);
 
     const intervalId = window.setInterval(() => {
       setRedirectSecondsLeft((prev) => {
