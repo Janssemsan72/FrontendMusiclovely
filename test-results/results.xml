@@ -1,0 +1,2892 @@
+<testsuites id="" name="" tests="694" failures="0" skipped="694" errors="0" time="0.4151329999999999">
+<testsuite name="admin\auth\auth.setup.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="setup" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="authenticate as admin" classname="admin\auth\auth.setup.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="chromium" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="firefox" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="webkit" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Chrome" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Mobile Safari" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Microsoft Edge" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\accessibility.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="14" failures="0" skipped="14" time="0" errors="0">
+<testcase name="Admin Accessibility › deve passar testes de acessibilidade com axe-core" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter navegação por teclado funcional" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter labels apropriados para elementos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter contraste de cores adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter roles ARIA apropriados" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter landmarks semânticos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ser compatível com screen readers" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter gerenciamento de foco adequado" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no dashboard" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de pedidos" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade na página de músicas" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no wizard de geração" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve ter acessibilidade no sidebar" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Accessibility › deve executar todos os testes de acessibilidade" classname="admin\accessibility\accessibility.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\accessibility\responsive.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar sidebar para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar dashboard para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de pedidos para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar página de músicas para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Mobile Viewport (375x667) › deve adaptar wizard de geração para mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar sidebar para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar dashboard para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Tablet Viewport (768x1024) › deve adaptar tabelas para tablet" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir layout completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir dashboard completo em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Desktop Viewport (1920x1080) › deve exibir tabelas completas em desktop" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve manter estado entre mudanças de viewport" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Cross-Viewport Navigation › deve adaptar sidebar entre viewports" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve responder a toques em mobile" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Touch Interactions › deve permitir scroll em listas longas" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Responsive Design › Orientation Changes › deve adaptar a mudanças de orientação" classname="admin\accessibility\responsive.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\flows\order-flow.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Order Complete Flow › deve completar fluxo completo de pedido" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve verificar status de geração em tempo real" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve navegar entre páginas relacionadas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter contexto entre navegações" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir informações consistentes entre páginas" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve funcionar em diferentes viewports" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve manter performance durante navegação" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve exibir loading states apropriados" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Order Complete Flow › deve tratar erros graciosamente" classname="admin\flows\order-flow.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\navigation\sidebar.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="9" failures="0" skipped="9" time="0" errors="0">
+<testcase name="Admin Sidebar Navigation › deve renderizar o sidebar corretamente" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve alternar entre collapse e expand do sidebar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve navegar para todas as páginas do menu" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve manter estado ativo correto ao navegar" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve funcionar corretamente em mobile" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter ícones corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter labels corretos para cada item" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve responder a cliques do teclado" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Sidebar Navigation › deve ter acessibilidade adequada" classname="admin\navigation\sidebar.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\dashboard.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="12" failures="0" skipped="12" time="0" errors="0">
+<testcase name="Admin Dashboard › deve carregar a página dashboard corretamente" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir estatísticas corretas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter botão de refresh funcional" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve alternar entre tabs Jobs e Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir jobs recentes na tab Jobs" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir músicas recentes na tab Músicas" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve permitir retry de jobs falhados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir status badges corretos" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ser responsivo em mobile" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve ter acessibilidade adequada" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve carregar dados em tempo real" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Dashboard › deve exibir loading states apropriados" classname="admin\pages\dashboard.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\generate.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="13" failures="0" skipped="13" time="0" errors="0">
+<testcase name="Admin Generate - Geração Manual › deve carregar a página de geração corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir timeline de progresso" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve preencher formulário do step 1 corretamente" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve permitir editar letras geradas" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve avançar para step 3 após aprovar letras" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir estimativa de custos" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir logs de geração" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir status da API Suno" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter modo debug funcional" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ser responsivo em mobile" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve ter acessibilidade adequada" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve exibir loading states apropriados" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Generate - Geração Manual › deve validar formato de email" classname="admin\pages\generate.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\orders.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="10" failures="0" skipped="10" time="0" errors="0">
+<testcase name="Admin Orders › deve carregar a página de pedidos corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir estatísticas de pedidos" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por status" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve filtrar pedidos por plano" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve buscar pedidos por email" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir lista (ou estado vazio) corretamente" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve navegar para detalhes do pedido" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ser responsivo em mobile" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve ter acessibilidade adequada" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Orders › deve exibir loading states" classname="admin\pages\orders.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="admin\pages\songs.spec.ts" timestamp="2026-01-04T22:22:16.490Z" hostname="Google Chrome" tests="16" failures="0" skipped="16" time="0" errors="0">
+<testcase name="Admin Songs › deve carregar a página de músicas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir estatísticas de músicas" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve agrupar músicas por pedido" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por status" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve filtrar músicas por período" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve buscar músicas por email do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir player de áudio funcional" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve navegar para detalhes da música" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir status detalhado dos grupos" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações do quiz do cliente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ser responsivo em mobile" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve ter acessibilidade adequada" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir loading states" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve permitir ordenação por data de release" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir datas formatadas corretamente" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+<testcase name="Admin Songs › deve exibir informações de áudio quando disponível" classname="admin\pages\songs.spec.ts" time="0">
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+</testsuites>
