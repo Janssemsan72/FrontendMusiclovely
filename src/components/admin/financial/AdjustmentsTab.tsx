@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAdjustments, useCreateAdjustment, useUpdateAdjustment } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,7 +60,10 @@ export function AdjustmentsTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingAdjustment(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Novo Ajuste</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editingAdjustment ? "Editar" : "Novo"} Ajuste</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editingAdjustment ? "Editar" : "Novo"} Ajuste</DialogTitle>
+              <DialogDescription>Crie ou atualize um ajuste vinculado a um pedido.</DialogDescription>
+            </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div><Label htmlFor="order_id">Pedido *</Label>
                 <Select name="order_id" defaultValue={editingAdjustment?.order_id || ""}>

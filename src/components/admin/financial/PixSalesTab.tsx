@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usePixSales, useCreatePixSale, useUpdatePixSale } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -60,7 +60,10 @@ export function PixSalesTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingSale(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nova Venda</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editingSale ? "Editar" : "Nova"} Venda PIX</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editingSale ? "Editar" : "Nova"} Venda PIX</DialogTitle>
+              <DialogDescription>Registre uma venda por PIX e seus detalhes.</DialogDescription>
+            </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div><Label htmlFor="customer_name">Nome do Cliente *</Label><Input id="customer_name" name="customer_name" required defaultValue={editingSale?.customer_name} /></div>
               <div className="grid grid-cols-2 gap-4">

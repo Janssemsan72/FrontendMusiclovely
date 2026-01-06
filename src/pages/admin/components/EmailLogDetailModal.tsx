@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -41,6 +41,7 @@ export function EmailLogDetailModal({ log, onClose }: EmailLogDetailModalProps) 
             <Mail className="h-5 w-5" />
             Detalhes do Email
           </DialogTitle>
+          <DialogDescription>Detalhamento do envio e eventos do email (entrega, abertura e cliques).</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

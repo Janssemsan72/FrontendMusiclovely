@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1237,6 +1237,7 @@ export default function AdminEmails() {
                 </>
               )}
             </DialogTitle>
+            <DialogDescription>Edite o assunto, remetente e HTML do template.</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -1314,6 +1315,7 @@ export default function AdminEmails() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg md:text-xl">Preview do Template</DialogTitle>
+            <DialogDescription>Visualize o template renderizado antes de salvar.</DialogDescription>
           </DialogHeader>
           
           {selectedTemplate && (
@@ -1352,6 +1354,7 @@ export default function AdminEmails() {
               <FileText className="h-5 w-5" />
               Email Recebido
             </DialogTitle>
+            <DialogDescription>Veja o conteúdo do email e o histórico do thread, se existir.</DialogDescription>
           </DialogHeader>
           
           {selectedEmail && (
@@ -1465,6 +1468,7 @@ export default function AdminEmails() {
               <Reply className="h-5 w-5" />
               Responder Email
             </DialogTitle>
+            <DialogDescription>Escreva e envie uma resposta para o email selecionado.</DialogDescription>
           </DialogHeader>
           
           {selectedEmail && (

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useApiCosts, useCreateApiCost, useUpdateApiCost, useDeleteApiCost } from "@/hooks/useFinancialData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,7 +58,10 @@ export function ApiCostsTab() {
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditingCost(null); }}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Nova Despesa</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>{editingCost ? "Editar" : "Nova"} Despesa de API</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle>{editingCost ? "Editar" : "Nova"} Despesa de API</DialogTitle>
+              <DialogDescription>Registre gastos com APIs e, se necessário, vincule ao pedido.</DialogDescription>
+            </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div><Label htmlFor="provider">Provider *</Label>

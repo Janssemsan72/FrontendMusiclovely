@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Image, Music, MessageSquare, HelpCircle, Plus, Trash2, Edit, Upload, Star, RefreshCw, Sparkles, Video, Loader2 } from "lucide-react";
@@ -756,6 +756,7 @@ export default function AdminMedia() {
                     <DialogTitle>
                       {editingTestimonial?.id ? "Editar" : "Novo"} Depoimento
                     </DialogTitle>
+                    <DialogDescription>Cadastre ou atualize um depoimento exibido no site.</DialogDescription>
                   </DialogHeader>
                   {editingTestimonial && (
                     <div className="space-y-4">
@@ -1036,6 +1037,7 @@ export default function AdminMedia() {
                     <DialogTitle>
                       {editingFaq?.id ? "Editar" : "Novo"} FAQ
                     </DialogTitle>
+                    <DialogDescription>Cadastre ou atualize uma pergunta frequente exibida no site.</DialogDescription>
                   </DialogHeader>
                   {editingFaq && (
                     <div className="space-y-4">

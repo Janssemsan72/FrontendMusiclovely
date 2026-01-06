@@ -169,6 +169,9 @@ const baseDirectives: CSPDirectives = {
     'https://cdn.similarweb.com',
     'https://*.contentsquare.net',
     'https://t.contentsquare.net',
+    'https://cloudflareinsights.com',
+    'https://static.cloudflareinsights.com',
+    'https://*.cloudflareinsights.com',
   ],
   
   // Frames: specific domains only

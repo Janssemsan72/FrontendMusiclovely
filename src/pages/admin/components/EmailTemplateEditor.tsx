@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Mail, Send, Save, Eye } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface EmailTemplate {
   id: string;
@@ -101,6 +101,7 @@ export function EmailTemplateEditor({ template, onSave, onSendTest }: EmailTempl
             <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
               <DialogHeader>
                 <DialogTitle>Preview do Email</DialogTitle>
+                <DialogDescription>Visualize o HTML do email antes de salvar ou enviar teste.</DialogDescription>
               </DialogHeader>
               <div className="border rounded-lg p-4">
                 <div className="mb-4 pb-4 border-b">

@@ -542,6 +542,7 @@ export default function AdminAffiliates() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar Afiliado</DialogTitle>
+            <DialogDescription>Atualize os dados do afiliado selecionado.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
