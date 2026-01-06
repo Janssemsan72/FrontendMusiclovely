@@ -87,6 +87,8 @@ const baseDirectives: CSPDirectives = {
     'https://*.contentsquare.net',
     'https://*.similarweb.com',
     'https://cdn.similarweb.com',
+    'https://static.cloudflareinsights.com',
+    'https://*.cloudflareinsights.com',
     // Hashes removidos - devem estar apenas em script-src-elem
   ],
   
@@ -100,6 +102,8 @@ const baseDirectives: CSPDirectives = {
     'https://*.contentsquare.net',
     'https://*.similarweb.com',
     'https://cdn.similarweb.com',
+    'https://static.cloudflareinsights.com',
+    'https://*.cloudflareinsights.com',
     ...Object.values(INLINE_SCRIPT_HASHES).filter(Boolean),
   ],
   
