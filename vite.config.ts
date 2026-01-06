@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => {
           "base-uri 'self'",
           "frame-ancestors 'none'",
           "child-src 'self' blob: data: https:",  // Permitir iframes e workers filhos
-          "frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://safeframe.googlesyndication.com",  // Stripe, Facebook e Google AdSense (UTMify)
+          "frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://www.facebook.com https://safeframe.googlesyndication.com",  // Stripe, Facebook e Google AdSense (UTMify)
         ].join('; ')
       } : undefined
     },

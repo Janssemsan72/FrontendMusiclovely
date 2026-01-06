@@ -182,6 +182,7 @@ const baseDirectives: CSPDirectives = {
     'https://js.stripe.com',
     'https://connect.facebook.net',
     'https://*.facebook.net',
+    'https://www.facebook.com',
     'https://safeframe.googlesyndication.com',
     'https://*.similarweb.com',
     'https://*.contentsquare.net',

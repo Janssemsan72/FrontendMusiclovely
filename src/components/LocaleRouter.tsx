@@ -12,6 +12,9 @@ import { devLog, i18nLog, isDevVerbose } from '@/utils/debug/devLogger';
 
 const SUPPORTED_LOCALES = ['pt', 'en', 'es'] as const;
 
+// Rotas que NÃO devem ter prefixo de idioma
+const ROUTES_WITHOUT_LOCALE_PREFIX = ['/checkout', '/payment-success', '/payment/success'];
+
 // Cache para resultado da detecção de edge (evitar múltiplas chamadas)
 let cachedEdgeDetection: { locale: string | null; timestamp: number } | null = null;
 const EDGE_DETECTION_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
@@ -143,6 +146,25 @@ function LocaleRouterInternal() {
       SUPPORTED_LOCALES.includes(localeFromPathCheck as any)
     );
     
+    // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
+    const pathWithoutLocaleCheck = removeLocalePrefix(currentPathCheck);
+    const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
+      pathWithoutLocaleCheck === route || pathWithoutLocaleCheck.startsWith(route + '/')
+    );
+    
+    if (shouldSkipLocalePrefix && !hasValidLocaleCheck) {
+      // Rota sem prefixo e sem locale na URL - apenas atualizar contexto e retornar
+      forceLocaleRef.current('pt'); // Default para português
+      lastProcessedRouteKeyRef.current = routeKey;
+      globalNavigationState.hasProcessed.set(routeKey, Date.now());
+      globalNavigationState.isProcessing = false;
+      if (globalNavigationState.processingTimeout) {
+        clearTimeout(globalNavigationState.processingTimeout);
+        globalNavigationState.processingTimeout = null;
+      }
+      return;
+    }
+    
     if (hasValidLocaleCheck) {
       // Se já tem locale válido, apenas atualizar contexto e retornar
       forceLocaleRef.current(localeFromPathCheck);
@@ -271,11 +293,18 @@ function LocaleRouterInternal() {
           
           // Redirecionar para o idioma preferido
           const pathWithoutLocale = removeLocalePrefix(currentPath);
+          
+          // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
+          const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
+            pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
+          );
+          
           // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
           const isMusicLovelyShop = typeof window !== 'undefined' && 
             (window.location.hostname.includes('musiclovely.shop') || 
              window.location.hostname === 'www.musiclovely.shop');
-          const newPath = (isMusicLovelyShop && preferred === 'pt')
+          
+          const newPath = (shouldSkipLocalePrefix || (isMusicLovelyShop && preferred === 'pt'))
             ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
             : `/${preferred}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
           const finalPath = `${newPath}${location.search || ''}${location.hash || ''}`;
@@ -387,8 +416,14 @@ function LocaleRouterInternal() {
         
         // Redirecionar para o idioma decidido
         const pathWithoutLocale = removeLocalePrefix(currentPath);
+        
+        // ✅ NOVO: Verificar se a rota não deve ter prefixo de idioma
+        const shouldSkipLocalePrefix = ROUTES_WITHOUT_LOCALE_PREFIX.some(route => 
+          pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
+        );
+        
         // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
-        const newPath = (isMusicLovelyShop && final === 'pt') 
+        const newPath = (shouldSkipLocalePrefix || (isMusicLovelyShop && final === 'pt'))
           ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
           : `/${final}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
         const search = location.search || '';
