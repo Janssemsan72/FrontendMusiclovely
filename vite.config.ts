@@ -110,6 +110,7 @@ export default defineConfig(({ mode }) => {
             }
             // Agrupar outras dependências grandes
             if (id.includes('node_modules')) {
+              // Separar por tamanho e frequência de uso
               if (id.includes('@radix-ui')) {
                 return 'vendor-radix';
               }
@@ -118,6 +119,14 @@ export default defineConfig(({ mode }) => {
               }
               if (id.includes('recharts')) {
                 return 'vendor-recharts';
+              }
+              // Separar Supabase em chunk próprio (usado em muitas páginas)
+              if (id.includes('@supabase')) {
+                return 'vendor-supabase';
+              }
+              // Separar React Router em chunk próprio
+              if (id.includes('react-router')) {
+                return 'vendor-router';
               }
               // Outras dependências em um chunk separado
               return 'vendor';
@@ -131,6 +140,11 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1500, // ✅ OTIMIZAÇÃO: Aumentado para 1500KB
       // Enable minification - usando esbuild para builds mais rápidos
       minify: 'esbuild', // Mais rápido que terser, especialmente em builds grandes
+      // ✅ OTIMIZAÇÃO: Remover console.log em produção para reduzir bundle size
+      esbuild: {
+        drop: mode === 'production' ? ['console', 'debugger'] : [],
+        legalComments: 'none', // Remover comentários legais para reduzir tamanho
+      },
       // Alternativa: se precisar de terser, usar configuração mais leve
       // minify: 'terser',
       // terserOptions: {
@@ -143,10 +157,10 @@ export default defineConfig(({ mode }) => {
       //     comments: false
       //   }
       // },
-      // ✅ COMPATIBILIDADE: Usar ES2020 para suportar navegadores mais antigos
-      // ES2020 suporta: Chrome 80+, Firefox 74+, Safari 13.1+, Edge 80+
-      // Inclui suporte para: optional chaining, nullish coalescing, dynamic import
-      target: 'es2020',
+      // ✅ OTIMIZAÇÃO: Usar ES2022 para reduzir polyfills e melhorar performance
+      // ES2022 suporta: Chrome 92+, Firefox 91+, Safari 15.4+, Edge 92+
+      // Reduz JavaScript legacy e melhora performance
+      target: 'es2022',
       cssCodeSplit: true,
       reportCompressedSize: false // Acelera build
     },

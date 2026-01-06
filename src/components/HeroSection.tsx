@@ -48,7 +48,9 @@ export default function HeroSection() {
               className="absolute inset-0 w-full h-full object-cover"
               src={heroPoster}
               alt="Memórias especiais"
-              loading="lazy"
+              fetchPriority="high"
+              width={640}
+              height={269}
               decoding="async"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -206,13 +208,13 @@ export default function HeroSection() {
         <div className="flex items-center justify-center gap-2 sm:gap-4 px-2">
           <div className="flex -space-x-2 sm:-space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial1} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial2} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial3} alt="Cliente satisfeito" className="w-full h-full object-cover" />
+              <img src={testimonial3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
           </div>
           <div className="text-left">

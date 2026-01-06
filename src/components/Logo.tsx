@@ -100,6 +100,8 @@ export default function Logo({ className = "", size = 40, variant = 'default' }:
       src={finalLogoSrc} 
       alt="Music Lovely" 
       className={`object-contain ${className}`}
+      width={355}
+      height={111}
       style={{ 
         width: size,
         height: 'auto',
