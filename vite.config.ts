@@ -42,8 +42,8 @@ export default defineConfig(({ mode }) => {
         // CSP de desenvolvimento - amigável ao Vite/HMR
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com",
-          "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com",
+          "script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com",
           "worker-src 'self' blob:",  // Permitir workers de blob
           "style-src 'self' 'unsafe-inline'",    // ok para Tailwind dev
           "img-src 'self' data: blob: https:",

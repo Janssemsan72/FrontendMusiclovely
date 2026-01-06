@@ -27,16 +27,6 @@ export function generateCaktoUrl(
     normalizedWhatsapp = `55${normalizedWhatsapp}`;
   }
   
-  // Logs detalhados para auditoria
-  console.log('🔍 [generateCaktoUrl] Gerando URL da Cakto:', {
-    orderId,
-    email,
-    whatsapp_original: whatsapp,
-    whatsapp_normalized: normalizedWhatsapp,
-    language,
-    hasUtms: !!utms,
-  });
-  
   // URL de redirecionamento após pagamento
   const redirectUrl = `${window.location.origin}/${language}/payment-success`;
   
@@ -69,17 +59,9 @@ export function generateCaktoUrl(
   
   const finalUrl = `${CAKTO_PAYMENT_URL}?${caktoParams.toString()}`;
   
-  // Validação e log da URL final
+  // Validação da URL final
   if (!finalUrl.startsWith('https://pay.cakto.com.br')) {
     console.error('❌ [generateCaktoUrl] URL gerada não começa com https://pay.cakto.com.br:', finalUrl);
-  } else {
-    console.log('✅ [generateCaktoUrl] URL da Cakto gerada com sucesso:', {
-      url: finalUrl,
-      urlLength: finalUrl.length,
-      hasOrderId: finalUrl.includes(`order_id=${orderId}`),
-      hasEmail: finalUrl.includes(`email=`),
-      hasPhone: finalUrl.includes(`phone=${normalizedWhatsapp}`),
-    });
   }
   
   return finalUrl;

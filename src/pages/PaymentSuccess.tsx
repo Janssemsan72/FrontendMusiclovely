@@ -21,9 +21,7 @@ export default function PaymentSuccess() {
   const [redirectSecondsLeft, setRedirectSecondsLeft] = useState(WHATSAPP_REDIRECT_SECONDS);
   
   useEffect(() => {
-    if (hasUtms) {
-      console.log('✅ UTMs preservados na página de sucesso:', utms);
-    }
+    // UTMs preservados automaticamente via localStorage
   }, [utms, hasUtms]);
   
   // Rastrear sucesso do pagamento

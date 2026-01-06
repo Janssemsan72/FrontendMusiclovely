@@ -126,12 +126,10 @@ async function fetchRevenueAggregate(filters?: {
   try {
     // ✅ CORREÇÃO: Usar paginação ao invés de agregação (mais confiável para grandes volumes)
     // A sintaxe de agregação do Supabase pode não funcionar corretamente
-    console.log(`🔍 [fetchRevenueAggregate] Buscando receita para ${filters?.provider || 'all'}...`);
     
     // Se não há filtro de plan, usar função de paginação otimizada
     if (!filters?.plan) {
       const revenue = await fetchRevenuePaginated({ provider: filters?.provider });
-      console.log(`✅ [fetchRevenueAggregate] Receita ${filters?.provider || 'all'} (via paginação): R$ ${revenue.toFixed(2)}`);
       return revenue;
     }
     
@@ -176,7 +174,6 @@ async function fetchRevenueAggregate(filters?: {
     }
     
     const revenue = totalRevenue / 100;
-    console.log(`✅ [fetchRevenueAggregate] Receita ${filters?.provider || 'all'} (com plan ${filters.plan}): R$ ${revenue.toFixed(2)}`);
     return revenue;
   } catch (error) {
     console.error(`❌ [fetchRevenueAggregate] Erro ao calcular receita (${filters?.provider || 'all'}):`, error);
@@ -297,8 +294,6 @@ export function useDashboardStats(options?: { enabled?: boolean }) {
           console.warn('⚠️ [Dashboard] Receitas retornaram 0, usando cache:', cachedRevenue);
           stripeRevenue = cachedRevenue.stripe || 0;
           caktoRevenue = cachedRevenue.cakto || 0;
-        } else if (stripeRevenue > 0 || caktoRevenue > 0) {
-          console.log(`✅ [Dashboard] Receitas carregadas: Stripe=$${stripeRevenue.toFixed(2)}, Cakto=R$${caktoRevenue.toFixed(2)}`);
         }
       } catch (error) {
         // Erro - usar cache anterior se disponível
@@ -2272,7 +2267,6 @@ export function useSongs(filters?: {
         }
       }
       
-      console.log(`✅ Carregadas ${allSongs.length} músicas em ${batchCount} lotes`);
       return allSongs;
     },
     staleTime: 3 * 60 * 1000, // ✅ 3 minutos de cache
