@@ -35,17 +35,8 @@ export default function CaktoReturn() {
       console.error('❌ [CaktoReturn] Order ID não encontrado');
       toast.error('ID do pedido não encontrado');
       
-      // Detectar idioma atual da URL e redirecionar para checkout no idioma correto
-      const currentPath = window.location.pathname;
-      let checkoutPath = '/pt/checkout?error=missing_order_id'; // fallback para português
-      
-      if (currentPath.startsWith('/en')) {
-        checkoutPath = '/en/checkout?error=missing_order_id';
-      } else if (currentPath.startsWith('/es')) {
-        checkoutPath = '/es/checkout?error=missing_order_id';
-      } else if (currentPath.startsWith('/pt')) {
-        checkoutPath = '/pt/checkout?error=missing_order_id';
-      }
+      // Redirecionar para checkout
+      const checkoutPath = '/checkout?error=missing_order_id';
       
       console.log('🔄 [CaktoReturn] Redirecionando para checkout no idioma:', checkoutPath);
       navigateWithUtms(checkoutPath);
@@ -104,7 +95,7 @@ export default function CaktoReturn() {
         const countdown = () => {
           setCountdown(prev => {
             if (prev <= 1) {
-              navigateWithUtms('/pt/checkout?error=payment_failed');
+              navigateWithUtms('/checkout?error=payment_failed');
               return 0;
             }
             requestAnimationFrame(countdown);
@@ -243,7 +234,7 @@ export default function CaktoReturn() {
   };
 
   const handleRetry = () => {
-    navigateWithUtms('/pt/checkout');
+    navigateWithUtms('/checkout');
   };
 
   const handleGoHome = () => {

@@ -305,7 +305,7 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }, [locale, isLocaleForced, isAdminRoute]); // ✅ CORREÇÃO CRÍTICA: Remover location.pathname para evitar loops
 
   // ✅ CORREÇÃO: Sincronizar automaticamente o locale com o prefixo de URL
-  // Isso garante que quando o usuário acessa /pt/checkout, o locale seja atualizado para 'pt'
+  // Isso garante que quando o usuário acessa /checkout, o locale seja atualizado corretamente
   useEffect(() => {
     // Detectar locale da URL atual
     const detected = detectLanguage(location.pathname);

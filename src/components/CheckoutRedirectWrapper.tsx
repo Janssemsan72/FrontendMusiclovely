@@ -68,24 +68,20 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
             const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
-            // ✅ CORREÇÃO: Detectar locale da rota atual para usar no redirect_url
-            const localeMatch = location.pathname.match(/^\/(pt|en|es)/);
-            const locale = localeMatch ? localeMatch[1] : 'pt';
-            
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55
             let normalizedWhatsapp = orderData.customer_whatsapp.replace(/\D/g, '');
             if (!normalizedWhatsapp.startsWith('55')) {
               normalizedWhatsapp = `55${normalizedWhatsapp}`;
             }
             const origin = window.location.origin;
-            const redirectUrl = `${origin}/${locale}/payment-success`;
+            const redirectUrl = `${origin}/payment-success`;
             
             const caktoParams = new URLSearchParams();
             caktoParams.set('order_id', orderData.id);
             caktoParams.set('email', orderData.customer_email);
             // ✅ Cakto usa 'phone' para pré-preencher o telefone (não 'whatsapp')
             caktoParams.set('phone', normalizedWhatsapp);
-            caktoParams.set('language', locale);
+            caktoParams.set('language', 'pt');
             caktoParams.set('redirect_url', redirectUrl);
             
             // ⚠️ CRÍTICO: NÃO adicionar parâmetros do checkout interno (restore, quiz_id, token)

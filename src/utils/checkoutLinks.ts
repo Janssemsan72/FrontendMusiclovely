@@ -28,7 +28,7 @@ export function generateCaktoUrl(
   }
   
   // URL de redirecionamento após pagamento
-  const redirectUrl = `${window.location.origin}/${language}/payment-success`;
+  const redirectUrl = `${window.location.origin}/payment-success`;
   
   const caktoParams = new URLSearchParams();
   caktoParams.set('order_id', orderId);
@@ -82,7 +82,7 @@ export function generateCheckoutUrl(
   language: string = 'pt'
 ): string {
   const baseUrl = window.location.origin;
-  return `${baseUrl}/${language}/checkout?order_id=${orderId}&quiz_id=${quizId}&token=${token}&restore=true`;
+  return `${baseUrl}/checkout?order_id=${orderId}&quiz_id=${quizId}&token=${token}&restore=true`;
 }
 
 /**

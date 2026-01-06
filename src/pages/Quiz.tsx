@@ -709,16 +709,7 @@ const Quiz = memo(() => {
         // ✅ CORREÇÃO: Após atualizar o quiz, navegar para checkout normalmente
         // O usuário clicou em "Continuar para o Pagamento", então deve ir para o checkout
         // Não mostrar mensagem "Quiz atualizado" - apenas navegar diretamente
-        const currentPath = window.location.pathname;
-        let checkoutPath = '/pt/checkout'; // fallback para português
-        
-        if (currentPath.startsWith('/en')) {
-          checkoutPath = '/en/checkout';
-        } else if (currentPath.startsWith('/es')) {
-          checkoutPath = '/es/checkout';
-        } else if (currentPath.startsWith('/pt')) {
-          checkoutPath = '/pt/checkout';
-        }
+        const checkoutPath = '/checkout';
         
         console.log('🔄 [Quiz] Navegando para checkout após atualização:', checkoutPath);
         
@@ -968,16 +959,7 @@ const Quiz = memo(() => {
       });
       
       // ✅ Só navegar se chegou até aqui (quiz foi salvo ou foi para fila)
-      const currentPath = window.location.pathname;
-      let checkoutPath = '/pt/checkout'; // fallback para português
-      
-      if (currentPath.startsWith('/en')) {
-        checkoutPath = '/en/checkout';
-      } else if (currentPath.startsWith('/es')) {
-        checkoutPath = '/es/checkout';
-      } else if (currentPath.startsWith('/pt')) {
-        checkoutPath = '/pt/checkout';
-      }
+      const checkoutPath = '/checkout';
       
       console.log('🔄 [Quiz] Navegando para checkout (quiz protegido):', checkoutPath);
       navigateWithUtms(checkoutPath);
