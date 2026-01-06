@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -7,16 +7,20 @@ import { Loader2 } from 'lucide-react';
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado
  * Redireciona IMEDIATAMENTE para Cakto se detectar message_id na URL
  */
-export default function CheckoutRedirectWrapper({ children }: { children: React.ReactNode }) {
+const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const lastLocationKeyRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear última combinação pathname+search
+  const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:10',message:'CheckoutRedirectWrapper render',data:{pathname:location.pathname,search:location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+  // #endregion
   
   useEffect(() => {
-    const locationKey = `${location.pathname}${location.search}`;
-    if (lastLocationKeyRef.current === locationKey) {
+    // ✅ FASE 5: Verificar se search não mudou antes de processar
+    if (lastSearchRef.current === location.search) {
       return;
     }
-    lastLocationKeyRef.current = locationKey;
+    lastSearchRef.current = location.search;
     // ⚠️ CRÍTICO: Verificar ANTES de qualquer renderização
     const urlParams = new URLSearchParams(location.search);
     const messageId = urlParams.get('message_id');
@@ -43,8 +47,8 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
     // Se contém, significa que está tentando acessar o checkout interno mas deveria ir para Cakto
     // Mas APENAS se for rota de checkout, não de quiz
     const isCheckoutRoute = location.pathname.includes('/checkout');
-    // ✅ CORREÇÃO: Também redirecionar se for rota home (/) com order_id e message_id
-    const isHomeRoute = location.pathname === '/';
+    // ✅ CORREÇÃO: Também redirecionar se for rota home (/pt, /en, /es) com order_id e message_id
+    const isHomeRoute = /^\/(pt|en|es)(\/)?$/.test(location.pathname);
     const hasCheckoutParams = urlParams.get('restore') === 'true' || urlParams.get('quiz_id') || urlParams.get('token');
     
     // Redirecionar se:
@@ -67,9 +71,7 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
         .single()
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
-            const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/k63z5ui';
-            const locale = 'pt';
-            
+            const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55
             let normalizedWhatsapp = orderData.customer_whatsapp.replace(/\D/g, '');
             if (!normalizedWhatsapp.startsWith('55')) {
@@ -83,7 +85,7 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
             caktoParams.set('email', orderData.customer_email);
             // ✅ Cakto usa 'phone' para pré-preencher o telefone (não 'whatsapp')
             caktoParams.set('phone', normalizedWhatsapp);
-            caktoParams.set('language', locale);
+            caktoParams.set('language', 'pt');
             caktoParams.set('redirect_url', redirectUrl);
             
             // ⚠️ CRÍTICO: NÃO adicionar parâmetros do checkout interno (restore, quiz_id, token)
@@ -126,11 +128,17 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
           console.error('❌ [CheckoutRedirectWrapper] Erro ao buscar pedido para redirecionamento:', err);
         });
     }
-  }, [location.pathname, location.search]);
+  }, [location.search]);
   
   // ✅ OTIMIZAÇÃO MOBILE: Não bloquear renderização - redirecionar em background
   // O redirecionamento já está sendo feito no useEffect acima
   // Sempre renderizar children para não bloquear a página
   
   return <>{children}</>;
-}
+};
+
+// ✅ OTIMIZAÇÃO: Memoizar para evitar re-renders desnecessários
+// Nota: useLocation() dentro do componente ainda pode causar re-renders quando location muda
+// Mas isso evita re-renders quando apenas as props children mudam de referência
+export default memo(CheckoutRedirectWrapperComponent);
+
