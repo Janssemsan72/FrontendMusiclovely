@@ -49,12 +49,22 @@ function LocaleRouterWrapper() {
     SUPPORTED_LOCALES.includes(localeFromPath as any)
   );
   
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:41',message:'LocaleRouterWrapper render',data:{pathname:currentPath,localeFromPath,hasValidLocale},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+  
   // Se já tem locale válido, retornar PublicRoutes diretamente SEM renderizar LocaleRouter
   if (hasValidLocale) {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:54',message:'LocaleRouterWrapper returning PublicRoutes directly',data:{hasValidLocale,localeFromPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return <PublicRoutes />;
   }
   
   // Se não tem locale válido, renderizar LocaleRouter para processar
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:58',message:'LocaleRouterWrapper returning LocaleRouterInternal',data:{hasValidLocale,localeFromPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   return <LocaleRouterInternal />;
 }
 
@@ -501,9 +511,15 @@ function LocaleRouterInternal() {
   // ✅ SOLUÇÃO RADICAL: Este useEffect SÓ executa se NÃO tem locale válido na URL
   // Se hasValidLocale for true, este useEffect nunca será executado porque o componente já retornou acima
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:503',message:'useEffect triggered',data:{routeKey,hasValidLocale,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     
     // ✅ CORREÇÃO CRÍTICA: Se já tem locale válido, NÃO PROCESSAR NADA
     if (hasValidLocale) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:507',message:'Early return - hasValidLocale',data:{routeKey,hasValidLocale},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       return;
     }
     
@@ -514,11 +530,17 @@ function LocaleRouterInternal() {
     
     // ✅ CORREÇÃO CRÍTICA: Se o routeKey não mudou desde a última execução, não processar
     if (lastProcessedRouteKeyRef.current === routeKey) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:516',message:'Early return - routeKey unchanged',data:{routeKey,lastProcessed:lastProcessedRouteKeyRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       return;
     }
     
     // ✅ CORREÇÃO CRÍTICA: Se já está processando ou navegando, bloquear completamente
     if (globalNavigationState.isProcessing || globalNavigationState.isNavigating) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:521',message:'Early return - already processing/navigating',data:{isProcessing:globalNavigationState.isProcessing,isNavigating:globalNavigationState.isNavigating},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       return;
     }
     
@@ -585,6 +607,9 @@ function LocaleRouterInternal() {
         return;
       }
       
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleRouter.tsx:588',message:'Calling processRoute',data:{routeKey},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       processRoute();
     }, DEBOUNCE_DELAY_MS);
     

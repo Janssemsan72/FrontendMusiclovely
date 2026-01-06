@@ -33,7 +33,20 @@ export default function HeroSection() {
   const handleQuizClick = (e: React.MouseEvent) => {
     e.preventDefault();
     const quizPath = getLocalizedLink('/quiz');
-    navigateWithUtms(quizPath);
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:33',message:'Clicou em criar música',data:{quizPath,currentPath:window.location.pathname},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
+    try {
+      navigateWithUtms(quizPath);
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:37',message:'Navegação iniciada',data:{quizPath},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+    } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'HeroSection.tsx:40',message:'Erro ao navegar para quiz',data:{error:error instanceof Error?error.message:String(error),quizPath},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
+      throw error;
+    }
   };
 
   return (

@@ -46,6 +46,9 @@ const RouteFallback = () => {
 
 // ✅ CORREÇÃO: Sempre renderizar rotas - React Router lida com paths automaticamente
 export default function PublicRoutes() {
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PublicRoutes.tsx:48',message:'PublicRoutes render',data:{pathname:typeof window!=='undefined'?window.location.pathname:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  // #endregion
   // Verificar se estamos no projeto music-lovely-novo ou musiclovely.shop (usando hostname)
   // Para esses projetos, sempre usar IndexCompany como página inicial
   const isCompanyPage = 

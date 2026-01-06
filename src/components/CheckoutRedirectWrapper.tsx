@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -7,9 +7,13 @@ import { Loader2 } from 'lucide-react';
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado
  * Redireciona IMEDIATAMENTE para Cakto se detectar message_id na URL
  */
-export default function CheckoutRedirectWrapper({ children }: { children: React.ReactNode }) {
+const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:10',message:'CheckoutRedirectWrapper render',data:{pathname:location.pathname,search:location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+  // #endregion
   
   useEffect(() => {
     // ✅ FASE 5: Verificar se search não mudou antes de processar
@@ -131,5 +135,10 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
   // Sempre renderizar children para não bloquear a página
   
   return <>{children}</>;
-}
+};
+
+// ✅ OTIMIZAÇÃO: Memoizar para evitar re-renders desnecessários
+// Nota: useLocation() dentro do componente ainda pode causar re-renders quando location muda
+// Mas isso evita re-renders quando apenas as props children mudam de referência
+export default memo(CheckoutRedirectWrapperComponent);
 

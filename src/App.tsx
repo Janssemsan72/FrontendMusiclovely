@@ -113,6 +113,10 @@ const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:110',message:'AppContent render',data:{pathname:location.pathname,isLoading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+  // #endregion
+  
   if (isDevVerbose) {
     devLog.debug('[App] AppContent renderizando...', {
       pathname: typeof window !== 'undefined' ? window.location.pathname : location.pathname,
@@ -293,11 +297,7 @@ const AppContent = () => {
         <Suspense fallback={null}>
           <Routes>
               {/* Rotas públicas - apenas português */}
-              <Route path="/*" element={
-                <Suspense fallback={null}>
-                  <PublicRoutes />
-                </Suspense>
-              } />
+              <Route path="/*" element={<PublicRoutes />} />
             
             {/* Admin sem prefixo */}
             <Route

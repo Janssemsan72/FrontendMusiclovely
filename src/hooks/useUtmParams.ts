@@ -136,6 +136,37 @@ export function useUtmParams() {
     }
   }, [isAdminRoute, allTrackingParams]);
 
+  // ✅ CORREÇÃO: Remover UTMs da URL quando entrar na área administrativa
+  useEffect(() => {
+    if (!isAdminRoute) {
+      return;
+    }
+    
+    // Verificar se há parâmetros de tracking na URL
+    const hasTrackingParams = TRACKING_PARAMS.some(param => searchParams.has(param));
+    
+    if (hasTrackingParams) {
+      // Criar nova URL sem parâmetros de tracking
+      const newParams = new URLSearchParams();
+      searchParams.forEach((value, key) => {
+        // Manter apenas parâmetros que NÃO são de tracking
+        if (!TRACKING_PARAMS.includes(key) && !key.startsWith('_gac_')) {
+          newParams.set(key, value);
+        }
+      });
+      
+      const newSearch = newParams.toString();
+      const newUrl = location.pathname + (newSearch ? `?${newSearch}` : '') + (location.hash || '');
+      
+      // Atualizar URL sem recarregar a página
+      window.history.replaceState({}, '', newUrl);
+      
+      if (isDev) {
+        console.log('🧹 [useUtmParams] UTMs removidos da URL na área administrativa');
+      }
+    }
+  }, [isAdminRoute, location.pathname, location.search, location.hash, searchParams]);
+
   // ✅ DESABILITADO: Injeção de UTMs na URL removida para evitar conflito com script UTMify
   // O script UTMify (https://cdn.utmify.com.br/scripts/utms/latest.js) já gerencia os UTMs automaticamente
   // Manter apenas a leitura e salvamento no localStorage para uso interno do React

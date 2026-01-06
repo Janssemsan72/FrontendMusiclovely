@@ -300,6 +300,9 @@ export default function Checkout() {
       // Redirecionar
       setTimeout(() => {
         logger.debug('redirectToCakto: Executando redirecionamento agora');
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:301',message:'Redirecionando para Cakto',data:{orderId:orderData.id,caktoUrlLength:caktoUrl.length,urlPreview:caktoUrl.substring(0,100)},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'F'})}).catch(()=>{});
+        // #endregion
         window.location.href = caktoUrl;
       }, 100);
       
@@ -426,6 +429,92 @@ export default function Checkout() {
   // ⚠️ NOTA: Scripts UTMify são carregados globalmente no index.html
   // Não é necessário carregar novamente aqui para evitar duplicação
   // Os scripts já estão configurados no <head> do index.html
+
+  // ✅ RETRY AUTOMÁTICO EM BACKGROUND: Tentar salvar quiz com flag _needsRetry
+  useEffect(() => {
+    const retryQuizInBackground = async () => {
+      if (!quiz || typeof quiz !== 'object') return;
+      
+      const needsRetry = (quiz as any)?._needsRetry === true;
+      if (!needsRetry) return;
+      
+      console.log('🔄 [Checkout] Quiz com flag de retry detectado, tentando salvar em background...');
+      
+      try {
+        // Preparar payload do quiz
+        const quizPayload: QuizPayload = {
+          user_id: null,
+          customer_email: email || null,
+          customer_whatsapp: whatsapp || null,
+          about_who: quiz.about_who,
+          relationship: quiz.relationship,
+          style: quiz.style,
+          language: quiz.language || 'pt',
+          vocal_gender: quiz.vocal_gender || null,
+          qualities: quiz.qualities,
+          memories: quiz.memories,
+          message: quiz.message || null,
+          key_moments: (quiz as any).key_moments || null,
+          occasion: (quiz as any).occasion || null,
+          desired_tone: (quiz as any).desired_tone || null,
+          answers: quiz,
+          session_id: (quiz as any).session_id || null
+        };
+        
+        // Tentar salvar no banco em background (não bloqueia UI)
+        const insertResult = await insertQuizWithRetry(quizPayload, {
+          maxRetries: 5,
+          initialDelay: 1000,
+          maxDelay: 10000
+        });
+        
+        if (insertResult.success && insertResult.data?.id) {
+          console.log('✅ [Checkout] Quiz salvo em background com sucesso:', insertResult.data.id);
+          
+          // Atualizar quiz local removendo flag de retry
+          const updatedQuiz = {
+            ...quiz,
+            id: insertResult.data.id
+          };
+          delete (updatedQuiz as any)._needsRetry;
+          delete (updatedQuiz as any)._retryAttempts;
+          delete (updatedQuiz as any)._lastRetryError;
+          
+          setQuiz(updatedQuiz);
+          
+          // Atualizar localStorage
+          try {
+            localStorage.setItem('pending_quiz', JSON.stringify(updatedQuiz));
+            localStorage.setItem('musiclovely_quiz', JSON.stringify(updatedQuiz));
+          } catch (e) {
+            console.warn('⚠️ [Checkout] Erro ao atualizar localStorage (não crítico):', e);
+          }
+        } else {
+          // Se falhar, tentar adicionar à fila
+          console.log('🔄 [Checkout] Salvamento direto falhou, tentando fila em background...');
+          const queueResult = await enqueueQuizToServer(quizPayload, insertResult.error);
+          
+          if (queueResult) {
+            console.log('✅ [Checkout] Quiz adicionado à fila em background');
+            // Manter flag de retry, mas marcar que foi para fila
+            (quiz as any)._queued = true;
+          } else {
+            console.warn('⚠️ [Checkout] Todas as tentativas em background falharam, mantendo no localStorage');
+          }
+        }
+      } catch (bgError) {
+        console.warn('⚠️ [Checkout] Erro no retry em background (não crítico):', bgError);
+        // Não mostrar erro - quiz está no localStorage e pode ser recuperado
+      }
+    };
+    
+    // Aguardar um pouco antes de iniciar retry (dar tempo para página carregar)
+    const timer = setTimeout(() => {
+      retryQuizInBackground();
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [quiz, email, whatsapp]);
 
   // FASE 2 & 3: Carregar quiz do banco (se vier da URL) ou do localStorage
   useEffect(() => {
@@ -1701,6 +1790,11 @@ export default function Checkout() {
 
   // Checkout com Stripe ou Cakto (baseado no locale)
   const handleCheckout = async (isRetry = false) => {
+    // ✅ AUDITORIA: Log de início do checkout
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:1703',message:'handleCheckout iniciado',data:{isRetry,hasEmail:!!email,hasWhatsapp:!!whatsapp,hasQuiz:!!quiz,selectedPlan},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    
     // Criar logger local ANTES de usar qualquer logger
     const checkoutLogger = createCheckoutLogger();
     const transactionId = checkoutLogger.getTransactionId();
@@ -2059,6 +2153,11 @@ export default function Checkout() {
       try {
         checkoutLogger.log('order_creation_started', { quiz_id: quizData.id, using_create_checkout: true });
 
+        // ✅ AUDITORIA: Log antes de chamar createCheckout
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2154',message:'Chamando createCheckout',data:{quiz_id:quizData.id,hasEmail:!!normalizedEmail,hasWhatsapp:!!normalizedWhatsApp,plan:selectedPlan,amountCents},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
+        // #endregion
+        
         // Usar backend API ao invés de Edge Function
         const checkoutResult = await apiHelpers.createCheckout({
           session_id: quizSessionId,
@@ -2104,6 +2203,9 @@ export default function Checkout() {
               quiz_id: returnedQuizId,
               order_id: order.id
             });
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2187',message:'Pedido criado com sucesso',data:{quiz_id:returnedQuizId,order_id:order.id,order_status:order.status},timestamp:Date.now(),sessionId:'audit-flow',hypothesisId:'E'})}).catch(()=>{});
+            // #endregion
             
             // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso
             // Isso garante que o próximo pedido terá um novo session_id
