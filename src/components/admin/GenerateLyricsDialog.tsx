@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiHelpers } from "@/lib/api";
 import { logger } from "@/utils/logger";
 
 interface GenerateLyricsDialogProps {
@@ -28,23 +28,21 @@ export function GenerateLyricsDialog({ open, onOpenChange, onSuccess }: Generate
     try {
       logger.debug("Gerando letras para pedido", { orderId });
 
-      // Chamar a Edge Function
-      const { data, error } = await supabase.functions.invoke('generate-lyrics-for-approval', {
-        body: { order_id: orderId.trim() }
-      });
+      // Usar backend Railway em vez de Edge Function
+      const result = await apiHelpers.generateLyrics({ order_id: orderId.trim() });
 
-      if (error) {
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || 'Erro ao gerar letras');
       }
 
-      logger.event('lyrics_generated_from_order', { orderId, jobId: data?.job_id });
+      logger.event('lyrics_generated_from_order', { orderId, jobId: result.job_id });
       
       toast.success(
         <div>
           <p className="font-semibold">✅ Letra sendo gerada!</p>
           <p className="text-sm mt-1">A letra aparecerá em "Pendentes" em alguns segundos.</p>
-          {data?.job_id && (
-            <p className="text-xs mt-1 text-muted-foreground">Job ID: {data.job_id}</p>
+          {result.job_id && (
+            <p className="text-xs mt-1 text-muted-foreground">Job ID: {result.job_id}</p>
           )}
         </div>,
         { duration: 5000 }
