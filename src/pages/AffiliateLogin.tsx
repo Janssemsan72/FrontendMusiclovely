@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function AffiliateLogin() {
   const [email, setEmail] = useState('');
-  const [token, setToken] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -20,28 +20,33 @@ export default function AffiliateLogin() {
     setError('');
 
     try {
-      // Buscar afiliado por email
-      const { data: affiliate, error: affiliateError } = await supabase
-        .from('affiliates')
-        .select('id, email, name, is_active')
-        .eq('email', email.toLowerCase().trim())
-        .eq('is_active', true)
-        .single();
+      // Autenticar via Edge Function
+      const { data, error: authError } = await supabase.functions.invoke('affiliate-auth', {
+        body: {
+          email: email.toLowerCase().trim(),
+          password: password,
+          action: 'login'
+        }
+      });
 
-      if (affiliateError || !affiliate) {
-        setError('Email não encontrado ou afiliado inativo');
+      if (authError || !data?.success) {
+        setError(data?.error || authError?.message || 'Email ou senha incorretos');
         setLoading(false);
         return;
       }
 
-      // Por enquanto, usar email como token simples
-      // Em produção, você pode implementar um sistema de tokens mais seguro
-      // Salvar no sessionStorage
-      sessionStorage.setItem('affiliate_id', affiliate.id);
-      sessionStorage.setItem('affiliate_email', affiliate.email);
-      sessionStorage.setItem('affiliate_name', affiliate.name || '');
+      // Salvar dados do afiliado no sessionStorage
+      sessionStorage.setItem('affiliate_id', data.affiliate.id);
+      sessionStorage.setItem('affiliate_email', data.affiliate.email);
+      sessionStorage.setItem('affiliate_name', data.affiliate.name || '');
+      sessionStorage.setItem('affiliate_must_change_password', data.affiliate.must_change_password ? 'true' : 'false');
 
-      navigate('/afiliado');
+      // Se precisa trocar senha, redirecionar para página de troca
+      if (data.affiliate.must_change_password) {
+        navigate('/afiliado/change-password');
+      } else {
+        navigate('/afiliado');
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao fazer login');
     } finally {
@@ -82,15 +87,16 @@ export default function AffiliateLogin() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="token" className="text-sm font-medium">
-                Token de Acesso (opcional)
+              <label htmlFor="password" className="text-sm font-medium">
+                Senha
               </label>
               <Input
-                id="token"
+                id="password"
                 type="password"
-                placeholder="Token de acesso"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
+                placeholder="Digite sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 disabled={loading}
               />
             </div>

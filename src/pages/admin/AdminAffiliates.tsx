@@ -61,6 +61,7 @@ export default function AdminAffiliates() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     commission_percentage: '10',
     is_active: true
   });
@@ -73,6 +74,7 @@ export default function AdminAffiliates() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTab]);
 
   const loadData = async () => {
@@ -113,6 +115,11 @@ export default function AdminAffiliates() {
 
   const handleCreateAffiliate = async () => {
     try {
+      if (!formData.password || formData.password.length < 6) {
+        toast.error('A senha deve ter pelo menos 6 caracteres');
+        return;
+      }
+
       // Criar afiliado
       const { data: affiliate, error: affiliateError } = await supabase
         .from('affiliates')
@@ -126,6 +133,21 @@ export default function AdminAffiliates() {
         .single();
 
       if (affiliateError) throw affiliateError;
+
+      // Definir senha via Edge Function
+      const { error: passwordError } = await supabase.functions.invoke('affiliate-auth', {
+        body: {
+          email: formData.email.toLowerCase().trim(),
+          password: formData.password,
+          action: 'set-password'
+        }
+      });
+
+      if (passwordError) {
+        // Se falhar ao definir senha, deletar o afiliado criado
+        await supabase.from('affiliates').delete().eq('id', affiliate.id);
+        throw passwordError;
+      }
 
       // Criar link do afiliado (slug baseado no email ou nome)
       const slug = formData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -157,7 +179,7 @@ export default function AdminAffiliates() {
 
       toast.success('Afiliado criado com sucesso!');
       setShowCreateDialog(false);
-      setFormData({ name: '', email: '', commission_percentage: '10', is_active: true });
+      setFormData({ name: '', email: '', password: '', commission_percentage: '10', is_active: true });
       loadData();
     } catch (err: any) {
       toast.error(err.message || 'Erro ao criar afiliado');
@@ -301,6 +323,20 @@ export default function AdminAffiliates() {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="password">Senha</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Mínimo 6 caracteres"
+                      minLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      A senha será usada pelo afiliado para fazer login
+                    </p>
+                  </div>
+                  <div>
                     <Label htmlFor="commission">Comissão (%)</Label>
                     <Input
                       id="commission"
@@ -364,6 +400,7 @@ export default function AdminAffiliates() {
                             setFormData({
                               name: affiliate.name,
                               email: affiliate.email,
+                              password: '', // Senha não é exibida ao editar (por segurança)
                               commission_percentage: affiliate.commission_percentage.toString(),
                               is_active: affiliate.is_active
                             });
