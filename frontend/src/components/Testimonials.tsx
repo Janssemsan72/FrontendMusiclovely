@@ -55,12 +55,11 @@ export default function Testimonials() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const defaultAvatars = [avatar1, avatar2, avatar3];
   const resolveAvatarUrl = (testimonial: { avatar_url: string | null; name: string }, index: number) => {
-    if (testimonial.avatar_url) return testimonial.avatar_url;
-
     const normalizedName = testimonial.name.trim().toLowerCase();
-    if (normalizedName.includes('carlos')) return avatar3;
-    if (normalizedName.includes('mariana')) return avatar2;
     if (normalizedName.includes('ana')) return avatar1;
+    if (normalizedName.includes('mariana')) return avatar3;
+    if (normalizedName.includes('carlos')) return avatar2;
+    if (testimonial.avatar_url) return testimonial.avatar_url;
     return defaultAvatars[index % defaultAvatars.length];
   };
 
@@ -91,7 +90,7 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar3,
+      avatar_url: avatar2,
       rating: 5
     },
     {
@@ -105,7 +104,7 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar2,
+      avatar_url: avatar3,
       rating: 5
     }
   ];
