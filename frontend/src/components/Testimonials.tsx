@@ -54,6 +54,15 @@ export default function Testimonials() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const defaultAvatars = [avatar1, avatar2, avatar3];
+  const resolveAvatarUrl = (testimonial: { avatar_url: string | null; name: string }, index: number) => {
+    if (testimonial.avatar_url) return testimonial.avatar_url;
+
+    const normalizedName = testimonial.name.trim().toLowerCase();
+    if (normalizedName.includes('carlos')) return avatar3;
+    if (normalizedName.includes('mariana')) return avatar2;
+    if (normalizedName.includes('ana')) return avatar1;
+    return defaultAvatars[index % defaultAvatars.length];
+  };
 
   // Dados mockados para desenvolvimento quando Supabase não está configurado
   const MOCK_TESTIMONIALS: Testimonial[] = [
@@ -82,7 +91,7 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar2,
+      avatar_url: avatar3,
       rating: 5
     },
     {
@@ -96,7 +105,7 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar3,
+      avatar_url: avatar2,
       rating: 5
     }
   ];
@@ -268,9 +277,7 @@ export default function Testimonials() {
   const displayTestimonial = currentTestimonial || (testimonials.length > 0 
     ? getTranslatedTestimonial(testimonials[0], currentLanguage)
     : null);
-  const featuredAvatarUrl = displayTestimonial
-    ? (displayTestimonial.avatar_url || defaultAvatars[validIndex % defaultAvatars.length])
-    : null;
+  const featuredAvatarUrl = displayTestimonial ? resolveAvatarUrl(displayTestimonial, validIndex) : null;
 
   if (!displayTestimonial) {
     // Fallback: mostrar apenas stats se não houver depoimentos válidos
@@ -419,7 +426,7 @@ export default function Testimonials() {
         <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {testimonials.slice(0, 3).map((testimonial, index) => {
             const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
-            const avatarUrl = translatedTestimonial.avatar_url || defaultAvatars[index % defaultAvatars.length];
+            const avatarUrl = resolveAvatarUrl(translatedTestimonial, index);
             return (
               <Card 
                 key={testimonial.id} 
