@@ -12,6 +12,10 @@ test-results/
 
 # Vite cache
 .vite/
+.vite/
+
+# Scripts de desenvolvimento (não essenciais para o repositório)
+scripts/
 
 # Environment variables
 .env
