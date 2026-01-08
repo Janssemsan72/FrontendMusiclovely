@@ -171,8 +171,8 @@ export default function Checkout() {
   
   // ✅ Função helper para obter caminho do quiz com prefixo de idioma
   const getQuizPath = () => {
-    const language = getCurrentLanguage();
-    return `/${language}/quiz`;
+    // ✅ CORREÇÃO: Remover prefixo de idioma
+    return `/quiz`;
   };
   
   const currentLanguage = getCurrentLanguage();
@@ -207,7 +207,8 @@ export default function Checkout() {
     const origin = window.location.origin;
     const utmQuery = getUtmQueryString(false);
     // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success (sem barra antes de success)
-    const redirectUrl = `${origin}/${language}/payment-success?order_id=${orderId}${utmQuery}`;
+    // ✅ CORREÇÃO: Remover prefixo de idioma
+    const redirectUrl = `${origin}/payment-success?order_id=${orderId}${utmQuery}`;
     
     // Normalizar WhatsApp para formato correto (55XXXXXXXXXXX)
     const normalizedWhatsapp = formatWhatsappForCakto(whatsapp);
@@ -1732,16 +1733,13 @@ export default function Checkout() {
     }
     
 
-    // Detectar se usuário está em rota portuguesa (Brasil)
-    const isPortuguese = window.location.pathname.startsWith('/pt');
-    
+    // ✅ CORREÇÃO: Remover sistema de locale - sempre usar Cakto (português)
     const caktoConfig = getCaktoConfigByDomain();
     const CAKTO_PAYMENT_URL = caktoConfig.url;
     
-    console.log('🌍 [Checkout] Detecção de locale:', {
+    console.log('🌍 [Checkout] Sistema de pagamento:', {
       currentPath: window.location.pathname,
-      isPortuguese,
-      paymentProvider: isPortuguese ? 'cakto' : 'stripe'
+      paymentProvider: 'cakto'
     });
 
     // ✅ OTIMIZAÇÃO: Limpar drafts em background (não bloqueante)
@@ -1992,7 +1990,7 @@ export default function Checkout() {
       const amountCents = caktoConfigForOrder.amount_cents;
       
       if (amountCents <= 0) {
-        logger.error('Valor do pedido inválido', undefined, { step: 'order_creation', amountCents, planPrice: plan.price, isPortuguese });
+        logger.error('Valor do pedido inválido', undefined, { step: 'order_creation', amountCents, planPrice: plan.price });
         throw new Error('Valor do pedido inválido');
       }
 
@@ -2156,8 +2154,8 @@ export default function Checkout() {
           plan: selectedPlan as 'standard' | 'express',
           amount_cents: amountCents,
           status: 'pending' as const,
-          provider: (isPortuguese ? 'cakto' : 'stripe') as 'cakto' | 'stripe',
-          payment_provider: (isPortuguese ? 'cakto' : 'stripe') as 'cakto' | 'stripe',
+          provider: 'cakto' as 'cakto' | 'stripe',
+          payment_provider: 'cakto' as 'cakto' | 'stripe',
           customer_email: normalizedEmail,
           customer_whatsapp: normalizedWhatsApp as string,
           transaction_id: transactionId
@@ -2203,17 +2201,11 @@ export default function Checkout() {
         logger.info('✅ [Checkout] session_id limpo após criar pedido (fallback)');
       }
 
-      // PASSO 3: Processar pagamento (Stripe ou Cakto)
-      // ✅ CRÍTICO: Verificar isPortuguese ANTES de qualquer coisa
-      const isPortugueseCheck = window.location.pathname.startsWith('/pt');
-      console.log('🌍 [Checkout] Verificando fluxo de pagamento:', {
-        isPortuguese,
-        isPortugueseCheck,
-        pathname: window.location.pathname,
-        willUseCakto: isPortugueseCheck
-      });
+      // PASSO 3: Processar pagamento (sempre Cakto para português)
+      // ✅ CORREÇÃO: Remover sistema de locale - sempre usar Cakto
+      console.log('🌍 [Checkout] Fluxo de pagamento: Cakto (português)');
       
-      if (isPortugueseCheck) {
+      {
         // ✅ FLUXO CAKTO - Redirecionar IMEDIATAMENTE após criar o pedido
         console.log('✅ [Cakto] Fluxo Cakto detectado - iniciando processo de pagamento');
         console.log('✅ [Cakto] Order criado:', {
@@ -2366,8 +2358,9 @@ export default function Checkout() {
       const mappedPlan = 'pt_express';
 
       const utmQuery = getUtmQueryString(false); // Não incluir params existentes
-      const successPath = `/${currentLanguage}/payment/success${utmQuery}`;
-      const cancelPath = `/${currentLanguage}/checkout${utmQuery}`;
+      // ✅ CORREÇÃO: Remover prefixo de idioma - rotas sem /pt/
+      const successPath = `/payment-success${utmQuery}`;
+      const cancelPath = `/checkout${utmQuery}`;
       const successUrl = `${window.location.origin}${successPath}`;
       const cancelUrl = `${window.location.origin}${cancelPath}`;
       
@@ -2521,8 +2514,8 @@ export default function Checkout() {
       const actualErrorMessage = extractErrorMessage(error);
       
       // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
-      const isPortuguese = window.location.pathname.startsWith('/pt');
-      if (isPortuguese && orderCreated && orderCreated.id) {
+      // ✅ CORREÇÃO: Remover verificação de prefixo /pt - sempre usar Cakto para português
+      if (orderCreated && orderCreated.id) {
         console.log('⚠️ [Cakto] Erro ocorreu mas pedido foi criado, tentando redirecionar mesmo assim...', {
           orderId: orderCreated.id,
           error: actualErrorMessage
@@ -2560,7 +2553,7 @@ export default function Checkout() {
               order_id: orderCreated?.id || 'unknown',
               plan: selectedPlan,
               error_message: actualErrorMessage,
-              payment_provider: isPortuguese ? 'cakto' : 'stripe',
+              payment_provider: 'cakto', // ✅ CORREÇÃO: Sempre Cakto (português)
             }).catch(() => {});
           }
         } catch (error) {

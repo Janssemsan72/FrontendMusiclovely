@@ -43,8 +43,8 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
     // Se contém, significa que está tentando acessar o checkout interno mas deveria ir para Cakto
     // Mas APENAS se for rota de checkout, não de quiz
     const isCheckoutRoute = location.pathname.includes('/checkout');
-    // ✅ CORREÇÃO: Também redirecionar se for rota home (/pt, /en, /es) com order_id e message_id
-    const isHomeRoute = /^\/(pt|en|es)(\/)?$/.test(location.pathname);
+    // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+    const isHomeRoute = /^\/$/.test(location.pathname);
     const hasCheckoutParams = urlParams.get('restore') === 'true' || urlParams.get('quiz_id') || urlParams.get('token');
     
     // Redirecionar se:
@@ -68,9 +68,8 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
             const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
-            // ✅ CORREÇÃO: Detectar locale da rota atual para usar no redirect_url
-            const localeMatch = location.pathname.match(/^\/(pt|en|es)/);
-            const locale = localeMatch ? localeMatch[1] : 'pt';
+            // ✅ CORREÇÃO: Remover sistema de locale - sempre usar português
+            const locale = 'pt';
             
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55
             let normalizedWhatsapp = orderData.customer_whatsapp.replace(/\D/g, '');
@@ -78,7 +77,8 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
               normalizedWhatsapp = `55${normalizedWhatsapp}`;
             }
             const origin = window.location.origin;
-            const redirectUrl = `${origin}/${locale}/payment-success`;
+            // ✅ CORREÇÃO: Remover prefixo de idioma da URL
+            const redirectUrl = `${origin}/payment-success`;
             
             const caktoParams = new URLSearchParams();
             caktoParams.set('order_id', orderData.id);
