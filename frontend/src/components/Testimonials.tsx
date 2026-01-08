@@ -53,6 +53,7 @@ export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const defaultAvatars = [avatar1, avatar2, avatar3];
 
   // Dados mockados para desenvolvimento quando Supabase não está configurado
   const MOCK_TESTIMONIALS: Testimonial[] = [
@@ -267,6 +268,9 @@ export default function Testimonials() {
   const displayTestimonial = currentTestimonial || (testimonials.length > 0 
     ? getTranslatedTestimonial(testimonials[0], currentLanguage)
     : null);
+  const featuredAvatarUrl = displayTestimonial
+    ? (displayTestimonial.avatar_url || defaultAvatars[validIndex % defaultAvatars.length])
+    : null;
 
   if (!displayTestimonial) {
     // Fallback: mostrar apenas stats se não houver depoimentos válidos
@@ -349,23 +353,20 @@ export default function Testimonials() {
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  {displayTestimonial.avatar_url ? (
-                    <img 
-                      src={displayTestimonial.avatar_url} 
-                      alt={displayTestimonial.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback para avatar padrão se a imagem não carregar
-                        console.error('❌ Erro ao carregar avatar:', displayTestimonial.avatar_url, e);
-                        e.currentTarget.style.display = 'none';
-                        (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
-                      }}
-                      onLoad={() => {
-                        console.log('✅ Avatar carregado com sucesso:', displayTestimonial.avatar_url);
-                      }}
-                    />
-                  ) : null}
-                  <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                  <img 
+                    src={featuredAvatarUrl || undefined} 
+                    alt={displayTestimonial.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('❌ Erro ao carregar avatar:', featuredAvatarUrl, e);
+                      e.currentTarget.style.display = 'none';
+                      (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Avatar carregado com sucesso:', featuredAvatarUrl);
+                    }}
+                  />
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base" style={{ display: featuredAvatarUrl ? 'none' : 'flex' }}>
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -418,6 +419,7 @@ export default function Testimonials() {
         <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {testimonials.slice(0, 3).map((testimonial, index) => {
             const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            const avatarUrl = translatedTestimonial.avatar_url || defaultAvatars[index % defaultAvatars.length];
             return (
               <Card 
                 key={testimonial.id} 
@@ -437,22 +439,20 @@ export default function Testimonials() {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      {translatedTestimonial.avatar_url ? (
-                        <img 
-                          src={translatedTestimonial.avatar_url} 
-                          alt={translatedTestimonial.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            console.error('❌ Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url, e);
-                            e.currentTarget.style.display = 'none';
-                            (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
-                          }}
-                          onLoad={() => {
-                            console.log('✅ Avatar do grid carregado:', translatedTestimonial.avatar_url);
-                          }}
-                        />
-                      ) : null}
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                      <img 
+                        src={avatarUrl} 
+                        alt={translatedTestimonial.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('❌ Erro ao carregar avatar no grid:', avatarUrl, e);
+                          e.currentTarget.style.display = 'none';
+                          (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Avatar do grid carregado:', avatarUrl);
+                        }}
+                      />
+                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm" style={{ display: avatarUrl ? 'none' : 'flex' }}>
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
