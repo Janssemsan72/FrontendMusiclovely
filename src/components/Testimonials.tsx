@@ -63,7 +63,7 @@ export default function Testimonials() {
       content: 'Encomendei uma música para meu casamento e foi simplesmente perfeita! Todos os convidados choraram. A qualidade de produção é incrível, parece música de rádio!',
       content_en: null,
       content_es: null,
-      avatar_url: null,
+      avatar_url: '/testimonials/avatar-1.webp',
       rating: 5
     },
     {
@@ -77,7 +77,7 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: null,
+      avatar_url: '/testimonials/avatar-2.webp',
       rating: 5
     },
     {
@@ -91,7 +91,7 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: null,
+      avatar_url: '/testimonials/avatar-3.webp',
       rating: 5
     }
   ];
