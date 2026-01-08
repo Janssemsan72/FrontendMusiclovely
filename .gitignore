@@ -5,6 +5,14 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Test results and reports
+playwright-report/
+test-results/
+*.test-results/
+
+# Vite cache
+.vite/
+
 # Environment variables
 .env
 .env.local
@@ -53,3 +61,6 @@ test-avatar-*.jpg
 test-avatar-*.png
 Musiclovelyoficial-main/
 frontendmusiclovely-clone/
+playwright-report/
+test-results/
+.vite/
