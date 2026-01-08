@@ -21,40 +21,29 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Chunks manuais para melhor cache e carregamento paralelo
-        // ✅ CORREÇÃO: Lógica simplificada e segura para evitar quebrar dependências
+        // ✅ CORREÇÃO: Usar estratégia mais conservadora para garantir que React funcione
         manualChunks: (id) => {
-          // Vendor chunks separados para melhor cache
+          // Apenas separar vendors grandes, mantendo React seguro
           if (id.includes("node_modules")) {
-            // React e React DOM devem estar juntos para evitar problemas de dependência
-            if (id.includes("react") && (id.includes("/react/") || id.includes("/react-dom/"))) {
+            // React core - verificar primeiro com múltiplas condições
+            const isReact = id.includes("node_modules/react/") || 
+                           id.includes("node_modules/react-dom/") ||
+                           (id.includes("/react/") && !id.includes("react-router") && !id.includes("react-i18next") && !id.includes("react-query"));
+            
+            if (isReact) {
               return "vendor-react";
             }
-            // React Router - pode estar separado
-            if (id.includes("react-router")) {
-              return "vendor-router";
-            }
-            // UI libraries
-            if (id.includes("@radix-ui")) {
-              return "vendor-ui";
-            }
-            // Query library
-            if (id.includes("@tanstack/react-query")) {
-              return "vendor-query";
-            }
-            // Supabase
-            if (id.includes("@supabase")) {
-              return "vendor-supabase";
-            }
-            // i18n
-            if (id.includes("react-i18next") || id.includes("/i18next/")) {
-              return "vendor-i18n";
-            }
-            // Lucide icons
-            if (id.includes("lucide-react")) {
-              return "vendor-icons";
-            }
-            // Outros vendors
-            return "vendor-other";
+            
+            // Outros vendors grandes apenas
+            if (id.includes("@radix-ui")) return "vendor-ui";
+            if (id.includes("@tanstack/react-query")) return "vendor-query";
+            if (id.includes("@supabase")) return "vendor-supabase";
+            if (id.includes("react-router")) return "vendor-router";
+            if (id.includes("react-i18next") || id.includes("/i18next/")) return "vendor-i18n";
+            if (id.includes("lucide-react")) return "vendor-icons";
+            
+            // Deixar o resto no chunk padrão (não forçar vendor-other)
+            // Isso evita problemas de dependências
           }
         },
         // Nomes de arquivos otimizados
