@@ -21,36 +21,42 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Chunks manuais para melhor cache e carregamento paralelo
+        // ✅ CORREÇÃO: Lógica mais específica para evitar dependências circulares
         manualChunks: (id) => {
           // Vendor chunks separados para melhor cache
           if (id.includes("node_modules")) {
-            // React core
-            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
-              return "vendor-react";
+            // React core - verificar primeiro e ser mais específico
+            if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
+              return "vendor-react-core";
             }
-            // UI libraries
-            if (id.includes("@radix-ui")) {
+            if (id.includes("node_modules/react-router")) {
+              return "vendor-react-router";
+            }
+            // UI libraries - verificar antes de outros
+            if (id.includes("node_modules/@radix-ui")) {
               return "vendor-ui";
             }
             // Query library
-            if (id.includes("@tanstack/react-query")) {
+            if (id.includes("node_modules/@tanstack/react-query")) {
               return "vendor-query";
             }
             // Supabase
-            if (id.includes("@supabase")) {
+            if (id.includes("node_modules/@supabase")) {
               return "vendor-supabase";
             }
             // i18n
-            if (id.includes("react-i18next") || id.includes("i18next")) {
+            if (id.includes("node_modules/react-i18next") || id.includes("node_modules/i18next")) {
               return "vendor-i18n";
             }
-            // Lucide icons (será otimizado na Fase 2)
-            if (id.includes("lucide-react")) {
+            // Lucide icons
+            if (id.includes("node_modules/lucide-react")) {
               return "vendor-icons";
             }
-            // Outros vendors
+            // Outros vendors - apenas se não foi categorizado acima
             return "vendor-other";
           }
+          // Retornar undefined para código da aplicação (não chunk manual)
+          return undefined;
         },
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
