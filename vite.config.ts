@@ -21,30 +21,20 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Chunks manuais para melhor cache e carregamento paralelo
-        // ✅ CORREÇÃO: Usar estratégia mais conservadora para garantir que React funcione
+        // ✅ CORREÇÃO CRÍTICA: Remover chunking manual problemático e usar estratégia mais segura
+        // O Vite já faz code splitting automático eficiente, então vamos ser mais conservadores
         manualChunks: (id) => {
-          // Apenas separar vendors grandes, mantendo React seguro
+          // Apenas separar vendors muito grandes, deixando React no chunk principal
           if (id.includes("node_modules")) {
-            // React core - verificar primeiro com múltiplas condições
-            const isReact = id.includes("node_modules/react/") || 
-                           id.includes("node_modules/react-dom/") ||
-                           (id.includes("/react/") && !id.includes("react-router") && !id.includes("react-i18next") && !id.includes("react-query"));
-            
-            if (isReact) {
-              return "vendor-react";
+            // Separar apenas bibliotecas muito grandes que não dependem de React diretamente
+            if (id.includes("@supabase") && !id.includes("react")) {
+              return "vendor-supabase";
             }
-            
-            // Outros vendors grandes apenas
-            if (id.includes("@radix-ui")) return "vendor-ui";
-            if (id.includes("@tanstack/react-query")) return "vendor-query";
-            if (id.includes("@supabase")) return "vendor-supabase";
-            if (id.includes("react-router")) return "vendor-router";
-            if (id.includes("react-i18next") || id.includes("/i18next/")) return "vendor-i18n";
-            if (id.includes("lucide-react")) return "vendor-icons";
-            
-            // Deixar o resto no chunk padrão (não forçar vendor-other)
-            // Isso evita problemas de dependências
+            // Deixar React e tudo relacionado no chunk padrão para evitar problemas de ordem
+            // O Vite fará o code splitting automático de forma segura
           }
+          // Retornar undefined para deixar Vite decidir (mais seguro)
+          return undefined;
         },
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
