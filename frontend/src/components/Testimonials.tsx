@@ -352,8 +352,12 @@ export default function Testimonials() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback para avatar padrão se a imagem não carregar
+                        console.error('❌ Erro ao carregar avatar:', displayTestimonial.avatar_url, e);
                         e.currentTarget.style.display = 'none';
                         (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Avatar carregado com sucesso:', displayTestimonial.avatar_url);
                       }}
                     />
                   ) : null}
@@ -435,8 +439,12 @@ export default function Testimonials() {
                           alt={translatedTestimonial.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
+                            console.error('❌ Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url, e);
                             e.currentTarget.style.display = 'none';
                             (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Avatar do grid carregado:', translatedTestimonial.avatar_url);
                           }}
                         />
                       ) : null}

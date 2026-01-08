@@ -49,7 +49,7 @@ export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
+  
   // Dados mockados para desenvolvimento quando Supabase não está configurado
   const MOCK_TESTIMONIALS: Testimonial[] = [
     {
@@ -95,6 +95,8 @@ export default function Testimonials() {
       rating: 5
     }
   ];
+  
+  console.log('🖼️ MOCK_TESTIMONIALS definidos:', MOCK_TESTIMONIALS.map(t => ({ name: t.name, avatar: t.avatar_url })));
 
   useEffect(() => {
     async function fetchTestimonials() {
@@ -205,6 +207,9 @@ export default function Testimonials() {
 
   // Debug: sempre logar o estado
   console.log('Testimonials component - testimonials.length:', testimonials.length, 'loading:', loading);
+  if (testimonials.length > 0) {
+    console.log('🖼️ Testimonials com avatares:', testimonials.map(t => ({ name: t.name, avatar: t.avatar_url, hasAvatar: !!t.avatar_url })));
+  }
 
   // Sempre mostrar a seção, mesmo sem depoimentos
   if (testimonials.length === 0 && !loading) {
@@ -352,8 +357,12 @@ export default function Testimonials() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // Fallback para avatar padrão se a imagem não carregar
+                        console.error('❌ Erro ao carregar avatar:', displayTestimonial.avatar_url, e);
                         e.currentTarget.style.display = 'none';
                         (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                      }}
+                      onLoad={() => {
+                        console.log('✅ Avatar carregado com sucesso:', displayTestimonial.avatar_url);
                       }}
                     />
                   ) : null}
@@ -435,8 +444,12 @@ export default function Testimonials() {
                           alt={translatedTestimonial.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
+                            console.error('❌ Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url, e);
                             e.currentTarget.style.display = 'none';
                             (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                          }}
+                          onLoad={() => {
+                            console.log('✅ Avatar do grid carregado:', translatedTestimonial.avatar_url);
                           }}
                         />
                       ) : null}
