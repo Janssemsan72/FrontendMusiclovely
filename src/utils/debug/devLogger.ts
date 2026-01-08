@@ -57,6 +57,24 @@ export const devLog = {
   },
 };
 
+export function agentLog(payload: Record<string, unknown>) {
+  if (!isDev) return;
+  if (import.meta.env.VITE_AGENT_LOGGING !== 'true') return;
+
+  const endpoint = import.meta.env.VITE_AGENT_LOG_ENDPOINT;
+  if (!endpoint) return;
+
+  try {
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  } catch {
+    return;
+  }
+}
+
 /**
  * Helper para logs de performance - apenas em desenvolvimento verbose
  */

@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { i18nLog } from '@/utils/debug/devLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, Globe, Lock, Star, Zap, Clock, Shield, Music, ArrowRight, Download } from 'lucide-react';
-import { getLocalizedPath } from '@/lib/i18nRoutes';
+import { Check, Globe, Lock, Star, Zap, Clock, Shield, Music, ArrowRight } from 'lucide-react';
 import { useUtmParams } from '@/hooks/useUtmParams';
 // formatDateTime removido - não é mais usado
 
@@ -51,121 +49,41 @@ interface RegionalPricing {
 }
 
 export default function RegionalPricingSection() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const { navigateWithUtms } = useUtmParams();
   const [pricing, setPricing] = useState<RegionalPricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Forçar reload quando a URL mudar
-    loadRegionalPricing();
-  }, [currentLanguage]);
-
-  const loadRegionalPricing = async () => {
+  const loadRegionalPricing = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       // SEMPRE usar dados mock baseados na URL (ignorar API de IP)
-      
-      // Detectar idioma atual pela URL (sempre priorizar URL)
-      const getCurrentLanguage = () => {
-        const pathname = window.location.pathname;
-        
-        // Prioridade 1: URL com prefixo de idioma
-        if (pathname.startsWith('/en')) return 'en';
-        if (pathname.startsWith('/es')) return 'es';
-        if (pathname.startsWith('/pt')) return 'pt';
-        
-        // Prioridade 2: Rota raiz - detecção automática
-        if (pathname === '/' || pathname === '') {
-          i18nLog('Rota raiz detectada', {
-            currentLanguage,
-            navigatorLanguage: navigator.language
-          });
-          
-          // Detectar pelo navegador
-          const navLang = navigator.language.toLowerCase();
-          i18nLog('navLang processado', navLang);
-          
-          if (navLang.startsWith('pt')) {
-            i18nLog('Detectado português pelo navegador');
-            return 'pt';
-          }
-          if (navLang.startsWith('en')) {
-            i18nLog('Detectado inglês pelo navegador');
-            return 'en';
-          }
-          if (navLang.startsWith('es')) {
-            i18nLog('Detectado espanhol pelo navegador');
-            return 'es';
-          }
-          
-          // Fallback para português
-          i18nLog('Fallback para português');
-          return 'pt';
-        }
-        
-        // Fallback para currentLanguage
-        return currentLanguage || 'pt';
-      };
-      
-      const currentLang = getCurrentLanguage();
-      
-      // Forçar detecção se não estiver funcionando
-      const forcedLang = currentLang || 'pt';
+
+      const currentLang = 'pt';
       
       let mockPricing = [];
       
-      if (forcedLang === 'pt') {
-        // Para português: apenas plano brasileiro com preço dinâmico por domínio
-        const caktoConfig = getCaktoConfigByDomain();
-        mockPricing = [
-          {
-            id: '1',
-            region: 'brasil',
-            plan_name: 'Expresso',
-            price_cents: caktoConfig.price_display,
-            currency: 'BRL',
-            stripe_price_id: 'price_BR_EXPRESS',
-            features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 48h'],
-            is_active: true
-          }
-        ];
-      } else {
-        // Para inglês e espanhol: dois planos USD
-        mockPricing = [
-          {
-            id: '2',
-            region: 'usa',
-            plan_name: 'Express Plus 7 Days',
-            price_cents: 3900,
-            currency: 'USD',
-            stripe_price_id: 'prod_THfijhgSPvtnsE', // Personalized Music - Express plus 7 days US$ 39,00
-            features: ['High quality MP3', 'Custom cover', 'Full lyrics', '7 days delivery'],
-            is_active: true,
-            badge: currentLang === 'en' ? 'Standard' : 'Estándar'
-          },
-          {
-            id: '3',
-            region: 'usa',
-            plan_name: 'Express Plan 24h',
-            price_cents: 4900,
-            currency: 'USD',
-            stripe_price_id: 'prod_THfhMPbPNkoSPc', // Personalized Music - Express Plan 24h US$ 49,00
-            features: ['High quality MP3', 'Custom cover', 'Full lyrics', '24h delivery'],
-            is_active: true,
-            badge: currentLang === 'en' ? 'Most Popular' : 'Más Popular',
-            featured: true
-          }
-        ];
-      }
+      const caktoConfig = getCaktoConfigByDomain();
+      mockPricing = [
+        {
+          id: '1',
+          region: 'brasil',
+          plan_name: 'Expresso',
+          price_cents: caktoConfig.price_display,
+          currency: 'BRL',
+          stripe_price_id: 'price_BR_EXPRESS',
+          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 48h'],
+          is_active: true
+        }
+      ];
       
       const mockData = {
         success: true,
-        region: currentLang === 'pt' ? 'brasil' : 'usa',
-        country: currentLang === 'pt' ? 'BR' : 'US',
+        region: 'brasil',
+        country: 'BR',
         language: currentLang,
         pricing: mockPricing,
         session_token: 'mock-session-token',
@@ -181,7 +99,11 @@ export default function RegionalPricingSection() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadRegionalPricing();
+  }, [loadRegionalPricing]);
 
   const formatPrice = (cents: number, currency: string) => {
     const value = cents / 100;
@@ -375,12 +297,7 @@ export default function RegionalPricingSection() {
                   onClick={() => {
                     // Salvar session token para checkout
                     localStorage.setItem('pricing_session_token', pricing.session_token);
-                    // Redirecionar para quiz com navegação localizada (preservando UTMs)
-                    const activeLocale = (currentLanguage === 'pt' || currentLanguage === 'en' || currentLanguage === 'es')
-                      ? currentLanguage
-                      : 'pt';
-                    const quizPath = getLocalizedPath('/quiz', activeLocale);
-                    navigateWithUtms(quizPath);
+                    navigateWithUtms('/quiz');
                   }}
                 >
                   <Music className="h-5 w-5 mr-2" />

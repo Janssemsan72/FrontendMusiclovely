@@ -5,23 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Users, Heart, Music, Award, Clock, Star, CheckCircle, Mail, Phone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getLocalizedPath } from '@/lib/i18nRoutes';
 
 export default function About() {
   const { t } = useTranslation();
-  
-  const getLocalizedLink = (path: string) => {
-    // Detectar locale atual da URL
-    const currentPath = window.location.pathname;
-    const currentLocale = currentPath.split('/')[1];
-    
-    // Se estamos em uma rota localizada, usar o locale da URL
-    const activeLocale = (currentLocale === 'pt' || currentLocale === 'en' || currentLocale === 'es') 
-      ? currentLocale 
-      : 'pt';
-    
-    return getLocalizedPath(path, activeLocale);
-  };
   
   const teamMembers = [
     {
@@ -255,7 +241,7 @@ export default function About() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
-                  to={getLocalizedLink('/quiz')} 
+                  to="/quiz" 
                   className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl hover:bg-primary-600 transition-colors"
                 >
                   <Music className="h-4 w-4" />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Accordion,
@@ -20,7 +20,7 @@ export default function FAQ() {
   const [loading, setLoading] = useState(true);
 
   // Função para traduzir perguntas e respostas hardcoded
-  const translateFAQ = (faq: FAQ): FAQ => {
+  const translateFAQ = useCallback((faq: FAQ): FAQ => {
     const faqMap: { [key: string]: { question: string; answer: string } } = {
       'Quais estilos musicais vocês produzem?': {
         question: t('faq.questions.musicStyles.question'),
@@ -49,7 +49,7 @@ export default function FAQ() {
       };
     }
     return faq;
-  };
+  }, [t]);
 
   useEffect(() => {
     async function fetchFAQs() {
@@ -95,7 +95,7 @@ export default function FAQ() {
     }
 
     fetchFAQs();
-  }, []);
+  }, [t, translateFAQ]);
 
   if (loading) {
     return (

@@ -29,17 +29,8 @@ const NotFound = () => {
     }
   }, [location.pathname, location.search, trackEvent]);
 
-  // Detectar idioma baseado na URL
-  const getHomePath = () => {
-    const pathname = location.pathname;
-    if (pathname.startsWith('/en')) return '/en';
-    if (pathname.startsWith('/es')) return '/es';
-    if (pathname.startsWith('/pt')) return '/pt';
-    return '/pt'; // fallback para português
-  };
-
   const handleGoHome = () => {
-    navigateWithUtms(getHomePath());
+    navigateWithUtms('/');
   };
 
   return (

@@ -73,7 +73,7 @@ export default function CaktoReturn() {
         const utmQuery = Object.keys(utms).length > 0 
           ? '&' + Object.entries(utms).map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`).join('&')
           : '';
-        const successPath = `/pt/payment/success?order_id=${orderIdParam}${utmQuery}`;
+        const successPath = `/payment/success?order_id=${orderIdParam}${utmQuery}`;
         
         console.log('🔄 [CaktoReturn] Redirecionando para:', successPath);
         console.log('📊 [CaktoReturn] UTMs preservados:', utms);

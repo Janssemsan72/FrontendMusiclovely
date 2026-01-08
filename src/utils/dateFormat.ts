@@ -1,32 +1,8 @@
-import { useTranslation } from '@/hooks/useTranslation';
-
 /**
  * Formata uma data usando o locale baseado no idioma atual
  */
 export function formatDateWithLocale(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
-  // Detectar idioma atual
-  const pathname = window.location.pathname;
-  let currentLang = 'pt';
-  
-  if (pathname.startsWith('/en')) currentLang = 'en';
-  else if (pathname.startsWith('/es')) currentLang = 'es';
-  else if (pathname.startsWith('/pt')) currentLang = 'pt';
-  else {
-    // Fallback para localStorage
-    const storedLang = localStorage.getItem('musiclovely_language');
-    if (storedLang && ['pt', 'en', 'es'].includes(storedLang)) {
-      currentLang = storedLang;
-    }
-  }
-  
-  // Mapear idioma para locale
-  const localeMap = { 
-    'pt': 'pt-BR', 
-    'en': 'en-US', 
-    'es': 'es-ES' 
-  };
-  
-  const locale = localeMap[currentLang as keyof typeof localeMap] || 'pt-BR';
+  const locale = 'pt-BR';
   
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   

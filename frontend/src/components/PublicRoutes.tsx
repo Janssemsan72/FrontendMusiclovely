@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
+import { agentLog } from "@/utils/debug/devLogger";
 
 import Index from "../pages/Index";
 const IndexCompany = lazyWithRetry(() => import("../pages/IndexCompany"));
@@ -46,9 +47,17 @@ const RouteFallback = () => {
 
 // ✅ CORREÇÃO: Sempre renderizar rotas - React Router lida com paths automaticamente
 export default function PublicRoutes() {
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PublicRoutes.tsx:48',message:'PublicRoutes render',data:{pathname:typeof window!=='undefined'?window.location.pathname:'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-  // #endregion
+  const location = useLocation();
+
+  useEffect(() => {
+    agentLog({
+      location: 'PublicRoutes.tsx:PublicRoutes',
+      message: 'PublicRoutes render',
+      data: { pathname: location.pathname },
+      timestamp: Date.now(),
+    });
+  }, [location.pathname]);
+
   // Verificar se estamos no projeto music-lovely-novo ou musiclovely.shop (usando hostname)
   // Para esses projetos, sempre usar IndexCompany como página inicial
   const isCompanyPage = 
@@ -81,27 +90,29 @@ export default function PublicRoutes() {
     <CheckoutRedirectWrapper>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path=":locale(pt|en|es)/*" element={<StripLocalePrefixRedirect />} />
-          <Route path="" element={isCompanyPage ? <IndexCompany /> : <Index />} />
-          <Route path="about" element={<About />} />
-          <Route path="company" element={<Company />} />
-          <Route path="company-standalone" element={<CompanyStandalone />} />
-          <Route path="how-it-works" element={<HowItWorks />} />
-          <Route path="pricing" element={<Pricing />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="terms" element={<Terms />} />
-          <Route path="quiz" element={<Quiz />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="checkout-processing" element={<CheckoutProcessing />} />
-          <Route path="payment/success" element={<PaymentSuccess />} />
-          <Route path="payment-success" element={<PaymentSuccess />} />
-          <Route path="success" element={<PaymentSuccess />} />
-          <Route path="song/:id" element={<SongDownload />} />
-          <Route path="download/:id" element={<SongDownload />} />
-          <Route path="download/:id/:token" element={<SongDownload />} />
-          <Route path="approve-lyrics" element={<ApproveLyrics />} />
-          <Route path="afiliado/login" element={<AffiliateLogin />} />
-          <Route path="afiliado" element={<AffiliateDashboard />} />
+          <Route path="/pt/*" element={<StripLocalePrefixRedirect />} />
+          <Route path="/en/*" element={<StripLocalePrefixRedirect />} />
+          <Route path="/es/*" element={<StripLocalePrefixRedirect />} />
+          <Route path="/" element={isCompanyPage ? <IndexCompany /> : <Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/company" element={<Company />} />
+          <Route path="/company-standalone" element={<CompanyStandalone />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout-processing" element={<CheckoutProcessing />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/success" element={<PaymentSuccess />} />
+          <Route path="/song/:id" element={<SongDownload />} />
+          <Route path="/download/:id" element={<SongDownload />} />
+          <Route path="/download/:id/:token" element={<SongDownload />} />
+          <Route path="/approve-lyrics" element={<ApproveLyrics />} />
+          <Route path="/afiliado/login" element={<AffiliateLogin />} />
+          <Route path="/afiliado" element={<AffiliateDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

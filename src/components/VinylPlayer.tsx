@@ -164,8 +164,9 @@ export default function VinylPlayer() {
       setIsLoadingTrackData(true);
       
       // Parar música atual se estiver tocando
-      if (playing && audioRef.current) {
-        audioRef.current.pause();
+      const currentAudio = audioRef.current;
+      if (currentAudio && !currentAudio.paused) {
+        currentAudio.pause();
         setPlaying(false);
       }
       

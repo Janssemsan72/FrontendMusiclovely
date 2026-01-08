@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -385,7 +385,7 @@ export const LyricsCard = memo(function LyricsCard({
 
   // Função para acessar dados de lyrics de forma robusta
   // ✅ OTIMIZAÇÃO: Usar loadedLyrics (carregado sob demanda) ou approval.lyrics (se já estiver disponível)
-  const getLyricsData = () => {
+  const getLyricsData = useCallback(() => {
     const lyrics = loadedLyrics || approval.lyrics;
     if (!lyrics) {
       return null;
@@ -407,7 +407,7 @@ export const LyricsCard = memo(function LyricsCard({
     }
 
     return null;
-  };
+  }, [approval.id, approval.lyrics, loadedLyrics]);
 
   // Extrair título da música
   const getMusicTitle = () => {

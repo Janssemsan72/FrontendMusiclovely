@@ -106,11 +106,6 @@ export default function AdminLyrics() {
     enabled: activeTab === "rejected" // ✅ Só carregar dados quando tab estiver ativa
   });
 
-  // ✅ CORREÇÃO: Usar dados diretamente (sem paginação, carrega tudo)
-  const pendingApprovals = pendingApprovalsPage || [];
-  const approvedApprovals = approvedApprovalsPage || [];
-  const rejectedApprovals = rejectedApprovalsPage || [];
-
   // ✅ Hook robusto para regeneração em massa
   const handleRefetchAll = useCallback(async () => {
     await Promise.all([refetchPending(), refetchApproved(), refetchRejected()]);
@@ -425,7 +420,7 @@ export default function AdminLyrics() {
       return removeDuplicates(searchResults.filter(a => a.status === 'pending'));
     }
 
-    let approvals = pendingApprovals || [];
+    let approvals = pendingApprovalsPage || [];
     
     // ✅ CORREÇÃO: Remover duplicatas primeiro, mas garantir que todas as letras válidas apareçam
     approvals = removeDuplicates(approvals);
@@ -444,7 +439,7 @@ export default function AdminLyrics() {
       approval.lyrics_preview?.toLowerCase().includes(term) ||
       (typeof approval.lyrics === 'object' && approval.lyrics?.title?.toLowerCase().includes(term))
     );
-  }, [pendingApprovals, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
+  }, [pendingApprovalsPage, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
 
   const filteredApprovedApprovals = useMemo(() => {
     // ✅ CORREÇÃO: Se for busca por email, usar resultados da busca global
@@ -452,7 +447,7 @@ export default function AdminLyrics() {
       return removeDuplicates(searchResults.filter(a => a.status === 'approved'));
     }
 
-    let approvals = approvedApprovals || [];
+    let approvals = approvedApprovalsPage || [];
     
     // Remover duplicatas primeiro
     approvals = removeDuplicates(approvals);
@@ -464,7 +459,7 @@ export default function AdminLyrics() {
       approval.orders?.customer_email?.toLowerCase().includes(term) ||
       approval.quizzes?.about_who?.toLowerCase().includes(term)
     );
-  }, [approvedApprovals, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
+  }, [approvedApprovalsPage, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
 
   const filteredRejectedApprovals = useMemo(() => {
     // ✅ CORREÇÃO: Se for busca por email, usar resultados da busca global
@@ -472,7 +467,7 @@ export default function AdminLyrics() {
       return removeDuplicates(searchResults.filter(a => a.status === 'rejected'));
     }
 
-    let approvals = rejectedApprovals || [];
+    let approvals = rejectedApprovalsPage || [];
     
     // Remover duplicatas primeiro
     approvals = removeDuplicates(approvals);
@@ -484,7 +479,7 @@ export default function AdminLyrics() {
       approval.orders?.customer_email?.toLowerCase().includes(term) ||
       approval.quizzes?.about_who?.toLowerCase().includes(term)
     );
-  }, [rejectedApprovals, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
+  }, [rejectedApprovalsPage, debouncedSearchTerm, removeDuplicates, isEmailSearch, searchResults]);
 
   // ✅ OTIMIZAÇÃO: Usar diretamente os dados filtrados (já paginados do backend)
   const visiblePending = filteredPendingApprovals;

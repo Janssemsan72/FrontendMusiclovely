@@ -36,7 +36,7 @@ const BlackFridayBanner: React.FC<BlackFridayBannerProps> = ({ onClose }) => {
       window.addEventListener('resize', updateHeaderHeight);
       
       // ✅ Detectar quando o teclado abre/fecha no mobile para manter banner fixo
-      let bannerFixedTop = headerHeight; // Armazenar posição fixa do banner
+      let bannerFixedTop = 0; // Armazenar posição fixa do banner
       let isLocked = false; // Flag para prevenir mudanças
       
       const forceBannerPosition = (lock = false) => {
@@ -47,7 +47,7 @@ const BlackFridayBanner: React.FC<BlackFridayBannerProps> = ({ onClose }) => {
           if (banner) {
             // Buscar altura atual do header
             const header = document.querySelector('header');
-            const currentHeaderHeight = header ? header.offsetHeight : 64;
+            const currentHeaderHeight = header ? header.offsetHeight : 0;
             
             // Se não estiver travado, atualizar posição fixa
             if (!isLocked) {

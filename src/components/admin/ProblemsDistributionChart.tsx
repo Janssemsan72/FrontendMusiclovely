@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBehaviorAnalytics } from "@/hooks/useBehaviorAnalytics";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const COLORS = ['#F59E0B', '#EF4444', '#DC2626'];
 
 export function ProblemsDistributionChart() {
-  const { data, loading } = useBehaviorAnalytics();
+  const { loading } = useBehaviorAnalytics();
   const [isMobile, setIsMobile] = useState(false);
 
   // ✅ CORREÇÃO: Detectar se é mobile para ajustar tamanho do gráfico
@@ -20,24 +20,7 @@ export function ProblemsDistributionChart() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const chartData = useMemo(() => {
-    if (!data.clarity?.metrics) {
-      return [];
-    }
-
-    const metrics = data.clarity.metrics;
-    const total = metrics.totalDeadClicks + metrics.totalRageClicks + metrics.totalJsErrors;
-
-    if (total === 0) {
-      return [];
-    }
-
-    return [
-      { name: 'Dead Clicks', value: metrics.totalDeadClicks, color: COLORS[0] },
-      { name: 'Rage Clicks', value: metrics.totalRageClicks, color: COLORS[1] },
-      { name: 'Erros JS', value: metrics.totalJsErrors, color: COLORS[2] },
-    ].filter(item => item.value > 0);
-  }, [data]);
+  const chartData = [];
 
   if (loading) {
     return (

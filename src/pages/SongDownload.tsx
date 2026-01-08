@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Music, Calendar, Loader2, AlertCircle, Home } from 'lucide-react';
+import { Download, Share2, Music, Calendar, Loader2, AlertCircle, Home, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUtmParams } from '@/hooks/useUtmParams';
@@ -25,14 +25,11 @@ export default function SongDownload() {
   const [error, setError] = useState<string | null>(null);
   const [autoDownloading, setAutoDownloading] = useState(false);
   const [autoDownloadComplete, setAutoDownloadComplete] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Detectar idioma baseado na URL
   const getHomePath = () => {
-    const pathname = window.location.pathname;
-    if (pathname.startsWith('/en')) return '/en';
-    if (pathname.startsWith('/es')) return '/es';
-    if (pathname.startsWith('/pt')) return '/pt';
-    return '/pt'; // fallback para português
+    return '/';
   };
 
   // ✅ NOVO: Download automático quando tiver token
@@ -129,10 +126,8 @@ export default function SongDownload() {
         console.warn('Erro ao rastrear download:', trackError);
       }
 
-      // Redirecionar para home após 1 segundo
-      setTimeout(() => {
-        navigateWithUtms(getHomePath());
-      }, 1000);
+      // ✅ MELHORIA: Não redirecionar - mostrar mensagem de sucesso com instruções
+      setLoading(false);
       
     } catch (error: any) {
       console.error('Error in auto download:', error);
@@ -371,15 +366,79 @@ export default function SongDownload() {
     );
   }
 
-  // ✅ NOVO: Mostrar mensagem de sucesso após download automático
+  // ✅ MELHORIA: Mostrar mensagem de sucesso após download automático com instruções
   if (autoDownloadComplete) {
+    const currentUrl = window.location.href;
+    
+    const handleCopyLink = async () => {
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        setLinkCopied(true);
+        toast.success(t('songDownload.linkCopied') || 'Link copiado para área de transferência!');
+        setTimeout(() => setLinkCopied(false), 3000);
+      } catch (error) {
+        console.error('Erro ao copiar link:', error);
+        toast.error(t('songDownload.copyError') || 'Erro ao copiar link');
+      }
+    };
+
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-4" style={{ minHeight: 'var(--dvh)' }}>
-        <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-          <Download className="h-8 w-8 text-green-600 dark:text-green-400" />
-        </div>
-        <p className="text-lg font-medium text-foreground">Download iniciado com sucesso!</p>
-        <p className="text-sm text-muted-foreground">Redirecionando...</p>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-6 p-4" style={{ minHeight: 'var(--dvh)' }}>
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-foreground">
+                  {t('songDownload.download.success') || 'Download iniciado com sucesso!'}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {t('songDownload.download.instructions') || 'O arquivo já foi baixado. Procure na pasta de Downloads do seu aparelho.'}
+                </p>
+              </div>
+
+              <div className="w-full space-y-3 pt-4">
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                  size="lg"
+                >
+                  {linkCopied ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      {t('songDownload.linkCopied') || 'Link copiado!'}
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      {t('songDownload.copyLink') || 'Copiar link desta página'}
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => navigateWithUtms(getHomePath())}
+                  className="w-full"
+                  variant="secondary"
+                  size="lg"
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  {t('songDownload.backHome') || 'Voltar para Home'}
+                </Button>
+              </div>
+
+              <div className="mt-4 p-4 bg-muted rounded-lg w-full">
+                <p className="text-xs text-muted-foreground text-left">
+                  <strong>Dica:</strong> {t('songDownload.download.tip') || 'Se não encontrar o arquivo, verifique a pasta de Downloads do seu dispositivo ou procure pelo nome do arquivo na busca do sistema.'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

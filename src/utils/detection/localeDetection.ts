@@ -18,36 +18,7 @@ const DEFAULT_LOCALE: SupportedLocale = 'pt';
  * 5. Fallback para 'pt'
  */
 export function detectCurrentLocale(): SupportedLocale {
-  // 1. Verificar prefixo na URL (MAIOR PRIORIDADE)
-  const currentPath = window.location.pathname;
-  
-  if (currentPath.startsWith('/pt')) return 'pt';
-  if (currentPath.startsWith('/en')) return 'en';
-  if (currentPath.startsWith('/es')) return 'es';
-  
-  // 2. Verificar localStorage
-  const storedLang = localStorage.getItem('musiclovely_language');
-  if (storedLang && SUPPORTED_LOCALES.includes(storedLang as SupportedLocale)) {
-    return storedLang as SupportedLocale;
-  }
-  
-  // 3. Verificar cookie
-  const cookie = document.cookie.split(';').find(c => c.trim().startsWith('lang='));
-  if (cookie) {
-    const lang = cookie.split('=')[1].trim();
-    if (SUPPORTED_LOCALES.includes(lang as SupportedLocale)) {
-      return lang as SupportedLocale;
-    }
-  }
-  
-  // 4. Verificar navegador
-  const navLang = navigator.language?.slice(0, 2);
-  if (navLang && SUPPORTED_LOCALES.includes(navLang as SupportedLocale)) {
-    return navLang as SupportedLocale;
-  }
-  
-  // 5. Fallback
-  return DEFAULT_LOCALE;
+  return 'pt';
 }
 
 /**

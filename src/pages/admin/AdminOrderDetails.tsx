@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -183,11 +183,7 @@ export default function AdminOrderDetails() {
     );
   };
 
-  useEffect(() => {
-    loadOrderDetails();
-  }, [id]);
-
-  const loadOrderDetails = async () => {
+  const loadOrderDetails = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -410,7 +406,11 @@ export default function AdminOrderDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadOrderDetails();
+  }, [loadOrderDetails]);
 
   const handleAdminAction = async (action: string, data?: any) => {
     if (!order) return;

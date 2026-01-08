@@ -1,29 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBehaviorAnalytics } from "@/hooks/useBehaviorAnalytics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { useMemo } from "react";
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
 
 export function PagesPerformanceChart() {
-  const { data, loading } = useBehaviorAnalytics();
+  const { loading } = useBehaviorAnalytics();
 
-  const chartData = useMemo(() => {
-    if (!data.clarity?.metrics?.pages) {
-      return [];
-    }
-
-    return Object.entries(data.clarity.metrics.pages)
-      .map(([page, metrics]: [string, any]) => ({
-        page: page === '/' ? 'Homepage' : page,
-        visitas: metrics.visits || 0,
-        deadClicks: metrics.deadClicks || 0,
-        rageClicks: metrics.rageClicks || 0,
-        erros: metrics.jsErrors || 0,
-      }))
-      .sort((a, b) => b.visitas - a.visitas)
-      .slice(0, 6); // Top 6 páginas
-  }, [data]);
+  const chartData = [];
 
   if (loading) {
     return (

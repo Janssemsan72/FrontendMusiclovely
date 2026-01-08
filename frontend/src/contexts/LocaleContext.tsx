@@ -5,6 +5,7 @@ import languageAnalytics from '@/lib/languageAnalytics';
 import { detectLanguage, type SupportedLocale } from '@/lib/language-detection';
 import { getOptimizedTimeout, getDeviceInfo } from '@/utils/detection/deviceDetection';
 import { devLogOnce } from '@/utils/debug/devLogDedupe';
+import { agentLog } from '@/utils/debug/devLogger';
 
 // Verificar se está em desenvolvimento
 const isDev = import.meta.env.DEV;
@@ -463,11 +464,17 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  useEffect(() => {
+    agentLog({
+      location: 'LocaleContext.tsx',
+      message: 'context state changed',
+      data: { locale, isLoading, isLocaleForced },
+      timestamp: Date.now(),
+    });
+  }, [locale, isLoading, isLocaleForced]);
+
   // ✅ OTIMIZAÇÃO: Memoizar o valor do contexto para evitar re-renders desnecessários
   const contextValue = useMemo(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LocaleContext.tsx:460',message:'contextValue recalculated',data:{locale,isLoading,isLocaleForced},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     return {
       locale,
       isLoading,

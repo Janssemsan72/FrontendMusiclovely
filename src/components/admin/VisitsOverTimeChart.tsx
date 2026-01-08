@@ -1,42 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBehaviorAnalytics } from "@/hooks/useBehaviorAnalytics";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
-import { useMemo } from "react";
 
 export function VisitsOverTimeChart() {
-  const { data, loading } = useBehaviorAnalytics();
+  const { loading } = useBehaviorAnalytics();
 
-  const chartData = useMemo(() => {
-    if (!data.clarity?.analytics && !data.hotjar?.analytics) {
-      return [];
-    }
-
-    const visitsByDate: Record<string, { visits: number; errors: number }> = {};
-
-    [...(data.clarity?.analytics || []), ...(data.hotjar?.analytics || [])].forEach((item: any) => {
-      if (item.event_type === 'page_view') {
-        const date = new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-        if (!visitsByDate[date]) {
-          visitsByDate[date] = { visits: 0, errors: 0 };
-        }
-        visitsByDate[date].visits += item.event_count || 0;
-      } else if (item.event_type === 'js_error') {
-        const date = new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-        if (!visitsByDate[date]) {
-          visitsByDate[date] = { visits: 0, errors: 0 };
-        }
-        visitsByDate[date].errors += item.event_count || 0;
-      }
-    });
-
-    return Object.entries(visitsByDate)
-      .map(([date, values]) => ({
-        date,
-        visitas: values.visits,
-        erros: values.errors,
-      }))
-      .sort((a, b) => a.date.localeCompare(b.date));
-  }, [data]);
+  const chartData = [];
 
   if (loading) {
     return (

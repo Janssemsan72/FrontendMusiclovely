@@ -1,10 +1,10 @@
 // Sistema de detecção de idioma para localhost e produção sem dependências externas
-// Prioridade: URL (/pt, /en, /es) > Navigator (Accept-Language) > Fallback: 'en'
+// Site apenas em português
 
 export type SupportedLocale = 'pt' | 'en' | 'es';
 
 const SUPPORTED_LOCALES: SupportedLocale[] = ['pt', 'en', 'es'];
-const DEFAULT_LOCALE: SupportedLocale = 'en';
+const DEFAULT_LOCALE: SupportedLocale = 'pt';
 
 // Listas de países por idioma (para futura detecção via headers de edge, sem uso de fetch)
 export const PT_COUNTRIES = [
@@ -57,20 +57,9 @@ export function detectFromCountryHeader(countryHeader?: string | null): Supporte
 }
 
 export function detectLanguage(pathname: string, countryHeader?: string | null): SupportedLocale {
-	// 1) URL
-	const urlLocale = detectFromUrl(pathname);
-	if (urlLocale) return urlLocale;
-
-	// 2) Navigator
-	const navLocale = detectFromNavigator();
-	if (navLocale) return navLocale;
-
-	// 3) Header de país (quando disponível via edge, ignorado em localhost)
-	const headerLocale = detectFromCountryHeader(countryHeader);
-	if (headerLocale) return headerLocale;
-
-	// 4) Fallback
-	return DEFAULT_LOCALE;
+	void pathname;
+	void countryHeader;
+	return 'pt';
 }
 
 

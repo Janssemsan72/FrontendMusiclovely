@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,7 @@ export default function AdminEmails() {
   const [selectedTemplateForCustom, setSelectedTemplateForCustom] = useState<string>('');
   const [isSendingCustom, setIsSendingCustom] = useState(false);
 
-  const fetchCustomerName = async () => {
+  const fetchCustomerName = useCallback(async () => {
     if (!testEmail || !testEmail.includes('@')) return;
     
     try {
@@ -125,10 +125,10 @@ export default function AdminEmails() {
         .join(' ');
       setTestCustomerName(formattedName);
     }
-  };
+  }, [testEmail]);
 
   // Funções para Caixa de Entrada
-  const loadReceivedEmails = async () => {
+  const loadReceivedEmails = useCallback(async () => {
     try {
       setLoadingEmails(true);
       let query = supabase
@@ -176,7 +176,7 @@ export default function AdminEmails() {
     } finally {
       setLoadingEmails(false);
     }
-  };
+  }, [inboxFilter]);
 
   const markAsRead = async (emailId: string) => {
     try {
@@ -268,7 +268,7 @@ export default function AdminEmails() {
   };
 
   // Funções para Email Personalizado
-  const getTemplateBaseStructure = () => {
+  const getTemplateBaseStructure = useCallback(() => {
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -281,9 +281,9 @@ export default function AdminEmails() {
   </div>
 </body>
 </html>`;
-  };
+  }, []);
 
-  const loadTemplateForCustom = async (templateId: string) => {
+  const loadTemplateForCustom = useCallback(async (templateId: string) => {
     if (!templateId) {
       setCustomEmailContent(getTemplateBaseStructure());
       return;
@@ -307,7 +307,7 @@ export default function AdminEmails() {
       console.error('Erro ao carregar template:', error);
       toast.error('Erro ao carregar template');
     }
-  };
+  }, [customEmailSubject, getTemplateBaseStructure]);
 
   const handleSendCustomEmail = async () => {
     if (!customEmailTo.trim() || !customEmailSubject.trim() || !customEmailContent.trim()) {
@@ -369,21 +369,21 @@ export default function AdminEmails() {
     if (testEmail && testEmail.includes('@')) {
       fetchCustomerName();
     }
-  }, [testEmail]);
+  }, [testEmail, fetchCustomerName]);
 
   useEffect(() => {
     // Carregar emails quando a aba de inbox estiver ativa
     if (activeTab === 'inbox') {
       loadReceivedEmails();
     }
-  }, [activeTab, inboxFilter]);
+  }, [activeTab, inboxFilter, loadReceivedEmails]);
 
   useEffect(() => {
     // Carregar template quando selecionado
     if (selectedTemplateForCustom && activeTab === 'custom') {
       loadTemplateForCustom(selectedTemplateForCustom);
     }
-  }, [selectedTemplateForCustom, activeTab]);
+  }, [selectedTemplateForCustom, activeTab, loadTemplateForCustom]);
 
   const loadTemplates = async () => {
     try {

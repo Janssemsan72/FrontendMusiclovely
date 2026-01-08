@@ -22,56 +22,14 @@ export default function AdminBehaviorAnalytics() {
 
   // Extrair páginas disponíveis dos dados
   const availablePages = useMemo(() => {
-    const pages = new Set<string>();
-    if (data.clarity?.analytics) {
-      data.clarity.analytics.forEach((item: any) => {
-        if (item.page_path) {
-          pages.add(item.page_path);
-        }
-      });
-    }
-    if (data.hotjar?.analytics) {
-      data.hotjar.analytics.forEach((item: any) => {
-        if (item.page_path) {
-          pages.add(item.page_path);
-        }
-      });
-    }
-    return Array.from(pages).sort();
+    // Sem dados disponíveis após remoção do Clarity e Hotjar
+    return [];
   }, [data]);
 
   // Filtrar dados baseado nos filtros
   const filteredData = useMemo(() => {
-    const filtered = { ...data };
-
-    if (startDate || endDate || selectedPage !== "all") {
-      const filterAnalytics = (analytics: any[]) => {
-        return analytics.filter((item: any) => {
-          // Filtro de data
-          if (startDate || endDate) {
-            const itemDate = new Date(item.date);
-            if (startDate && itemDate < startDate) return false;
-            if (endDate && itemDate > endDate) return false;
-          }
-
-          // Filtro de página
-          if (selectedPage !== "all" && item.page_path !== selectedPage) {
-            return false;
-          }
-
-          return true;
-        });
-      };
-
-      if (filtered.clarity?.analytics) {
-        filtered.clarity.analytics = filterAnalytics(filtered.clarity.analytics);
-      }
-      if (filtered.hotjar?.analytics) {
-        filtered.hotjar.analytics = filterAnalytics(filtered.hotjar.analytics);
-      }
-    }
-
-    return filtered;
+    // Sem dados disponíveis após remoção do Clarity e Hotjar
+    return { ...data };
   }, [data, startDate, endDate, selectedPage]);
 
   const [clearingProblems, setClearingProblems] = useState(false);
@@ -202,7 +160,7 @@ export default function AdminBehaviorAnalytics() {
             Analytics de Comportamento
           </h1>
           <p className="text-xs md:text-base text-muted-foreground mt-1 md:mt-2">
-            Métricas detalhadas de comportamento do usuário (Clarity e Hotjar)
+            Métricas detalhadas de comportamento do usuário
           </p>
         </div>
         <div className="flex gap-2">
@@ -335,41 +293,9 @@ export default function AdminBehaviorAnalytics() {
                 </div>
               ) : (
                 <div className="space-y-2 md:space-y-3">
-                  {filteredData.clarity?.analytics
-                    ?.filter((item: any) => item.event_type === "js_error")
-                    .map((item: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-start justify-between p-2 md:p-3 border border-destructive/20 rounded-lg bg-destructive/5"
-                      >
-                        <div className="flex-1">
-                          <div className="font-medium text-destructive">
-                            {item.metadata?.error_message || "Erro JavaScript"}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Página: {item.page_path || "N/A"}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Data: {new Date(item.date).toLocaleDateString("pt-BR")}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-bold text-destructive">
-                            {item.event_count}
-                          </div>
-                          <div className="text-xs text-muted-foreground">ocorrências</div>
-                        </div>
-                      </div>
-                    ))}
-                  {(!filteredData.clarity?.analytics?.filter(
-                    (item: any) => item.event_type === "js_error"
-                  ) || filteredData.clarity.analytics.filter(
-                    (item: any) => item.event_type === "js_error"
-                  ).length === 0) && (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      Nenhum erro JavaScript registrado
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum dado disponível após remoção das ferramentas de analytics
+                  </p>
                 </div>
               )}
             </CardContent>

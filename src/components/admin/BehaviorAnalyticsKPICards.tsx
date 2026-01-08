@@ -22,29 +22,11 @@ export function BehaviorAnalyticsKPICards() {
     );
   }
 
-  const clarityMetrics = data.clarity?.metrics || {
-    totalVisits: 0,
-    totalDeadClicks: 0,
-    totalRageClicks: 0,
-    totalJsErrors: 0,
-    averageScrollDepth: 0,
-  };
-
-  const hotjarMetrics = data.hotjar?.metrics || {
-    totalVisits: 0,
-    totalRecordings: 0,
-    totalFeedback: 0,
-  };
-
-  const totalVisits = clarityMetrics.totalVisits || hotjarMetrics.totalVisits || 0;
-  const totalProblems = clarityMetrics.totalDeadClicks + clarityMetrics.totalRageClicks + clarityMetrics.totalJsErrors;
-  const averageScrollDepth = clarityMetrics.averageScrollDepth || 0;
-  const totalRecordings = hotjarMetrics.totalRecordings || 0;
-
-  // Calcular taxa de conversão (simplificado)
-  const conversionRate = totalVisits > 0 
-    ? ((data.clarity?.analytics?.filter((a: any) => a.event_type === 'funnel_complete').reduce((sum: number, a: any) => sum + (a.event_count || 0), 0) || 0) / totalVisits) * 100
-    : 0;
+  const totalVisits = 0;
+  const totalProblems = 0;
+  const averageScrollDepth = 0;
+  const totalRecordings = 0;
+  const conversionRate = 0;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -92,11 +74,7 @@ export function BehaviorAnalyticsKPICards() {
             {totalProblems.toLocaleString('pt-BR')}
           </div>
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <span>Dead: {clarityMetrics.totalDeadClicks}</span>
-            <span>•</span>
-            <span>Rage: {clarityMetrics.totalRageClicks}</span>
-            <span>•</span>
-            <span>Erros: {clarityMetrics.totalJsErrors}</span>
+            <span>Nenhum dado disponível</span>
           </div>
         </CardContent>
       </Card>

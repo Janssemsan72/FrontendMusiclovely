@@ -2,6 +2,7 @@ import { useEffect, useRef, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { agentLog } from '@/utils/debug/devLogger';
 
 /**
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado
@@ -11,16 +12,19 @@ const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactN
   const location = useLocation();
   const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
   
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:10',message:'CheckoutRedirectWrapper render',data:{pathname:location.pathname,search:location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-  // #endregion
-  
   useEffect(() => {
     // ✅ FASE 5: Verificar se search não mudou antes de processar
     if (lastSearchRef.current === location.search) {
       return;
     }
     lastSearchRef.current = location.search;
+
+    agentLog({
+      location: 'CheckoutRedirectWrapper.tsx',
+      message: 'CheckoutRedirectWrapper route change',
+      data: { pathname: location.pathname, search: location.search },
+      timestamp: Date.now(),
+    });
     // ⚠️ CRÍTICO: Verificar ANTES de qualquer renderização
     const urlParams = new URLSearchParams(location.search);
     const messageId = urlParams.get('message_id');
@@ -47,13 +51,13 @@ const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactN
     // Se contém, significa que está tentando acessar o checkout interno mas deveria ir para Cakto
     // Mas APENAS se for rota de checkout, não de quiz
     const isCheckoutRoute = location.pathname.includes('/checkout');
-    // ✅ CORREÇÃO: Também redirecionar se for rota home (/pt, /en, /es) com order_id e message_id
-    const isHomeRoute = /^\/(pt|en|es)(\/)?$/.test(location.pathname);
+    // ✅ CORREÇÃO: Também redirecionar se for rota home (/) com order_id e message_id
+    const isHomeRoute = location.pathname === '/';
     const hasCheckoutParams = urlParams.get('restore') === 'true' || urlParams.get('quiz_id') || urlParams.get('token');
     
     // Redirecionar se:
     // 1. For rota de checkout E tiver os parâmetros necessários, OU
-    // 2. For rota home (/pt, /en, /es) E tiver message_id e order_id (vindo do WhatsApp)
+    // 2. For rota home (/) E tiver message_id e order_id (vindo do WhatsApp)
     const shouldRedirect = (
       (isCheckoutRoute && (messageId || hasCheckoutParams) && orderId) ||
       (isHomeRoute && messageId && orderId)
@@ -128,7 +132,7 @@ const CheckoutRedirectWrapperComponent = ({ children }: { children: React.ReactN
           console.error('❌ [CheckoutRedirectWrapper] Erro ao buscar pedido para redirecionamento:', err);
         });
     }
-  }, [location.search]);
+  }, [location.pathname, location.search]);
   
   // ✅ OTIMIZAÇÃO MOBILE: Não bloquear renderização - redirecionar em background
   // O redirecionamento já está sendo feito no useEffect acima
