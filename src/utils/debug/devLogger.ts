@@ -9,51 +9,38 @@ export const isDevVerbose = isDev && isVerbose;
 
 export const devLog = {
   /**
-   * Log informativo - apenas em desenvolvimento verbose
+   * Log informativo - desabilitado
    */
   info: (...args: any[]) => {
-    if (isDevVerbose) {
-      console.log(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Log de warning - apenas em desenvolvimento
+   * Log de warning - desabilitado
    */
   warn: (...args: any[]) => {
-    if (isDev) {
-      console.warn(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Log de erro - sempre mostrar, mas com contexto
+   * Log de erro - desabilitado
    */
   error: (...args: any[]) => {
-    if (isDev) {
-      console.error(...args);
-    } else {
-      // Em produção, logar apenas o essencial
-      console.error('[Error]', args[0]);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Log de debug - apenas em desenvolvimento verbose
+   * Log de debug - desabilitado
    */
   debug: (...args: any[]) => {
-    if (isDevVerbose) {
-      console.debug(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Log de sucesso - apenas em desenvolvimento verbose
+   * Log de sucesso - desabilitado
    */
   success: (...args: any[]) => {
-    if (isDevVerbose) {
-      console.log(...args);
-    }
+    // Logs desabilitados
   },
 };
 
@@ -76,39 +63,30 @@ export function agentLog(payload: Record<string, unknown>) {
 }
 
 /**
- * Helper para logs de performance - apenas em desenvolvimento verbose
+ * Helper para logs de performance - desabilitado
  */
 export const perfLog = (label: string, startTime: number) => {
-  if (isDevVerbose) {
-    const duration = Date.now() - startTime;
-    console.log(`⏱️ [Performance] ${label}: ${duration}ms`);
-  }
+  // Logs desabilitados
 };
 
 /**
- * Helper para logs de tracking - apenas em desenvolvimento verbose
+ * Helper para logs de tracking - desabilitado
  */
 export const trackingLog = (event: string, data?: any) => {
-  if (isDevVerbose) {
-    console.log(`📊 [Tracking] ${event}`, data || '');
-  }
+  // Logs desabilitados
 };
 
 /**
- * Helper para logs de tradução - apenas em desenvolvimento verbose
+ * Helper para logs de tradução - desabilitado
  */
 export const i18nLog = (message: string, data?: any) => {
-  if (isDevVerbose) {
-    console.log(`🌍 [i18n] ${message}`, data || '');
-  }
+  // Logs desabilitados
 };
 
 /**
- * Helper para logs de áudio/música - apenas em desenvolvimento verbose
+ * Helper para logs de áudio/música - desabilitado
  */
 export const audioLog = (message: string, data?: any) => {
-  if (isDevVerbose) {
-    console.log(`🎵 [Audio] ${message}`, data || '');
-  }
+  // Logs desabilitados
 };
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star } from "@/utils/iconImports";
 // ✅ OTIMIZAÇÃO: Usar versões otimizadas 96x96 para reduzir tamanho (de 512x512 para 96x96)
 import testimonial1 from "@/assets/testimonial-1-96.webp";
 import testimonial2 from "@/assets/testimonial-2-96.webp";
@@ -47,9 +47,10 @@ export default function HeroSection() {
               className="absolute inset-0 w-full h-full object-cover"
               src={heroPoster}
               alt="Memórias especiais"
-              fetchPriority="high"
+              fetchpriority="high"
               width={640}
               height={269}
+              loading="eager"
               decoding="async"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -81,16 +82,7 @@ export default function HeroSection() {
                   const target = e.target as HTMLVideoElement;
                   const currentSrc = target.src;
                   const currentIndex = heroVideoSources.findIndex((src) => currentSrc.includes(src));
-                  console.error('❌ [HeroSection] Erro ao carregar vídeo:', {
-                    attemptedUrl: currentVideoSrc,
-                    currentSrc,
-                    attempt: videoErrorCount + 1,
-                    currentIndex,
-                    totalSources: heroVideoSources.length,
-                    networkState: target.networkState,
-                    readyState: target.readyState,
-                    errorCode: target.error?.code,
-                  });
+                  // Log removido
                   
                   // Tentar próximo fallback
                   if (currentIndex < heroVideoSources.length - 1) {
@@ -137,14 +129,6 @@ export default function HeroSection() {
         <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-3 sm:mb-4 px-2 sm:px-4 leading-relaxed">
           {t('hero.subtitle')}
         </p>
-        
-        <div className="max-w-3xl mx-auto px-2 sm:px-4 mb-4 sm:mb-6">
-          <p className="text-sm sm:text-base text-muted-foreground/90 leading-relaxed text-center">
-            Crie músicas personalizadas de alta qualidade para casamentos, aniversários, homenagens e momentos especiais. 
-            Nossa equipe de músicos profissionais trabalha com você para criar uma canção única que capture suas emoções e histórias. 
-            Produção de estúdio profissional, letras personalizadas e entrega rápida garantida.
-          </p>
-        </div>
 
         <div className="flex justify-center items-center mb-4 sm:mb-6 px-2">
           <Button
@@ -154,7 +138,7 @@ export default function HeroSection() {
           >
             <span className="flex items-center justify-center gap-2 sm:gap-3">
               {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
-              <span>🎵 {t('hero.cta', 'Criar Minha Música')}</span>
+              <span>🎵 {t('hero.cta', 'Criar Sua Música Aqui')}</span>
               <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
             </span>
           </Button>

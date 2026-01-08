@@ -1,111 +1,13 @@
-// Mapear país para região comercial
+// Mapear país para região comercial (sempre Brasil)
 export function mapCountryToRegion(country: string): string {
-  const regionMap: Record<string, string> = {
-    // Brasil
-    'BR': 'brasil',
-    
-    // USA e países de língua inglesa
-    'US': 'usa',
-    'GB': 'usa', // Reino Unido -> USA (preço USD)
-    'CA': 'usa', // Canadá -> USA (preço USD)
-    'AU': 'usa', // Austrália -> USA (preço USD)
-    'NZ': 'usa', // Nova Zelândia -> USA (preço USD)
-    
-    // Países de língua espanhola -> internacional
-    'ES': 'internacional',
-    'MX': 'internacional',
-    'AR': 'internacional',
-    'CO': 'internacional',
-    'CL': 'internacional',
-    'PE': 'internacional',
-    'VE': 'internacional',
-    'EC': 'internacional',
-    'GT': 'internacional',
-    'CU': 'internacional',
-    'BO': 'internacional',
-    'DO': 'internacional',
-    'HN': 'internacional',
-    'PY': 'internacional',
-    'SV': 'internacional',
-    'NI': 'internacional',
-    'CR': 'internacional',
-    'PA': 'internacional',
-    'UY': 'internacional',
-    'GQ': 'internacional',
-  };
-  
-  return regionMap[country] || 'internacional'; // Padrão: internacional
+  // Projeto apenas para Brasil, sempre retorna 'brasil'
+  return 'brasil';
 }
 
-// Mapear país para idioma
+// Mapear país para idioma (sempre português)
 export function mapCountryToLanguage(country: string): string {
-  const languageMap: Record<string, string> = {
-    // Português
-    'BR': 'pt',
-    'PT': 'pt',
-    'AO': 'pt',
-    'MZ': 'pt',
-    'CV': 'pt',
-    'GW': 'pt',
-    'ST': 'pt',
-    'TL': 'pt',
-    
-    // Inglês
-    'US': 'en',
-    'GB': 'en',
-    'CA': 'en',
-    'AU': 'en',
-    'NZ': 'en',
-    'IE': 'en',
-    'SG': 'en',
-    'MY': 'en',
-    'PH': 'en',
-    'IN': 'en',
-    'PK': 'en',
-    'BD': 'en',
-    'LK': 'en',
-    'MM': 'en',
-    'FJ': 'en',
-    'PG': 'en',
-    'SB': 'en',
-    'VU': 'en',
-    'TO': 'en',
-    'WS': 'en',
-    'KI': 'en',
-    'TV': 'en',
-    'NR': 'en',
-    'PW': 'en',
-    'FM': 'en',
-    'MH': 'en',
-    'CK': 'en',
-    'NU': 'en',
-    'TK': 'en',
-    'NF': 'en',
-    
-    // Espanhol (padrão)
-    'ES': 'es',
-    'MX': 'es',
-    'AR': 'es',
-    'CO': 'es',
-    'CL': 'es',
-    'PE': 'es',
-    'VE': 'es',
-    'EC': 'es',
-    'GT': 'es',
-    'CU': 'es',
-    'BO': 'es',
-    'DO': 'es',
-    'HN': 'es',
-    'PY': 'es',
-    'SV': 'es',
-    'NI': 'es',
-    'CR': 'es',
-    'PA': 'es',
-    'UY': 'es',
-    'GQ': 'es',
-  };
-  
-  return languageMap[country] || 'es'; // Padrão: espanhol
+  // Projeto apenas para Brasil, sempre retorna 'pt'
+  return 'pt';
 }
 
 // Verificar se dois países estão na mesma região
@@ -131,14 +33,9 @@ export function getCountryFlag(country: string): string {
   return flags[country] || '🌍';
 }
 
-// Obter nome da região
+// Obter nome da região (sempre Brasil)
 export function getRegionName(region: string): string {
-  const names: Record<string, string> = {
-    'brasil': 'Brasil',
-    'usa': 'Estados Unidos',
-    'internacional': 'Internacional'
-  };
-  return names[region] || region;
+  return 'Brasil';
 }
 
 // Hash do IP para privacidade

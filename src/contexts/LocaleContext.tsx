@@ -163,7 +163,7 @@ export const useLocaleContext = () => {
       }
     },
     translations: {},
-    forceLocale: () => {},
+    forceLocale: (_locale: SupportedLocale) => {},
     isLocaleForced: false
   };
 };

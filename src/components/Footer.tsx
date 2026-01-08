@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { useTranslation } from "@/hooks/useTranslation";
 // Locale removido - apenas português
-import { Mail, Heart, Music } from "lucide-react";
+import { Mail, Heart, Music } from "@/utils/iconImports";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { LinkWithUtms } from "@/components/LinkWithUtms";
 
@@ -17,6 +17,7 @@ export default function Footer() {
 
   // Função para gerar links (apenas português)
   const getLocalizedLink = (path: string) => path;
+  const homePath = getLocalizedLink('/');
 
   // Handler para navegação para seções da home
   const handleSectionClick = (sectionId: string) => {

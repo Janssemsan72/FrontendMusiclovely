@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Quote } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
-// Importar avatares diretamente para garantir que funcionem
-import avatar1 from '@/assets/testimonial-1.webp';
-import avatar2 from '@/assets/testimonial-2.webp';
-import avatar3 from '@/assets/testimonial-3.webp';
+// ✅ OTIMIZAÇÃO: Usar versões menores (96x96) em vez de 512x512 para reduzir tamanho
+import avatar1 from '@/assets/testimonial-1-96.webp';
+import avatar2 from '@/assets/testimonial-2-96.webp';
+import avatar3 from '@/assets/testimonial-3-96.webp';
 
 interface Testimonial {
   id: string;
@@ -45,8 +45,6 @@ const getTranslatedTestimonial = (testimonial: Testimonial, language: string) =>
 };
 
 export default function Testimonials() {
-  console.log('🔵 Testimonials component RENDERIZADO');
-  
   const { t, currentLanguage } = useTranslation();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,8 +98,6 @@ export default function Testimonials() {
     }
   ];
   
-  console.log('🖼️ MOCK_TESTIMONIALS definidos:', MOCK_TESTIMONIALS.map(t => ({ name: t.name, avatar: t.avatar_url })));
-
   useEffect(() => {
     async function fetchTestimonials() {
       try {
@@ -109,7 +105,6 @@ export default function Testimonials() {
         const isDummyClient = !import.meta.env.VITE_SUPABASE_ANON_KEY && !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         
         if (isDummyClient) {
-          console.warn('⚠️ Supabase não configurado. Usando depoimentos mockados para desenvolvimento.');
           setTestimonials(MOCK_TESTIMONIALS);
           setLoading(false);
           return;
@@ -122,7 +117,6 @@ export default function Testimonials() {
           .order('display_order', { ascending: true });
 
         if (error) {
-          console.error('Erro ao buscar depoimentos:', error);
           // Tentar buscar todos os depoimentos (sem filtro is_active) para debug
           const { data: allData, error: allError } = await supabase
             .from('testimonials')
@@ -130,23 +124,17 @@ export default function Testimonials() {
             .order('display_order', { ascending: true });
           
           if (!allError && allData && allData.length > 0) {
-            console.log('Depoimentos encontrados (incluindo inativos):', allData);
             // Se houver depoimentos mas nenhum ativo, usar os primeiros 3
             setTestimonials(allData.slice(0, 3));
           } else {
-            console.warn('Não foi possível buscar depoimentos do Supabase. Usando dados mockados.');
             setTestimonials(MOCK_TESTIMONIALS);
           }
         } else if (data && data.length > 0) {
-          console.log('✅ Depoimentos ativos encontrados:', data.length, data);
           setTestimonials(data);
         } else {
-          console.warn('Nenhum depoimento ativo encontrado no Supabase. Usando dados mockados.');
           setTestimonials(MOCK_TESTIMONIALS);
         }
       } catch (err) {
-        console.error('Erro inesperado ao buscar depoimentos:', err);
-        console.warn('Usando dados mockados devido ao erro.');
         setTestimonials(MOCK_TESTIMONIALS);
       } finally {
         setLoading(false);
@@ -209,11 +197,7 @@ export default function Testimonials() {
     );
   }
 
-  // Debug: sempre logar o estado
-  console.log('Testimonials component - testimonials.length:', testimonials.length, 'loading:', loading);
-  if (testimonials.length > 0) {
-    console.log('🖼️ Testimonials com avatares:', testimonials.map(t => ({ name: t.name, avatar: t.avatar_url, hasAvatar: !!t.avatar_url })));
-  }
+  // Logs removidos
 
   // Sempre mostrar a seção, mesmo sem depoimentos
   if (testimonials.length === 0 && !loading) {
@@ -359,14 +343,18 @@ export default function Testimonials() {
                       src={displayTestimonial.avatar_url} 
                       alt={displayTestimonial.name}
                       className="w-full h-full object-cover"
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         // Fallback para avatar padrão se a imagem não carregar
-                        console.error('❌ Erro ao carregar avatar:', displayTestimonial.avatar_url, e);
+                        // Log removido
                         e.currentTarget.style.display = 'none';
                         (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
                       }}
                       onLoad={() => {
-                        console.log('✅ Avatar carregado com sucesso:', displayTestimonial.avatar_url);
+                        // Log removido
                       }}
                     />
                   ) : null}
@@ -447,13 +435,17 @@ export default function Testimonials() {
                           src={translatedTestimonial.avatar_url} 
                           alt={translatedTestimonial.name}
                           className="w-full h-full object-cover"
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
                           onError={(e) => {
-                            console.error('❌ Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url, e);
+                            // Log removido
                             e.currentTarget.style.display = 'none';
                             (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
                           }}
                           onLoad={() => {
-                            console.log('✅ Avatar do grid carregado:', translatedTestimonial.avatar_url);
+                            // Log removido
                           }}
                         />
                       ) : null}

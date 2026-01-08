@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, MessageCircle, Sparkles, Music, Clock, CheckCircle } from "lucide-react";
+import { ArrowRight, MessageCircle, Sparkles, Music, Clock, CheckCircle } from "@/utils/iconImports";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function HowItWorks() {

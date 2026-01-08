@@ -4,8 +4,8 @@ import { useLocaleSimple, type Locale } from '@/hooks/useLocaleSimple';
 // Importar traduções
 // ✅ CORREÇÃO VERCEL: Usar import direto (Vite suporta importação de JSON nativamente)
 import ptTranslations from '@/i18n/locales/pt.json';
-import esTranslations from '@/i18n/locales/es.json';
-import enTranslations from '@/i18n/locales/en.json';
+import esTranslations from '@/i18n/locales/es_new.json';
+import enTranslations from '@/i18n/locales/en_new.json';
 
 interface SimpleLocaleContextType {
   locale: Locale;

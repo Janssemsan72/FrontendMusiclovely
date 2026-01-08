@@ -45,7 +45,7 @@
     "platform": "A plataforma #1 de músicas personalizadas",
     "title": "Músicas Personalizadas para Seus Momentos Especiais",
     "subtitle": "Propostas, casamentos, tributos — feitos com amor. Crie música personalizada que conta sua história única.",
-    "cta": "Criar Sua Música",
+    "cta": "Criar Sua Música Aqui",
     "watchDemo": "Ver Demo"
   },
   "features": {
@@ -81,7 +81,7 @@
     },
     "whatsIncluded": {
       "title": "O que está incluído?",
-      "description": "Arquivo MP3 de alta qualidade, capa personalizada em alta resolução e letra completa da música."
+      "description": "Arquivo MP3 de alta qualidade."
     },
     "guarantee": {
       "title": "Garantia",
@@ -331,7 +331,7 @@
       },
       "whatYouGet": {
         "question": "O que recebo ao final?",
-        "answer": "Você recebe um arquivo MP3 de alta qualidade, capa personalizada em alta resolução e a letra completa da música. Pode baixar e usar quantas vezes quiser."
+        "answer": "Você recebe um arquivo MP3 de alta qualidade. Pode baixar e usar quantas vezes quiser."
       },
       "commercialUse": {
         "question": "Posso usar a música comercialmente?",

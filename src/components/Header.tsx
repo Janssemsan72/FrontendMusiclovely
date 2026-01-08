@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X } from "@/utils/iconImports";
 import Logo from "@/components/Logo";
 import { useScrollspy } from "@/hooks/use-scrollspy";
 import { useTranslation } from "@/hooks/useTranslation";

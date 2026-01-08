@@ -6,6 +6,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { MessageCircle, Users, Music, Clock, CheckCircle, ArrowRight, Star, Shield, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getLocalizedPath } from '@/lib/i18nRoutes';
+import type { Locale } from '@/lib/detectLocale';
 
 export default function HowItWorks() {
   const { t, currentLanguage } = useTranslation();
@@ -17,8 +18,8 @@ export default function HowItWorks() {
     
     // Se estamos em uma rota localizada, usar o locale da URL
     const activeLocale = (currentLocale === 'pt' || currentLocale === 'en' || currentLocale === 'es') 
-      ? currentLocale 
-      : currentLanguage;
+      ? (currentLocale as Locale)
+      : (currentLanguage as Locale);
     
     return getLocalizedPath(path, activeLocale);
   };
@@ -57,9 +58,7 @@ export default function HowItWorks() {
       time: "Download instantâneo",
       highlight: "Qualidade profissional",
       details: [
-        "Arquivo MP3 de alta qualidade",
-        "Capa personalizada em alta resolução",
-        "Letra completa da música"
+        "Arquivo MP3 de alta qualidade"
       ]
     }
   ];
@@ -93,7 +92,7 @@ export default function HowItWorks() {
     },
     {
       question: "O que recebo ao final?",
-      answer: "Você recebe um arquivo MP3 de alta qualidade, capa personalizada em alta resolução e a letra completa da música."
+      answer: "Você recebe um arquivo MP3 de alta qualidade."
     }
   ];
 

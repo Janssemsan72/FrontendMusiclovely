@@ -52,40 +52,66 @@ if (typeof window !== 'undefined') {
   const MAX_HREF_CHANGES_PER_SECOND = 10;
   const HREF_CHANGE_COOLDOWN_MS = 1000; // 1 segundo
   
-  // Monitorar mudanças de URL via popstate e hashchange
+  // ✅ OTIMIZAÇÃO: Mover verificação de href para requestIdleCallback para não bloquear thread principal
   const checkHrefChange = () => {
-    const now = Date.now();
-    const timeSinceLastChange = now - lastHrefChange;
-    
-    if (timeSinceLastChange < HREF_CHANGE_COOLDOWN_MS && lastHrefChange > 0) {
-      hrefChangeCount++;
-      if (isDev) {
-      console.warn(`⚠️ [Main] Mudança de URL detectada rapidamente (${hrefChangeCount} vez(es) em ${Math.round(timeSinceLastChange)}ms)`);
+    const win = typeof window !== 'undefined' ? window : null;
+    if (!win || !('requestIdleCallback' in win)) {
+      // Fallback síncrono se requestIdleCallback não estiver disponível
+      const now = Date.now();
+      const timeSinceLastChange = now - lastHrefChange;
       
-      if (hrefChangeCount >= MAX_HREF_CHANGES_PER_SECOND) {
-        console.error('❌ [Main] POSSÍVEL LOOP DE NAVEGAÇÃO DETECTADO! Verifique o console para mais detalhes.');
+      if (timeSinceLastChange < HREF_CHANGE_COOLDOWN_MS && lastHrefChange > 0) {
+        hrefChangeCount++;
+        if (isDev) {
+          console.warn(`⚠️ [Main] Mudança de URL detectada rapidamente (${hrefChangeCount} vez(es) em ${Math.round(timeSinceLastChange)}ms)`);
+          
+          if (hrefChangeCount >= MAX_HREF_CHANGES_PER_SECOND) {
+            console.error('❌ [Main] POSSÍVEL LOOP DE NAVEGAÇÃO DETECTADO! Verifique o console para mais detalhes.');
+          }
         }
+      } else {
+        hrefChangeCount = 0;
       }
-      // Não bloquear, apenas alertar
-    } else {
-      hrefChangeCount = 0;
+      
+      lastHrefChange = now;
+      return;
     }
-    
-    lastHrefChange = now;
+
+    // Usar requestIdleCallback para não bloquear thread principal
+    (win as any).requestIdleCallback(() => {
+      const now = Date.now();
+      const timeSinceLastChange = now - lastHrefChange;
+      
+      if (timeSinceLastChange < HREF_CHANGE_COOLDOWN_MS && lastHrefChange > 0) {
+        hrefChangeCount++;
+        if (isDev) {
+          console.warn(`⚠️ [Main] Mudança de URL detectada rapidamente (${hrefChangeCount} vez(es) em ${Math.round(timeSinceLastChange)}ms)`);
+          
+          if (hrefChangeCount >= MAX_HREF_CHANGES_PER_SECOND) {
+            console.error('❌ [Main] POSSÍVEL LOOP DE NAVEGAÇÃO DETECTADO! Verifique o console para mais detalhes.');
+          }
+        }
+      } else {
+        hrefChangeCount = 0;
+      }
+      
+      lastHrefChange = now;
+    }, { timeout: 100 });
   };
   
-  // Monitorar recarregamentos via beforeunload
+  // ✅ OTIMIZAÇÃO: beforeunload precisa ser síncrono, mas podemos otimizar o código dentro
   window.addEventListener('beforeunload', () => {
     const now = Date.now();
     const timeSinceLastReload = now - lastReloadTime;
     
+    // Verificação rápida primeiro (não bloqueia)
     if (timeSinceLastReload < RELOAD_COOLDOWN_MS && lastReloadTime > 0) {
       reloadCount++;
       if (isDev) {
-      console.warn(`⚠️ [Main] Recarregamento detectado rapidamente (${reloadCount} vez(es) em ${Math.round(timeSinceLastReload / 1000)}s)`);
-      
-      if (reloadCount >= MAX_RELOADS_PER_MINUTE) {
-        console.error('❌ [Main] POSSÍVEL LOOP DE RECARREGAMENTO DETECTADO!');
+        console.warn(`⚠️ [Main] Recarregamento detectado rapidamente (${reloadCount} vez(es) em ${Math.round(timeSinceLastReload / 1000)}s)`);
+        
+        if (reloadCount >= MAX_RELOADS_PER_MINUTE) {
+          console.error('❌ [Main] POSSÍVEL LOOP DE RECARREGAMENTO DETECTADO!');
         }
       }
     } else {
@@ -97,13 +123,13 @@ if (typeof window !== 'undefined') {
     
     // ✅ CAMADA 4 - SALVAMENTO DE ÚLTIMA HORA: Tentar salvar quiz antes de fechar
     // Envia quiz via sendBeacon mesmo que já tenha ID (pode atualizar dados)
+    // ✅ OTIMIZAÇÃO: Usar try-catch mínimo e sendBeacon (não bloqueia)
     try {
       const pendingQuiz = localStorage.getItem('pending_quiz');
-      if (pendingQuiz) {
+      if (pendingQuiz && navigator.sendBeacon) {
         const quiz = JSON.parse(pendingQuiz);
         const sessionId = quiz.session_id || quiz.answers?.session_id;
         
-        // ✅ Enviar se tem session_id (mesmo que já tenha ID - pode atualizar)
         if (sessionId) {
           const quizData = {
             session_id: sessionId,
@@ -123,42 +149,14 @@ if (typeof window !== 'undefined') {
             customer_whatsapp: quiz.customer_whatsapp || null
           };
           
-          // Usar sendBeacon para enviar quiz antes de fechar
-          if (navigator.sendBeacon) {
-            const blob = new Blob([JSON.stringify(quizData)], { type: 'application/json' });
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-            const beaconUrl = `${supabaseUrl}/functions/v1/quiz-beacon-save`;
-            const success = navigator.sendBeacon(beaconUrl, blob);
-            if (success) {
-              if (isDev) {
-                console.log('✅ [Main] Quiz enviado via sendBeacon antes de fechar', {
-                  session_id: sessionId,
-                  has_id: !!quiz.id
-                });
-              }
-            } else {
-              if (isDev) {
-                console.warn('⚠️ [Main] Falha ao enviar quiz via sendBeacon', {
-                  session_id: sessionId
-                });
-              }
-            }
-          } else {
-            if (isDev) {
-              console.warn('⚠️ [Main] sendBeacon não disponível no navegador');
-            }
-          }
-        } else {
-          if (isDev) {
-            console.warn('⚠️ [Main] Quiz sem session_id, não é possível enviar via sendBeacon');
-          }
+          const blob = new Blob([JSON.stringify(quizData)], { type: 'application/json' });
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+          const beaconUrl = `${supabaseUrl}/functions/v1/quiz-beacon-save`;
+          navigator.sendBeacon(beaconUrl, blob);
         }
       }
     } catch (error) {
       // Ignorar erros silenciosamente - não queremos bloquear o fechamento da página
-      if (isDev) {
-        console.warn('⚠️ [Main] Erro ao tentar salvar quiz no beforeunload:', error);
-      }
     }
   });
   

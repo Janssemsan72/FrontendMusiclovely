@@ -80,10 +80,10 @@ class LazyTranslationManager implements LazyTranslationLoader {
                 return await import('@/i18n/locales/pt.json');
               case 'en':
                 i18nLog('Carregando EN...');
-                return await import('@/i18n/locales/en.json');
+                return await import('@/i18n/locales/en_new.json');
               case 'es':
                 i18nLog('Carregando ES...');
-                return await import('@/i18n/locales/es.json');
+                return await import('@/i18n/locales/es_new.json');
               default:
                 throw new Error(`Locale não suportado: ${locale}`);
             }

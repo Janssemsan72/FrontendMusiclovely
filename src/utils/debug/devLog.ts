@@ -7,73 +7,59 @@ const isDev = import.meta.env.DEV;
 
 export const devLog = {
   /**
-   * Log geral - apenas em desenvolvimento
+   * Log geral - desabilitado
    */
   log: (...args: any[]) => {
-    if (isDev) {
-      console.log(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Debug - apenas em desenvolvimento
+   * Debug - desabilitado
    */
   debug: (...args: any[]) => {
-    if (isDev) {
-      console.debug(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Warning - apenas em desenvolvimento
+   * Warning - desabilitado
    */
   warn: (...args: any[]) => {
-    if (isDev) {
-      console.warn(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Error - SEMPRE logado (crítico para debugging em produção)
+   * Error - desabilitado
    */
   error: (...args: any[]) => {
-    console.error(...args);
+    // Logs desabilitados
   },
 
   /**
-   * Info - apenas em desenvolvimento
+   * Info - desabilitado
    */
   info: (...args: any[]) => {
-    if (isDev) {
-      console.info(...args);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Group - apenas em desenvolvimento
+   * Group - desabilitado
    */
   group: (label: string) => {
-    if (isDev) {
-      console.group(label);
-    }
+    // Logs desabilitados
   },
 
   /**
-   * GroupEnd - apenas em desenvolvimento
+   * GroupEnd - desabilitado
    */
   groupEnd: () => {
-    if (isDev) {
-      console.groupEnd();
-    }
+    // Logs desabilitados
   },
 
   /**
-   * Table - apenas em desenvolvimento
+   * Table - desabilitado
    */
   table: (data: any) => {
-    if (isDev) {
-      console.table(data);
-    }
+    // Logs desabilitados
   }
 };
 

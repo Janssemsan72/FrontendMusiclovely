@@ -19,13 +19,13 @@ export const useTranslation = () => {
 
   return {
     t,
-    locale: 'pt', // Sempre português
+    locale: 'pt' as const,
     i18n: {
-      language: 'pt',
-      changeLanguage: () => {}, // Não faz nada - sempre português
+      language: 'pt' as const,
+      changeLanguage: (_language?: string) => {},
       dir: () => 'ltr'
     },
-    currentLanguage: 'pt',
+    currentLanguage: 'pt' as const,
     isRTL: false,
     isLoading: false,
     error: null,

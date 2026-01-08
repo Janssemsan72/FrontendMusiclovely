@@ -64,6 +64,7 @@ export default function Logo({ className = "", size = 40, variant = 'default' }:
       }}
       loading="eager"
       decoding="async"
+      fetchpriority="high"
       onError={handleError}
     />
   );

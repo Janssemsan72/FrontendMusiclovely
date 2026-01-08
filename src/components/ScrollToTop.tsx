@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSmoothScroll } from '@/hooks/use-smooth-scroll';
-import { ChevronUp } from 'lucide-react';
+import { ChevronUp } from '@/utils/iconImports';
 import { Button } from '@/components/ui/button';
 
 export default function ScrollToTop() {

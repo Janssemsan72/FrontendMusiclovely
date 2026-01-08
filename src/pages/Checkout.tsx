@@ -67,22 +67,21 @@ interface CheckoutDraft {
   timestamp: number;
 }
 
-// ✅ Configuração de preços por domínio
-// .com.br / localhost = R$ 67,00 (URL nova: k63z5ui)
-// .com = R$ 47,90 (URL antiga: d877u4t_665160)
-const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-  
-  // .com ou qualquer outro domínio = R$ 47,90 (URL antiga)
+type PlanId = 'standard' | 'express';
+
+type Plan = {
+  id: PlanId;
+  name: string;
+  price: number;
+  currency: 'BRL';
+  delivery: string;
+  featured: boolean;
+  badge?: string;
+  features: string[];
+};
+
+// ✅ Configuração de preço fixo: R$ 47,90 (apenas Brasil, BRL)
+const getCaktoConfig = () => {
   return {
     url: 'https://pay.cakto.com.br/d877u4t_665160',
     amount_cents: 4790,
@@ -116,7 +115,7 @@ export default function Checkout() {
         .single()
         .then(({ data: orderData, error }) => {
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
-            const caktoConfig = getCaktoConfigByDomain();
+            const caktoConfig = getCaktoConfig();
             const CAKTO_PAYMENT_URL = caktoConfig.url;
             // ✅ CORREÇÃO: Normalizar WhatsApp e garantir prefixo 55
             let normalizedWhatsapp = orderData.customer_whatsapp.replace(/\D/g, '');
@@ -327,78 +326,39 @@ export default function Checkout() {
     referrer: document.referrer
   });
 
-  // Planos dinâmicos baseados no idioma e domínio
-  const getPlansForLanguage = (lang: string) => {
-    // ✅ Preço dinâmico baseado no domínio (.com.br = R$ 67 | .com = R$ 47,90)
-    const caktoConfig = getCaktoConfigByDomain();
+  // Planos fixos: apenas Brasil, BRL, R$ 47,90
+  const getPlansForLanguage = (): Plan[] => {
+    const caktoConfig = getCaktoConfig();
     
-    if (lang === 'pt') {
-      // Português: apenas 1 plano BRL com preço dinâmico por domínio
-      return [
-        {
-          id: 'express',
-          name: t('checkout.expressPlan'),
-          price: caktoConfig.price_display,
-          currency: 'BRL',
-          delivery: t('checkout.delivery24h'),
-          featured: true,
-          features: [
-            t('checkout.features.highQualityMP3'),
-            t('checkout.features.customCover'),
-            t('checkout.features.fullLyrics'),
-            t('checkout.features.unlimitedDownload'),
-            t('checkout.features.professionalProduction'),
-            t('checkout.features.delivery24h')
-          ]
-        }
-      ];
-    } else {
-      // Inglês e Espanhol: 2 planos USD
-      return [
-        {
-          id: 'standard',
-          name: lang === 'en' ? 'Express Plus 7 Days' : 'Expreso Plus 7 Días',
-          price: 3900,
-          currency: 'USD',
-          delivery: lang === 'en' ? '7 days delivery' : 'Entrega en 7 días',
-          featured: false,
-          badge: lang === 'en' ? 'Standard' : 'Estándar',
-          features: [
-            lang === 'en' ? 'High quality MP3' : 'MP3 de alta calidad',
-            lang === 'en' ? 'Custom cover' : 'Portada personalizada',
-            lang === 'en' ? 'Full lyrics' : 'Letra completa',
-            lang === 'en' ? 'Unlimited download' : 'Descarga ilimitada',
-            lang === 'en' ? '7 days delivery' : 'Entrega en 7 días'
-          ]
-        },
-        {
-          id: 'express',
-          name: lang === 'en' ? 'Express Plan 48h' : 'Plan Expreso 48h',
-          price: 4900,
-          currency: 'USD',
-          delivery: lang === 'en' ? '48h delivery' : 'Entrega en 48h',
-          featured: true,
-          badge: lang === 'en' ? 'Most Popular' : 'Más Popular',
-          features: [
-            lang === 'en' ? 'High quality MP3' : 'MP3 de alta calidad',
-            lang === 'en' ? 'Custom cover' : 'Portada personalizada',
-            lang === 'en' ? 'Full lyrics' : 'Letra completa',
-            lang === 'en' ? 'Unlimited download' : 'Descarga ilimitada',
-            lang === 'en' ? '48h delivery' : 'Entrega en 48h'
-          ]
-        }
-      ];
-    }
+    // Sempre retorna apenas 1 plano BRL
+    return [
+      {
+        id: 'express',
+        name: t('checkout.expressPlan'),
+        price: caktoConfig.price_display,
+        currency: 'BRL',
+        delivery: t('checkout.delivery24h'),
+        featured: true,
+        features: [
+          t('checkout.features.highQualityMP3'),
+          t('checkout.features.customCover'),
+          t('checkout.features.fullLyrics'),
+          t('checkout.features.unlimitedDownload'),
+          t('checkout.features.professionalProduction'),
+          t('checkout.features.delivery24h')
+        ]
+      }
+    ];
   };
 
-  const plans = getPlansForLanguage(currentLanguage);
+  const plans = getPlansForLanguage();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [whatsappError, setWhatsappError] = useState('');
   const [buttonError, setButtonError] = useState(false);
   const [cameFromRestore, setCameFromRestore] = useState(false); // ✅ Flag para detectar se veio do restore
-  const [selectedPlan, setSelectedPlan] = useState(() => {
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>(() => {
     // Selecionar plano padrão baseado no idioma
     if (currentLanguage === 'pt') {
       return 'express'; // Único plano disponível
@@ -1845,7 +1805,12 @@ export default function Checkout() {
       let quizData;
       
       // ✅ PRIORIDADE 1: Buscar por session_id se disponível
-      const quizSessionId = quiz.session_id || quiz.answers?.session_id || getOrCreateQuizSessionId();
+      const quizSessionId = (() => {
+        if (typeof quiz.session_id === 'string' && quiz.session_id.trim() !== '') return quiz.session_id;
+        const answersSessionId = quiz.answers?.['session_id'];
+        if (typeof answersSessionId === 'string' && answersSessionId.trim() !== '') return answersSessionId;
+        return getOrCreateQuizSessionId();
+      })();
       
       if (quizSessionId && !quiz.id) {
         // Tentar buscar quiz no banco por session_id
@@ -2022,9 +1987,9 @@ export default function Checkout() {
 
       // ✅ NOVO FLUXO: Usar edge function create-checkout para criar quiz + pedido em transação atômica
       // Garantir que amount_cents é sempre um número válido
-      // ✅ Para português, usar preço dinâmico por domínio (.com.br = R$ 67 | .com = R$ 47,90)
-      const caktoConfigForOrder = getCaktoConfigByDomain();
-      const amountCents = isPortuguese ? caktoConfigForOrder.amount_cents : (typeof plan.price === 'number' ? plan.price : 0);
+      // ✅ Preço fixo: R$ 47,90 (apenas Brasil, BRL)
+      const caktoConfigForOrder = getCaktoConfig();
+      const amountCents = caktoConfigForOrder.amount_cents;
       
       if (amountCents <= 0) {
         logger.error('Valor do pedido inválido', undefined, { step: 'order_creation', amountCents, planPrice: plan.price, isPortuguese });
@@ -2068,7 +2033,7 @@ export default function Checkout() {
 
         if (!checkoutResult || !checkoutResult.success) {
           logger.warn('⚠️ [Checkout] Backend API create-checkout falhou, usando fallback:', {
-            error: checkoutResult?.error,
+            error: checkoutResult?.success === false ? checkoutResult.error : undefined,
             step: 'order_creation'
           });
           useCreateCheckoutFunction = false;
@@ -2293,7 +2258,7 @@ export default function Checkout() {
         // ✅ OTIMIZAÇÃO: Registrar eventos após redirecionar (não bloqueante)
         setTimeout(() => {
           try {
-            const caktoConfigLog = getCaktoConfigByDomain();
+            const caktoConfigLog = getCaktoConfig();
             checkoutLogger.log('checkout_requested', { 
               order_id: order.id,
               plan: plan?.name || selectedPlan,
@@ -2397,18 +2362,8 @@ export default function Checkout() {
         provider: 'stripe'
       });
 
-      // Mapear plano para formato da edge function
-      const planMapping: Record<string, string> = {
-        'express': `${currentLanguage}_express`,
-        'standard': `${currentLanguage}_standard`
-      };
-      
-      const mappedPlan = planMapping[selectedPlan];
-      
-      // ✅ VALIDAÇÃO 1: Validar mappedPlan
-      if (!mappedPlan) {
-        throw new Error(`Plano '${selectedPlan}' não é válido para o idioma '${currentLanguage}'`);
-      }
+      // Mapear plano para formato da edge function (apenas express em português)
+      const mappedPlan = 'pt_express';
 
       const utmQuery = getUtmQueryString(false); // Não incluir params existentes
       const successPath = `/${currentLanguage}/payment/success${utmQuery}`;
@@ -2544,7 +2499,7 @@ export default function Checkout() {
             order_id: order.id,
             plan: plan?.name || selectedPlan,
             amount: plan?.price || amountCents,
-            currency: plan?.currency || 'USD',
+            currency: 'BRL',
             email,
             has_whatsapp: !!normalizedWhatsApp,
             payment_provider: 'stripe',
@@ -2997,7 +2952,7 @@ export default function Checkout() {
                         </div>
                         <div className="text-right">
                           <div className="text-base font-bold text-primary">
-                            {plan.currency === 'BRL' ? 'R$' : '$'} {(plan.price / 100).toFixed(2)}
+                            R$ {(plan.price / 100).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -3094,10 +3049,10 @@ export default function Checkout() {
                     <span className="text-base md:text-base font-medium">{t('checkout.total')}</span>
                     <div className="flex items-baseline gap-2 md:gap-2">
                       <span className="text-base md:text-base text-muted-foreground line-through">
-                        {selectedPlanData.currency === 'BRL' ? 'R$' : '$'} {(selectedPlanData.price / 100 * 3.3).toFixed(2)}
+                        R$ {(selectedPlanData.price / 100 * 3.3).toFixed(2)}
                       </span>
                       <span className="text-2xl md:text-2xl font-bold text-primary">
-                        {selectedPlanData.currency === 'BRL' ? 'R$' : '$'} {(selectedPlanData.price / 100).toFixed(2)}
+                        R$ {(selectedPlanData.price / 100).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -3140,10 +3095,10 @@ export default function Checkout() {
                     </div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-base md:text-base text-muted-foreground line-through">
-                        {selectedPlanData.currency === 'BRL' ? 'R$' : '$'} {(selectedPlanData.price / 100 * 3.3).toFixed(2)}
+                        R$ {(selectedPlanData.price / 100 * 3.3).toFixed(2)}
                       </span>
                       <span className="text-2xl md:text-2xl font-bold text-primary">
-                        {selectedPlanData.currency === 'BRL' ? 'R$' : '$'} {(selectedPlanData.price / 100).toFixed(2)}
+                        R$ {(selectedPlanData.price / 100).toFixed(2)}
                       </span>
                     </div>
                   </div>

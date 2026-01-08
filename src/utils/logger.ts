@@ -23,30 +23,24 @@ class Logger {
   }
 
   /**
-   * Log genérico (apenas em desenvolvimento)
+   * Log genérico - desabilitado
    */
   log(message: string, context?: LogContext): void {
-    if (this.isDevelopment) {
-      console.log(`[LOG] ${message}`, context || '');
-    }
+    // Logs desabilitados
   }
 
   /**
-   * Log de informação (apenas em desenvolvimento)
+   * Log de informação - desabilitado
    */
   info(message: string, context?: LogContext): void {
-    if (this.isDevelopment) {
-      console.info(`[INFO] ${message}`, context || '');
-    }
+    // Logs desabilitados
   }
 
   /**
-   * Log de aviso (apenas em desenvolvimento)
+   * Log de aviso - desabilitado
    */
   warn(message: string, context?: LogContext): void {
-    if (this.isDevelopment) {
-      console.warn(`[WARN] ${message}`, context || '');
-    }
+    // Logs desabilitados
   }
 
   /**
@@ -57,27 +51,14 @@ class Logger {
       ? { message: error.message, stack: error.stack, name: error.name }
       : error;
 
-    if (this.isDevelopment) {
-      console.error(`[ERROR] ${message}`, errorData, context || '');
-    } else {
-      // Em produção, apenas logar erros críticos
-      // Aqui você pode integrar com serviço de monitoramento (Sentry, LogRocket, etc.)
-      console.error(`[ERROR] ${message}`, errorData);
-      
-      // Exemplo de integração com serviço externo (descomente quando configurar):
-      // if (window.Sentry) {
-      //   window.Sentry.captureException(error, { extra: context });
-      // }
-    }
+    // Logs desabilitados
   }
 
   /**
    * Log de debug (apenas em desenvolvimento)
    */
   debug(message: string, context?: LogContext): void {
-    if (this.isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, context || '');
-    }
+    // Logs desabilitados
   }
 
   /**

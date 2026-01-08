@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { safeReload } from '@/utils/reload';
-import { Play, Pause } from "lucide-react";
+import { Play, Pause } from "@/utils/iconImports";
 import { supabase } from "@/integrations/supabase/client";
 import AudioProgressBar from "./AudioProgressBar";
 import { useTranslation } from "@/hooks/useTranslation";

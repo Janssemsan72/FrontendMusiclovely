@@ -8,24 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Check, Globe, Lock, Star, Zap, Clock, Shield, Music, ArrowRight, Download } from 'lucide-react';
 import { getLocalizedPath } from '@/lib/i18nRoutes';
 import { useUtmParams } from '@/hooks/useUtmParams';
+import type { Locale } from '@/lib/detectLocale';
 // formatDateTime removido - não é mais usado
 
-// ✅ Configuração de preços por domínio
-// .com.br / localhost = R$ 67,00 (URL nova: k63z5ui)
-// .com = R$ 47,90 (URL antiga: d877u4t_665160)
-const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-  
-  // .com ou qualquer outro domínio = R$ 47,90 (URL antiga)
+// ✅ Configuração de preço fixo: R$ 47,90 (apenas Brasil, BRL)
+const getCaktoConfig = () => {
   return {
     url: 'https://pay.cakto.com.br/d877u4t_665160',
     amount_cents: 4790,
@@ -117,57 +104,26 @@ export default function RegionalPricingSection() {
       // Forçar detecção se não estiver funcionando
       const forcedLang = currentLang || 'pt';
       
-      let mockPricing = [];
-      
-      if (forcedLang === 'pt') {
-        // Para português: apenas plano brasileiro com preço dinâmico por domínio
-        const caktoConfig = getCaktoConfigByDomain();
-        mockPricing = [
-          {
-            id: '1',
-            region: 'brasil',
-            plan_name: 'Expresso',
-            price_cents: caktoConfig.price_display,
-            currency: 'BRL',
-            stripe_price_id: 'price_BR_EXPRESS',
-            features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 48h'],
-            is_active: true
-          }
-        ];
-      } else {
-        // Para inglês e espanhol: dois planos USD
-        mockPricing = [
-          {
-            id: '2',
-            region: 'usa',
-            plan_name: 'Express Plus 7 Days',
-            price_cents: 3900,
-            currency: 'USD',
-            stripe_price_id: 'prod_THfijhgSPvtnsE', // Personalized Music - Express plus 7 days US$ 39,00
-            features: ['High quality MP3', 'Custom cover', 'Full lyrics', '7 days delivery'],
-            is_active: true,
-            badge: currentLang === 'en' ? 'Standard' : 'Estándar'
-          },
-          {
-            id: '3',
-            region: 'usa',
-            plan_name: 'Express Plan 24h',
-            price_cents: 4900,
-            currency: 'USD',
-            stripe_price_id: 'prod_THfhMPbPNkoSPc', // Personalized Music - Express Plan 24h US$ 49,00
-            features: ['High quality MP3', 'Custom cover', 'Full lyrics', '24h delivery'],
-            is_active: true,
-            badge: currentLang === 'en' ? 'Most Popular' : 'Más Popular',
-            featured: true
-          }
-        ];
-      }
+      // Sempre retorna apenas plano brasileiro com preço fixo R$ 47,90
+      const caktoConfig = getCaktoConfig();
+      const mockPricing = [
+        {
+          id: '1',
+          region: 'brasil',
+          plan_name: 'Expresso',
+          price_cents: caktoConfig.price_display,
+          currency: 'BRL',
+          stripe_price_id: 'price_BR_EXPRESS',
+          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 48h'],
+          is_active: true
+        }
+      ];
       
       const mockData = {
         success: true,
-        region: currentLang === 'pt' ? 'brasil' : 'usa',
-        country: currentLang === 'pt' ? 'BR' : 'US',
-        language: currentLang,
+        region: 'brasil',
+        country: 'BR',
+        language: 'pt',
         pricing: mockPricing,
         session_token: 'mock-session-token',
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
@@ -184,22 +140,20 @@ export default function RegionalPricingSection() {
     }
   };
 
-  const formatPrice = (cents: number, currency: string) => {
-    const value = cents / 100;
+  const formatPrice = (cents: number | undefined | null) => {
+    // Validar e converter para número
+    const value = typeof cents === 'number' && !isNaN(cents) ? cents : 0;
     
-    // Mapear moeda para localização correta
-    const currencyLocaleMap: Record<string, string> = {
-      'BRL': 'pt-BR',
-      'USD': 'en-US', 
-      'EUR': 'de-DE'
-    };
-    
-    const locale = currencyLocaleMap[currency] || 'en-US';
-    
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: currency
-    }).format(value);
+    // Sempre usar BRL (Real brasileiro)
+    try {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(value / 100);
+    } catch (error) {
+      // Fallback em caso de erro
+      return `R$ ${(value / 100).toFixed(2).replace('.', ',')}`;
+    }
   };
 
   const getRegionFlag = (country: string) => {
@@ -338,7 +292,7 @@ export default function RegionalPricingSection() {
                 </div>
                 <CardTitle className="text-2xl font-bold mb-2">{plan.plan_name}</CardTitle>
                 <div className="text-4xl font-bold text-foreground mb-2">
-                  {formatPrice(plan.price_cents, plan.currency)}
+                  {formatPrice(plan.price_cents)}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t('pricing.deliveryTime')}
@@ -377,7 +331,10 @@ export default function RegionalPricingSection() {
                     // Salvar session token para checkout
                     localStorage.setItem('pricing_session_token', pricing.session_token);
                     // Redirecionar para quiz com navegação localizada (preservando UTMs)
-                    const quizPath = getLocalizedPath('/quiz', currentLanguage);
+                    const localeForPath: Locale = (currentLanguage === 'pt' || currentLanguage === 'en' || currentLanguage === 'es')
+                      ? currentLanguage
+                      : 'pt';
+                    const quizPath = getLocalizedPath('/quiz', localeForPath);
                     navigateWithUtms(quizPath);
                   }}
                 >

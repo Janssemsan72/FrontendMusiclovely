@@ -85,7 +85,10 @@ export const apiHelpers = {
     amount_cents: number;
     provider: 'cakto';
     transaction_id?: string;
-  }) => api.post<{ success: boolean; quiz_id: string; order_id: string; log_id?: string }>(
+  }) => api.post<
+    | { success: true; quiz_id: string; order_id: string; log_id?: string }
+    | { success: false; error?: string; message?: string; log_id?: string }
+  >(
     '/api/checkout/create',
     data
   ),

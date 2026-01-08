@@ -58,7 +58,7 @@ class CheckoutLogger {
     try {
       localStorage.setItem(`checkout_logs_${this.transactionId}`, JSON.stringify(this.logs));
     } catch (error) {
-      console.error('Failed to save logs to localStorage:', error);
+      // Log removido
     }
   }
 
@@ -85,10 +85,10 @@ class CheckoutLogger {
         .insert(events);
 
       if (error) {
-        console.error('Failed to save checkout events to database:', error);
+        // Log removido
       }
     } catch (error) {
-      console.error('Error sending logs to database:', error);
+      // Log removido
     }
   }
 }

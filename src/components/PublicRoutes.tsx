@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 
+// ✅ OTIMIZAÇÃO: Index é a página inicial, mas ainda pode ser lazy loaded se necessário
+// Por enquanto mantemos import direto para FCP mais rápido, mas podemos mudar se necessário
 import Index from "../pages/Index";
 const IndexCompany = lazyWithRetry(() => import("../pages/IndexCompany"));
 const About = lazyWithRetry(() => import("../pages/About"));

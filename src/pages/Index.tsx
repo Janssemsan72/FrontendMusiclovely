@@ -7,12 +7,13 @@ import { useScrollAnimations } from "@/hooks/use-scroll-animations";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { useUtmifyTracking } from "@/hooks/useUtmifyTracking";
-import { Mail } from "lucide-react";
+import { Mail } from "@/utils/iconImports";
 import { scrollToId } from "@/utils/scrollTo";
 
+// ✅ OTIMIZAÇÃO: Lazy load de todos os componentes não-críticos
 const VinylPlayer = React.lazy(() => import("@/components/VinylPlayer"));
 const HowItWorks = React.lazy(() => import("@/components/HowItWorks"));
-import Testimonials from "@/components/Testimonials";
+const Testimonials = React.lazy(() => import("@/components/Testimonials"));
 const PricingSection = React.lazy(() => import("@/components/PricingSection"));
 const FAQ = React.lazy(() => import("@/components/FAQ"));
 
@@ -146,10 +147,11 @@ const Index = memo(() => {
         
         <main className="container mx-auto px-3 sm:px-4 py-0 sm:py-4 space-y-4 sm:space-y-12">
         
+        {/* ✅ OTIMIZAÇÃO: VinylPlayer carregado apenas quando visível, com rootMargin maior para preload */}
         <div id="radiola" className="scroll-mt-20 mt-8 sm:mt-0">
           <div className="grid gap-4 sm:gap-6 items-center max-w-6xl mx-auto px-4">
             <div className="flex justify-center">
-              <LazySection minHeight={420} rootMargin="0px 0px">
+              <LazySection minHeight={420} rootMargin="200px 0px">
                 <VinylPlayer />
               </LazySection>
             </div>
