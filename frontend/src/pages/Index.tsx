@@ -1,7 +1,8 @@
 import React, { memo, Suspense, useEffect, useRef, useState } from "react";
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
-import Footer from "@/components/Footer";
+// ✅ OTIMIZAÇÃO: Lazy load de componentes não críticos acima da dobra
+const Header = React.lazy(() => import("@/components/Header"));
+const HeroSection = React.lazy(() => import("@/components/HeroSection"));
+const Footer = React.lazy(() => import("@/components/Footer"));
 
 import { useScrollAnimations } from "@/hooks/use-scroll-animations";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -55,34 +56,40 @@ function LazySection({
 
 const Index = memo(() => {
   const { t } = useTranslation();
+  
+  // ✅ OTIMIZAÇÃO: useScrollAnimations já usa IntersectionObserver que é eficiente
+  // Não precisa adiar, pois IntersectionObserver não bloqueia render
   useScrollAnimations();
+  
   // Capturar e salvar UTMs na página inicial
   const { hasUtms } = useUtmParams();
-  const { trackEvent } = useUtmifyTracking();
+  const { trackEvent, utmifyReady } = useUtmifyTracking();
   
   // UTMs são capturados automaticamente pelo hook
 
-  // Rastrear visualização da homepage (UTMify)
+  // ✅ OTIMIZAÇÃO: Rastrear visualização da homepage apenas após FCP
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
 
     let cancelled = false;
-    const schedule = () => {
+    const schedule = async () => {
       if (cancelled) return;
       try {
-        trackEvent('homepage_viewed', {
+        // trackEvent agora aguarda UTMify estar pronto internamente
+        await trackEvent('homepage_viewed', {
           pathname: win.location.pathname,
           hasUtms,
-        }).catch(() => {});
+        });
       } catch (error) {
         void error;
       }
     };
 
+    // ✅ OTIMIZAÇÃO: Aguardar FCP antes de rastrear (reduzir de 5s para 3s)
     if ('requestIdleCallback' in win) {
       const w = win as any;
-      const id = w.requestIdleCallback(schedule, { timeout: 5000 });
+      const id = w.requestIdleCallback(schedule, { timeout: 3000 });
       return () => {
         cancelled = true;
         if (typeof w.cancelIdleCallback === 'function') {
@@ -96,7 +103,7 @@ const Index = memo(() => {
       cancelled = true;
       globalThis.clearTimeout(timer);
     };
-  }, [trackEvent, hasUtms]);
+  }, [trackEvent, hasUtms, utmifyReady]);
 
 
   // Tratar deep links com hash na URL ao carregar
@@ -133,7 +140,9 @@ const Index = memo(() => {
 
   return (
     <div className="h-[100dvh] flex flex-col overflow-hidden">
-      <Header />
+      <Suspense fallback={<div className="h-[80px] sm:h-[88px]" />}>
+        <Header />
+      </Suspense>
       <div 
         id="main-scroll-container"
         className="flex-1 overflow-y-auto overflow-x-hidden main-scroll-container mt-[80px] sm:mt-[88px]"
@@ -142,7 +151,9 @@ const Index = memo(() => {
           height: 'calc(100vh - 80px)',
         }}
       >
-        <HeroSection />
+        <Suspense fallback={<div className="h-[400px]" />}>
+          <HeroSection />
+        </Suspense>
         
         <main className="container mx-auto px-3 sm:px-4 py-0 sm:py-4 space-y-4 sm:space-y-12">
         
@@ -201,10 +212,10 @@ const Index = memo(() => {
           </section>
         </div>
       </main>
-
-      <div className="scroll-animate scroll-animate-delay-6">
+      
+      <Suspense fallback={null}>
         <Footer />
-      </div>
+      </Suspense>
       </div>
     </div>
   );
