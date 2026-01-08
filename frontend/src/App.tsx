@@ -7,14 +7,14 @@ import ScrollToTop from "@/components/ScrollToTop";
 import ScrollRestoration from "@/components/ScrollRestoration";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, initCacheSystem } from "@/lib/queryClient";
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 // LanguageProvider e LocaleProvider removidos - usando apenas português
 import { PublicErrorBoundary } from "@/components/PublicErrorBoundary";
-import CheckoutRedirectWrapper from "@/components/CheckoutRedirectWrapper";
+import PublicRoutes from "@/components/PublicRoutes";
 // ✅ CRÍTICO: Importar i18n para garantir inicialização antes de qualquer componente
 import '@/i18n';
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { agentLog, devLog, isDevVerbose } from "@/utils/debug/devLogger";
+import { devLog, isDevVerbose } from "@/utils/debug/devLogger";
 import { ensureE2EAdminStorageAuthorized, isE2EAdminFlagEnabled } from "@/utils/adminE2EBypass";
 import { Loader2 } from "lucide-react";
 
@@ -44,12 +44,7 @@ const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"))
 // AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
 const AdminFinancial = lazyWithRetry(() => import("./pages/admin/AdminFinancial"));
-const AdminAffiliates = lazyWithRetry(() => import("./pages/admin/AdminAffiliates"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
-const Index = lazyWithRetry(() => import("./pages/Index"));
-const IndexCompany = lazyWithRetry(() => import("./pages/IndexCompany"));
-const Company = lazyWithRetry(() => import("./pages/Company"));
-const CompanyStandalone = lazyWithRetry(() => import("./pages/CompanyStandalone"));
 const Quiz = lazyWithRetry(() => import("./pages/Quiz"));
 const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
 const CheckoutProcessing = lazyWithRetry(() => import("./pages/CheckoutProcessing"));
@@ -63,8 +58,6 @@ const HowItWorks = lazyWithRetry(() => import("./pages/HowItWorks"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const SongDownload = lazyWithRetry(() => import("./pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("./pages/ApproveLyrics"));
-const AffiliateLogin = lazyWithRetry(() => import("./pages/AffiliateLogin"));
-const AffiliateDashboard = lazyWithRetry(() => import("./pages/AffiliateDashboard"));
 // Componentes principais
 // LocaleRouter removido - usando apenas português
 const AdminDashboardRedirect = lazyWithRetry(() => import("./components/admin/AdminDashboardRedirect"));
@@ -118,15 +111,6 @@ const AppContent = () => {
   const isLoading = false;
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    agentLog({
-      location: 'App.tsx:AppContent',
-      message: 'AppContent render',
-      data: { pathname: location.pathname, isLoading },
-      timestamp: Date.now(),
-    });
-  }, [location.pathname, isLoading]);
   
   if (isDevVerbose) {
     devLog.debug('[App] AppContent renderizando...', {
@@ -134,35 +118,6 @@ const AppContent = () => {
       timestamp: new Date().toISOString()
     });
   }
-
-  const hostname = typeof window === 'undefined' ? '' : window.location.hostname;
-  const isCompanyPage =
-    typeof window !== 'undefined' &&
-    (hostname.includes('musiclovely-novo') ||
-      hostname.includes('music-lovely-novo') ||
-      hostname === 'musiclovely-novo.vercel.app' ||
-      hostname.includes('musiclovely.shop') ||
-      hostname === 'www.musiclovely.shop' ||
-      import.meta.env.VITE_PROJECT_NAME === 'music-lovely-novo');
-
-  const isMusicLovelyShopOnly =
-    typeof window !== 'undefined' && (hostname.includes('musiclovely.shop') || hostname === 'www.musiclovely.shop');
-
-  const StripLocalePrefixRedirect = () => {
-    const loc = useLocation();
-    const targetPathname = loc.pathname.replace(/^\/(pt|en|es)(?=\/|$)/, "") || "/";
-    return <Navigate to={`${targetPathname}${loc.search}${loc.hash}`} replace />;
-  };
-
-  const PublicShell = () => {
-    return (
-      <CheckoutRedirectWrapper>
-        <Suspense fallback={null}>
-          <Outlet />
-        </Suspense>
-      </CheckoutRedirectWrapper>
-    );
-  };
   
   // ✅ CORREÇÃO: Rotas admin não precisam de traduções, não bloquear
   const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/app/admin');
@@ -253,10 +208,9 @@ const AppContent = () => {
 
   // ✅ OTIMIZAÇÃO: Prefetch automático de rotas críticas após carregamento inicial
   // Reduzido para 1 segundo e apenas rotas essenciais para melhorar performance inicial
-  // ✅ OTIMIZAÇÃO: NÃO prefetch componentes admin - carregar apenas quando necessário
   useEffect(() => {
     if (isLoading) return;
-    if (isAdminRoute) return; // Não prefetch se já está em rota admin
+    if (isAdminRoute) return;
 
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
@@ -271,7 +225,6 @@ const AppContent = () => {
     let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     const prefetch = () => {
       if (cancelled) return;
-      // ✅ OTIMIZAÇÃO: Prefetch apenas rotas públicas críticas, não admin
       Promise.all([
         import('./pages/Quiz').catch(() => {}),
         import('./pages/Checkout').catch(() => {})
@@ -336,38 +289,19 @@ const AppContent = () => {
       <PublicErrorBoundary>
         <Suspense fallback={null}>
           <Routes>
-            <Route path="/pt/*" element={<StripLocalePrefixRedirect />} />
-            <Route path="/en/*" element={<StripLocalePrefixRedirect />} />
-            <Route path="/es/*" element={<StripLocalePrefixRedirect />} />
-            <Route element={<PublicShell />}>
-              {isMusicLovelyShopOnly ? (
-                <Route path="*" element={<Company />} />
-              ) : (
-                <>
-                  <Route path="/" element={isCompanyPage ? <IndexCompany /> : <Index />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/company" element={<Company />} />
-                  <Route path="/company-standalone" element={<CompanyStandalone />} />
-                  <Route path="/how-it-works" element={<HowItWorks />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/quiz" element={<Quiz />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/checkout-processing" element={<CheckoutProcessing />} />
-                  <Route path="/payment/success" element={<PaymentSuccess />} />
-                  <Route path="/payment-success" element={<PaymentSuccess />} />
-                  <Route path="/success" element={<PaymentSuccess />} />
-                  <Route path="/song/:id" element={<SongDownload />} />
-                  <Route path="/download/:id" element={<SongDownload />} />
-                  <Route path="/download/:id/:token" element={<SongDownload />} />
-                  <Route path="/approve-lyrics" element={<ApproveLyrics />} />
-                  <Route path="/afiliado/login" element={<AffiliateLogin />} />
-                  <Route path="/afiliado" element={<AffiliateDashboard />} />
-                  <Route path="*" element={<NotFound />} />
-                </>
-              )}
-            </Route>
+              {/* Rotas públicas - apenas português */}
+              {/* ✅ CORREÇÃO: Redirecionar rotas de checkout com prefixo de idioma para checkout sem prefixo */}
+              <Route path="/pt/checkout" element={<Navigate to="/checkout" replace />} />
+              <Route path="/en/checkout" element={<Navigate to="/checkout" replace />} />
+              <Route path="/es/checkout" element={<Navigate to="/checkout" replace />} />
+              <Route path="/pt/payment-success" element={<Navigate to="/payment-success" replace />} />
+              <Route path="/en/payment-success" element={<Navigate to="/payment-success" replace />} />
+              <Route path="/es/payment-success" element={<Navigate to="/payment-success" replace />} />
+              <Route path="/*" element={
+                <Suspense fallback={null}>
+                  <PublicRoutes />
+                </Suspense>
+              } />
             
             {/* Admin sem prefixo */}
             <Route
@@ -499,13 +433,6 @@ const AppContent = () => {
                 <Suspense fallback={null}>
                   <ProtectedAdminRoute requiredPermission="logs">
                     <AdminLogs />
-                  </ProtectedAdminRoute>
-                </Suspense>
-              } />
-              <Route path="afiliados" element={
-                <Suspense fallback={null}>
-                  <ProtectedAdminRoute requiredPermission="orders">
-                    <AdminAffiliates />
                   </ProtectedAdminRoute>
                 </Suspense>
               } />

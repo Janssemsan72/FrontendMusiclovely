@@ -1,8 +1,7 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { Suspense, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import { Suspense } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { agentLog } from "@/utils/debug/devLogger";
 
 import Index from "../pages/Index";
 const IndexCompany = lazyWithRetry(() => import("../pages/IndexCompany"));
@@ -19,15 +18,7 @@ const CheckoutProcessing = lazyWithRetry(() => import("../pages/CheckoutProcessi
 const PaymentSuccess = lazyWithRetry(() => import("../pages/PaymentSuccess"));
 const SongDownload = lazyWithRetry(() => import("../pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("../pages/ApproveLyrics"));
-const AffiliateLogin = lazyWithRetry(() => import("../pages/AffiliateLogin"));
-const AffiliateDashboard = lazyWithRetry(() => import("../pages/AffiliateDashboard"));
 const NotFound = lazyWithRetry(() => import("../pages/NotFound"));
-
-function StripLocalePrefixRedirect() {
-  const location = useLocation();
-  const targetPathname = location.pathname.replace(/^\/(pt|en|es)(?=\/|$)/, "") || "/";
-  return <Navigate to={`${targetPathname}${location.search}${location.hash}`} replace />;
-}
 
 const RouteFallback = () => {
   return (
@@ -47,17 +38,6 @@ const RouteFallback = () => {
 
 // ✅ CORREÇÃO: Sempre renderizar rotas - React Router lida com paths automaticamente
 export default function PublicRoutes() {
-  const location = useLocation();
-
-  useEffect(() => {
-    agentLog({
-      location: 'PublicRoutes.tsx:PublicRoutes',
-      message: 'PublicRoutes render',
-      data: { pathname: location.pathname },
-      timestamp: Date.now(),
-    });
-  }, [location.pathname]);
-
   // Verificar se estamos no projeto music-lovely-novo ou musiclovely.shop (usando hostname)
   // Para esses projetos, sempre usar IndexCompany como página inicial
   const isCompanyPage = 
@@ -90,29 +70,26 @@ export default function PublicRoutes() {
     <CheckoutRedirectWrapper>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
-          <Route path="/pt/*" element={<StripLocalePrefixRedirect />} />
-          <Route path="/en/*" element={<StripLocalePrefixRedirect />} />
-          <Route path="/es/*" element={<StripLocalePrefixRedirect />} />
-          <Route path="/" element={isCompanyPage ? <IndexCompany /> : <Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/company" element={<Company />} />
-          <Route path="/company-standalone" element={<CompanyStandalone />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/quiz" element={<Quiz />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout-processing" element={<CheckoutProcessing />} />
-          <Route path="/payment/success" element={<PaymentSuccess />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/success" element={<PaymentSuccess />} />
-          <Route path="/song/:id" element={<SongDownload />} />
-          <Route path="/download/:id" element={<SongDownload />} />
-          <Route path="/download/:id/:token" element={<SongDownload />} />
-          <Route path="/approve-lyrics" element={<ApproveLyrics />} />
-          <Route path="/afiliado/login" element={<AffiliateLogin />} />
-          <Route path="/afiliado" element={<AffiliateDashboard />} />
+          {/* Para musiclovely.shop e music-lovely-novo, a página inicial é a Company (sem Header/Footer) */}
+          <Route path="" element={isCompanyPage ? <IndexCompany /> : <Index />} />
+          <Route path="about" element={<About />} />
+          <Route path="company" element={<Company />} />
+          <Route path="company-standalone" element={<CompanyStandalone />} />
+          <Route path="how-it-works" element={<HowItWorks />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
+          <Route path="quiz" element={<Quiz />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="checkout-processing" element={<CheckoutProcessing />} />
+          {/* Rotas de sucesso - cobrindo todas as variações possíveis */}
+          <Route path="payment/success" element={<PaymentSuccess />} />
+          <Route path="payment-success" element={<PaymentSuccess />} />
+          <Route path="success" element={<PaymentSuccess />} />
+          <Route path="song/:id" element={<SongDownload />} />
+          <Route path="download/:id" element={<SongDownload />} />
+          <Route path="download/:id/:token" element={<SongDownload />} />
+          <Route path="approve-lyrics" element={<ApproveLyrics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

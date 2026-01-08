@@ -36,11 +36,11 @@
     <meta name="twitter:image" content="https://www.musiclovely.com/og/musiclovely-og-1200x630.png" />
     <meta name="twitter:image:alt" content="Music Lovely - Logo com coração e nota musical em laranja sobre fundo gradiente amarelo" />
     
+    <!-- ✅ OTIMIZAÇÃO: Preconnect para domínios críticos (antes de qualquer script) -->
     <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://zagkvtxarndluusiluhb.supabase.co" />
-    <link rel="dns-prefetch" href="https://js.stripe.com" />
     <link rel="dns-prefetch" href="https://cdn.utmify.com.br" />
-    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <!-- ✅ OTIMIZAÇÃO: Preload de recursos críticos acima da dobra -->
     <link rel="preload" as="image" href="/images/collage-memories-new.webp" fetchpriority="high" type="image/webp" />
   </head>
 
@@ -48,52 +48,142 @@
     <div id="root">
       <div id="app-root"></div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- ✅ OTIMIZAÇÃO: Defer script principal para não bloquear render -->
+    <script type="module" src="/src/main.tsx" defer></script>
 
     <!-- Pixel UTMify -->
     <script>
-      if ('%PROD%' === 'true') {
-        const shouldSkip =
-          location.pathname.startsWith('/admin') ||
-          location.pathname.startsWith('/app/admin');
-        const isLocal =
-          location.hostname === 'localhost' ||
-          location.hostname === '127.0.0.1' ||
-          location.hostname === '0.0.0.0';
+      // ✅ CORREÇÃO: Verificar produção pelo hostname (não depende de substituição de variáveis)
+      const isProduction = 
+        location.hostname === 'musiclovely.com' ||
+        location.hostname === 'www.musiclovely.com' ||
+        location.hostname === 'musiclovely.com.br' ||
+        location.hostname === 'www.musiclovely.com.br' ||
+        location.hostname.endsWith('.vercel.app');
+      
+      const shouldSkip =
+        location.pathname.startsWith('/admin') ||
+        location.pathname.startsWith('/app/admin');
+      const isLocal =
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname === '0.0.0.0';
 
-        if (!shouldSkip && !isLocal) {
-          const loadPixels = () => {
-            window.pixelId = "68f98a3f196fbe7f0e5683c7";
-            window.tikTokPixelId = "693c50472e9b1020b6ac57d4";
-
-            const scripts = [
-              "https://cdn.utmify.com.br/scripts/pixel/pixel.js",
-              "https://cdn.utmify.com.br/scripts/pixel/pixel-tiktok.js",
-            ];
-
-            for (const src of scripts) {
-              const el = document.createElement("script");
-              el.async = true;
-              el.src = src;
-              document.head.appendChild(el);
+      // ✅ SUPRIMIR LOGS: Interceptar console para filtrar logs dos scripts UTMify
+      // Aplicar em produção e também em desenvolvimento para manter console limpo
+      if (!isLocal || isProduction) {
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalInfo = console.info;
+        const originalDebug = console.debug;
+        
+        // Filtros para logs que devem ser suprimidos
+        const shouldSuppress = (args) => {
+          // Verificar todos os argumentos, não apenas o primeiro
+          const message = String(args[0] || '');
+          const secondArg = args[1];
+          
+          // Suprimir logs específicos dos pixels UTMify
+          const pixelPatterns = [
+            'buttons',
+            'response for',
+            '[Meta Pixel]',
+            '[TikTok Pixel]',
+            'Missing \'content_id\'',
+            'Removed parameters from custom data',
+            'pixel.js',
+            'pixel-tiktok.js',
+            'fbevents.js'
+          ];
+          
+          // Verificar se a mensagem contém algum padrão
+          if (pixelPatterns.some(pattern => message.includes(pattern))) {
+            return true;
+          }
+          
+          // Verificar se o segundo argumento é um array de botões (logs do pixel)
+          if (Array.isArray(secondArg) && secondArg.length > 0) {
+            const firstItem = secondArg[0];
+            // Se for um elemento HTML button, provavelmente é log do pixel
+            if (firstItem && typeof firstItem === 'object' && firstItem.tagName === 'BUTTON') {
+              return true;
             }
+          }
+          
+          // Verificar se a mensagem é apenas "buttons" ou "buttons Array"
+          if (message.trim() === 'buttons' || message.trim().startsWith('buttons ')) {
+            return true;
+          }
+          
+          return false;
+        };
+        
+        console.log = function(...args) {
+          if (!shouldSuppress(args)) {
+            originalLog.apply(console, args);
+          }
+        };
+        
+        console.warn = function(...args) {
+          if (!shouldSuppress(args)) {
+            originalWarn.apply(console, args);
+          }
+        };
+        
+        console.info = function(...args) {
+          if (!shouldSuppress(args)) {
+            originalInfo.apply(console, args);
+          }
+        };
+        
+        console.debug = function(...args) {
+          if (!shouldSuppress(args)) {
+            originalDebug.apply(console, args);
+          }
+        };
+      }
 
-            const utms = document.createElement("script");
-            utms.async = true;
-            utms.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
-            utms.setAttribute("data-utmify-prevent-xcod-sck", "");
-            utms.setAttribute("data-utmify-prevent-subids", "");
-            document.head.appendChild(utms);
+      // ✅ CORREÇÃO: Carregar UTMify em produção OU em desenvolvimento (para testes)
+      // Em desenvolvimento, ainda carregar para testar o tracking
+      if (!shouldSkip && (isProduction || !isLocal)) {
+        const loadPixels = () => {
+          window.pixelId = "68f98a3f196fbe7f0e5683c7";
+          window.tikTokPixelId = "693c50472e9b1020b6ac57d4";
+
+          const scripts = [
+            "https://cdn.utmify.com.br/scripts/pixel/pixel.js",
+            "https://cdn.utmify.com.br/scripts/pixel/pixel-tiktok.js",
+          ];
+
+          for (const src of scripts) {
+            const el = document.createElement("script");
+            el.async = true;
+            el.src = src;
+            document.head.appendChild(el);
+          }
+
+          const utms = document.createElement("script");
+          utms.async = true;
+          utms.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+          utms.setAttribute("data-utmify-prevent-xcod-sck", "");
+          utms.setAttribute("data-utmify-prevent-subids", "");
+          utms.onload = () => {
+            // Disparar evento customizado quando UTMify estiver pronto
+            window.dispatchEvent(new CustomEvent('utmify:ready', { bubbles: true }));
           };
+          document.head.appendChild(utms);
+        };
 
+        // ✅ OTIMIZAÇÃO: Adiar carregamento dos pixels até depois do FCP
+        // Usar requestIdleCallback com timeout menor para não bloquear interação
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(loadPixels, { timeout: 3000 });
+        } else {
+          // Fallback: aguardar load + delay adicional
           window.addEventListener(
             'load',
             () => {
-              if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(loadPixels, { timeout: 8000 });
-              } else {
-                setTimeout(loadPixels, 4000);
-              }
+              setTimeout(loadPixels, 2000);
             },
             { once: true }
           );

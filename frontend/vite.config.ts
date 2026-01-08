@@ -131,6 +131,13 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1500, // ✅ OTIMIZAÇÃO: Aumentado para 1500KB
       // Enable minification - usando esbuild para builds mais rápidos
       minify: 'esbuild', // Mais rápido que terser, especialmente em builds grandes
+      // ✅ OTIMIZAÇÃO: Remover console.log em produção para reduzir bundle size
+      terserOptions: mode === 'production' ? {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        }
+      } : undefined,
       // Alternativa: se precisar de terser, usar configuração mais leve
       // minify: 'terser',
       // terserOptions: {

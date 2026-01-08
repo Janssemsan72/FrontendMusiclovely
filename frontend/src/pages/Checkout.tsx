@@ -67,24 +67,13 @@ interface CheckoutDraft {
   timestamp: number;
 }
 
-// ✅ Configuração de preços por domínio
-// ✅ IMPORTANTE: URL antiga d877u4t_665160 está indisponível, usar apenas a URL ativa.
+// ✅ Configuração de preços - sempre R$ 47,90
 const getCaktoConfigByDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // .com.br ou localhost = R$ 67,00 (URL nova)
-  if (hostname.endsWith('.com.br') || hostname.includes('localhost')) {
-    return {
-      url: 'https://pay.cakto.com.br/k63z5ui',
-      amount_cents: 6700,
-      price_display: 6700
-    };
-  }
-
+  // Sempre usar R$ 47,90 (4790 centavos) para todos os domínios
   return {
-    url: 'https://pay.cakto.com.br/k63z5ui',
-    amount_cents: 6700,
-    price_display: 6700
+    url: 'https://pay.cakto.com.br/d877u4t_665160',
+    amount_cents: 4790,
+    price_display: 4790
   };
 };
 
@@ -152,7 +141,7 @@ export default function Checkout() {
   // Preservar UTMs através do funil
   const { navigateWithUtms, getUtmQueryString, utms } = useUtmParams();
   // Hook para tracking de eventos
-  const { trackEvent } = useUtmifyTracking();
+  const { trackEvent, utmifyReady } = useUtmifyTracking();
   
   // ✅ Flag para evitar múltiplos toasts de erro
   const toastShownRef = useRef(false);
@@ -170,7 +159,8 @@ export default function Checkout() {
   
   // ✅ Função helper para obter caminho do quiz com prefixo de idioma
   const getQuizPath = () => {
-    return '/quiz';
+    const language = getCurrentLanguage();
+    return `/${language}/quiz`;
   };
   
   const currentLanguage = getCurrentLanguage();
@@ -204,8 +194,8 @@ export default function Checkout() {
     const CAKTO_PAYMENT_URL = caktoConfig.url;
     const origin = window.location.origin;
     const utmQuery = getUtmQueryString(false);
-    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success
-    const redirectUrl = `${origin}/payment-success?order_id=${orderId}${utmQuery}`;
+    // ✅ CORREÇÃO: Padronizar redirect_url para /payment-success (sem barra antes de success)
+    const redirectUrl = `${origin}/${language}/payment-success?order_id=${orderId}${utmQuery}`;
     
     // Normalizar WhatsApp para formato correto (55XXXXXXXXXXX)
     const normalizedWhatsapp = formatWhatsappForCakto(whatsapp);
@@ -263,18 +253,10 @@ export default function Checkout() {
 
       // Verificar se já existe URL da Cakto salva
       let caktoUrl = orderData.cakto_payment_url;
-
-      const needsCaktoUrlRegeneration =
-        !caktoUrl ||
-        caktoUrl.trim() === '' ||
-        !caktoUrl.startsWith('https://pay.cakto.com.br') ||
-        caktoUrl.includes('d877u4t_665160') ||
-        caktoUrl.includes('%2Fpt%2Fpayment-success') ||
-        caktoUrl.includes('%2Fen%2Fpayment-success') ||
-        caktoUrl.includes('%2Fes%2Fpayment-success');
       
-      if (needsCaktoUrlRegeneration) {
-        logger.debug('redirectToCakto: Gerando nova URL da Cakto (ausente ou desatualizada)...');
+      if (!caktoUrl || caktoUrl.trim() === '') {
+        // Gerar nova URL da Cakto
+        logger.debug('redirectToCakto: Gerando nova URL da Cakto...');
         const safeUtms = utmsParam || utms || {};
         caktoUrl = generateCaktoUrl(
           orderData.id,
@@ -332,13 +314,13 @@ export default function Checkout() {
     referrer: document.referrer
   });
 
-  // Planos dinâmicos baseados no idioma e domínio
+  // Planos dinâmicos baseados no idioma
   const getPlansForLanguage = (lang: string) => {
-    // ✅ Preço dinâmico baseado no domínio (.com.br = R$ 67 | .com = R$ 47,90)
+    // ✅ Preço fixo: sempre R$ 47,90
     const caktoConfig = getCaktoConfigByDomain();
     
-    if (lang === 'pt') {
-      // Português: apenas 1 plano BRL com preço dinâmico por domínio
+      if (lang === 'pt') {
+      // Português: apenas 1 plano BRL com preço fixo R$ 47,90
       return [
         {
           id: 'express',
@@ -403,7 +385,7 @@ export default function Checkout() {
   const [whatsappError, setWhatsappError] = useState('');
   const [buttonError, setButtonError] = useState(false);
   const [cameFromRestore, setCameFromRestore] = useState(false); // ✅ Flag para detectar se veio do restore
-  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'express'>(() => {
+  const [selectedPlan, setSelectedPlan] = useState(() => {
     // Selecionar plano padrão baseado no idioma
     if (currentLanguage === 'pt') {
       return 'express'; // Único plano disponível
@@ -586,7 +568,7 @@ export default function Checkout() {
             }
             
           } catch (trackError) {
-            console.warn('⚠️ [Checkout] Erro ao rastrear evento:', trackError);
+            // Erro silencioso no tracking
           }
           
           return; // ✅ IMPORTANTE: Retornar aqui para não processar restore
@@ -1100,24 +1082,15 @@ export default function Checkout() {
               // Salvar no localStorage também para persistência
               localStorage.setItem('pending_quiz', JSON.stringify(restoredQuiz));
               
-              console.log('✅ [Checkout] Quiz restaurado do banco com sucesso:', {
-                quiz_id: quizData.id,
-                order_id: orderId,
-                has_id: !!restoredQuiz.id,
-                token_valid: linkValid,
-                email: orderData.customer_email,
-                whatsapp: orderData.customer_whatsapp
-              });
               toast.success(t('checkout.errors.orderRecovered'));
               return;
             }
           }
         } catch (error) {
-          console.error('❌ [Checkout] Erro ao restaurar quiz:', error);
+          logger.error('Erro ao restaurar quiz', error);
           
           // Se auto=true, tentar redirecionar para Cakto mesmo com erro
           if (auto === 'true' && orderId) {
-            console.log('⚠️ [Checkout] Erro no restore, mas auto=true. Tentando buscar pedido e redirecionar...');
             try {
               const { data: orderData } = await supabase
                 .from('orders')
@@ -1126,25 +1099,13 @@ export default function Checkout() {
                 .single();
               
               if (orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
-                console.log('✅ [Checkout] Pedido encontrado no fallback, redirecionando para Cakto...');
                 const redirectSuccess = await redirectToCakto(orderData, utms || {}, 'pt');
-                
                 if (redirectSuccess) {
-                  console.log('✅ [Checkout] Redirecionamento para Cakto iniciado com sucesso após erro');
                   return;
-                } else {
-                  console.error('❌ [Checkout] Falha ao redirecionar para Cakto no fallback');
                 }
-              } else {
-                console.warn('⚠️ [Checkout] Pedido não tem dados necessários no fallback:', {
-                  hasOrderData: !!orderData,
-                  status: orderData?.status,
-                  hasEmail: !!orderData?.customer_email,
-                  hasWhatsapp: !!orderData?.customer_whatsapp
-                });
               }
           } catch (fallbackError) {
-            console.error('❌ [Checkout] Erro no fallback:', fallbackError);
+            logger.error('Erro no fallback de redirecionamento', fallbackError);
           }
         }
         
@@ -1153,10 +1114,7 @@ export default function Checkout() {
         const hasSessionQuiz = sessionStorage.getItem('pending_quiz');
         
         if (!hasLocalQuiz && !hasSessionQuiz) {
-          console.error('❌ [Checkout] Erro ao restaurar quiz e não há quiz no localStorage/sessionStorage');
           toast.error(t('checkout.errors.errorLoadingQuiz'));
-        } else {
-          console.log('✅ [Checkout] Erro ao restaurar quiz, mas há quiz no localStorage/sessionStorage, continuando...');
         }
         // Continuar com fluxo normal para tentar carregar do localStorage
       }
@@ -1168,61 +1126,33 @@ export default function Checkout() {
       pendingQuiz = localStorage.getItem('pending_quiz');
       savedDraft = localStorage.getItem(draftKey);
     
-      console.log('📋 [Checkout] Dados encontrados no localStorage:', {
-        pendingQuiz: !!pendingQuiz,
-        pendingQuizLength: pendingQuiz?.length || 0,
-        savedDraft: !!savedDraft,
-        savedDraftLength: savedDraft?.length || 0,
-        pendingQuizContent: pendingQuiz ? (() => {
-          try {
-            return JSON.parse(pendingQuiz);
-          } catch {
-            return 'ERRO AO FAZER PARSE';
-          }
-        })() : null,
-        timestamp: new Date().toISOString(),
-        url: window.location.href
-      });
+      // Logs removidos para performance
     
       // ✅ PRIORIDADE 1: Novo quiz SEMPRE tem prioridade (se não foi processado acima e não há restore)
       if (pendingQuiz && restore !== 'true') {
         try {
           const quizData = JSON.parse(pendingQuiz);
-          console.log('✅ [Checkout] Quiz data parseado com sucesso:', {
-            hasAboutWho: !!quizData.about_who,
-            hasStyle: !!quizData.style,
-            hasLanguage: !!quizData.language,
-            hasId: !!quizData.id,
-            quizData
-          });
           
           // Validar que o quiz tem dados mínimos necessários
           if (!quizData.about_who || !quizData.style) {
-            console.error('❌ [Checkout] Quiz incompleto:', {
+            logger.error('Quiz incompleto', undefined, {
               hasAboutWho: !!quizData.about_who,
-              hasStyle: !!quizData.style,
-              quizData
+              hasStyle: !!quizData.style
             });
             toast.error('Quiz incompleto. Por favor, preencha o quiz novamente.');
-            // ✅ NÃO limpar quiz imediatamente - manter para debug
-            // localStorage.removeItem('pending_quiz'); // Comentado para debug
-            console.warn('⚠️ [Checkout] Quiz incompleto mantido no localStorage para debug');
             const quizPath = getQuizPath();
-            console.log('🔄 [Checkout] Redirecionando para quiz (quiz incompleto):', quizPath);
             navigateWithUtms(quizPath);
             return;
           }
           
           // Se existe draft, limpar para não interferir
           if (savedDraft) {
-            console.log('🗑️ [Checkout] Limpando draft antigo para usar novo quiz');
             localStorage.removeItem(draftKey);
           }
           
           setQuiz(quizData);
-          setShouldRedirect(false); // Resetar flag de redirecionamento
+          setShouldRedirect(false);
           setLoading(false);
-          console.log('✅ [Checkout] Quiz carregado do localStorage');
           
           // Rastrear visualização do checkout (silencioso)
           try {
@@ -1236,7 +1166,7 @@ export default function Checkout() {
             }
             
           } catch (trackError) {
-            console.warn('⚠️ [Checkout] Erro ao rastrear evento:', trackError);
+            // Erro silencioso no tracking
           }
           
           return;
@@ -1361,7 +1291,7 @@ export default function Checkout() {
             }
             
           } catch (trackError) {
-            console.warn('⚠️ [Checkout] Erro ao rastrear evento:', trackError);
+            // Erro silencioso no tracking
           }
           
           toast.info(t('checkout.errors.orderRecovered'));
@@ -1777,6 +1707,7 @@ export default function Checkout() {
     }
     
 
+    // ✅ CORREÇÃO: Detectar idioma usando currentLanguage ao invés de pathname (checkout não tem mais prefixo /pt)
     const isPortuguese = currentLanguage === 'pt';
     
     const caktoConfig = getCaktoConfigByDomain();
@@ -1784,6 +1715,7 @@ export default function Checkout() {
     
     console.log('🌍 [Checkout] Detecção de locale:', {
       currentPath: window.location.pathname,
+      currentLanguage,
       isPortuguese,
       paymentProvider: isPortuguese ? 'cakto' : 'stripe'
     });
@@ -1849,7 +1781,7 @@ export default function Checkout() {
       let quizData;
       
       // ✅ PRIORIDADE 1: Buscar por session_id se disponível
-      const quizSessionId: string = (quiz.session_id as string | undefined) || ((quiz.answers as any)?.session_id as string | undefined) || getOrCreateQuizSessionId();
+      const quizSessionId = quiz.session_id || quiz.answers?.session_id || getOrCreateQuizSessionId();
       
       if (quizSessionId && !quiz.id) {
         // Tentar buscar quiz no banco por session_id
@@ -2026,7 +1958,7 @@ export default function Checkout() {
 
       // ✅ NOVO FLUXO: Usar edge function create-checkout para criar quiz + pedido em transação atômica
       // Garantir que amount_cents é sempre um número válido
-      // ✅ Para português, usar preço dinâmico por domínio (.com.br = R$ 67 | .com = R$ 47,90)
+      // ✅ Para português, usar preço fixo: sempre R$ 47,90
       const caktoConfigForOrder = getCaktoConfigByDomain();
       const amountCents = isPortuguese ? caktoConfigForOrder.amount_cents : (typeof plan.price === 'number' ? plan.price : 0);
       
@@ -2243,24 +2175,11 @@ export default function Checkout() {
       }
 
       // PASSO 3: Processar pagamento (Stripe ou Cakto)
-      // ✅ CRÍTICO: Verificar isPortuguese ANTES de qualquer coisa
+      // ✅ CORREÇÃO: Verificar isPortuguese usando currentLanguage ao invés de pathname
       const isPortugueseCheck = currentLanguage === 'pt';
-      console.log('🌍 [Checkout] Verificando fluxo de pagamento:', {
-        isPortuguese,
-        isPortugueseCheck,
-        pathname: window.location.pathname,
-        willUseCakto: isPortugueseCheck
-      });
       
       if (isPortugueseCheck) {
         // ✅ FLUXO CAKTO - Redirecionar IMEDIATAMENTE após criar o pedido
-        console.log('✅ [Cakto] Fluxo Cakto detectado - iniciando processo de pagamento');
-        console.log('✅ [Cakto] Order criado:', {
-          orderId: order.id,
-          email,
-          whatsapp: normalizedWhatsApp,
-          language: currentLanguage
-        });
         logger.debug('Fluxo Cakto detectado');
         
         // Gerar URL da Cakto ANTES de qualquer outra operação
@@ -2273,14 +2192,8 @@ export default function Checkout() {
             currentLanguage,
             utms || {}
           );
-          console.log('✅ [Cakto] URL gerada com sucesso:', {
-            orderId: order.id,
-            urlLength: caktoUrl.length,
-            urlPreview: caktoUrl.substring(0, 100),
-            isValid: caktoUrl && caktoUrl.startsWith('http')
-          });
         } catch (urlError) {
-          console.error('❌ [Cakto] Erro ao gerar URL:', urlError);
+          logger.error('Erro ao gerar URL da Cakto', urlError);
           toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
           setProcessing(false); // ✅ Manter apenas em caso de erro real (não redirecionamento)
           return;
@@ -2288,9 +2201,9 @@ export default function Checkout() {
         
         // Validar URL
         if (!caktoUrl || !caktoUrl.startsWith('http')) {
-          console.error('❌ [Cakto] URL inválida:', caktoUrl);
+          logger.error('URL da Cakto inválida', undefined, { url: caktoUrl?.substring(0, 50) });
           toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
-          setProcessing(false); // ✅ Manter apenas em caso de erro real (não redirecionamento)
+          setProcessing(false);
           return;
         }
         
@@ -2311,7 +2224,7 @@ export default function Checkout() {
         }, 0);
         
         // ✅ OTIMIZAÇÃO: Todas as operações em background após redirecionar (não bloqueantes)
-        setTimeout(() => {
+        setTimeout(async () => {
           // Salvar URL no pedido
           supabase
             .from('orders')
@@ -2329,17 +2242,23 @@ export default function Checkout() {
             void error;
           }
 
-          // Tracking
+          // Tracking - ANTES do redirecionamento
           if (typeof trackEvent === 'function') {
-            trackEvent('payment_initiated', {
-              order_id: order.id,
-              plan: plan?.name || selectedPlan,
-              amount: amountCents,
-              currency: 'BRL',
-              email,
-              has_whatsapp: !!normalizedWhatsApp,
-              payment_provider: 'cakto',
-            }).catch(() => {});
+            try {
+              await trackEvent('payment_initiated', {
+                order_id: order.id,
+                plan: plan?.name || selectedPlan,
+                amount: amountCents,
+                currency: 'BRL',
+                email,
+                has_whatsapp: !!normalizedWhatsApp,
+                payment_provider: 'cakto',
+              });
+              // Pequeno delay para garantir que evento seja processado antes do redirect
+              await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (error) {
+              // Erro silencioso no tracking
+            }
           }
           
           supabase.functions.invoke('track-payment-click', {
@@ -2347,46 +2266,30 @@ export default function Checkout() {
           }).catch(() => {});
         }, 0);
         
-        // ✅ REDIRECIONAMENTO IMEDIATO - SEM DELAYS
-        console.log('🚀 [Cakto] ========== INICIANDO REDIRECIONAMENTO ==========');
-        console.log('🚀 [Cakto] Order ID:', order.id);
-        console.log('🚀 [Cakto] URL completa:', caktoUrl);
-        console.log('🚀 [Cakto] URL preview:', caktoUrl.substring(0, 150));
-        
-        // ✅ processing já foi definido no início da função após validações
-        // ✅ IMPORTANTE: NÃO resetar processing aqui - manter loading até redirecionamento
-        // ✅ Redirecionamento INSTANTÂNEO - o mais rápido possível
-        
-        // Forçar redirecionamento - múltiplas tentativas
-        // Método 1: window.location.replace (preferido)
-        try {
-          console.log('🚀 [Cakto] Tentando window.location.replace...');
-          window.location.replace(caktoUrl);
-          console.log('✅ [Cakto] window.location.replace executado com sucesso');
-        } catch (e) {
-          console.error('❌ [Cakto] Erro no replace:', e);
-          // Tentar href imediatamente se replace falhar
+        // ✅ REDIRECIONAMENTO - Aguardar um pouco para garantir que eventos sejam processados
+        // Pequeno delay para garantir que eventos sejam processados
+        setTimeout(() => {
           try {
-            console.log('🚀 [Cakto] Tentando window.location.href...');
-            window.location.href = caktoUrl;
-          } catch (e2) {
-            console.error('❌ [Cakto] Erro no href também:', e2);
-            // Método 3: Criar link e clicar
+            window.location.replace(caktoUrl);
+          } catch (e) {
+            // Fallback: tentar href
             try {
-              const link = document.createElement('a');
-              link.href = caktoUrl;
-              link.target = '_self';
-              link.style.display = 'none';
-              document.body.appendChild(link);
-              link.click();
-              console.log('✅ [Cakto] Link.click() executado');
-            } catch (e3) {
-              console.error('❌ [Cakto] Todos os métodos falharam:', e3);
+              window.location.href = caktoUrl;
+            } catch (e2) {
+              // Fallback final: criar link e clicar
+              try {
+                const link = document.createElement('a');
+                link.href = caktoUrl;
+                link.target = '_self';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+              } catch (e3) {
+                logger.error('Erro ao redirecionar para Cakto', e3);
+              }
             }
           }
-        }
-        
-        console.log('🚀 [Cakto] ========== FIM DO REDIRECIONAMENTO ==========');
+        }, 300);
         return;
       }
 
@@ -2415,8 +2318,9 @@ export default function Checkout() {
       }
 
       const utmQuery = getUtmQueryString(false); // Não incluir params existentes
-      const successPath = `/${currentLanguage}/payment/success${utmQuery}`;
-      const cancelPath = `/${currentLanguage}/checkout${utmQuery}`;
+      // ✅ CORREÇÃO: Payment success e checkout não usam mais prefixo de idioma
+      const successPath = `/payment-success${utmQuery}`;
+      const cancelPath = `/checkout${utmQuery}`;
       const successUrl = `${window.location.origin}${successPath}`;
       const cancelUrl = `${window.location.origin}${cancelPath}`;
       
@@ -2570,6 +2474,7 @@ export default function Checkout() {
       const actualErrorMessage = extractErrorMessage(error);
       
       // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
+      // ✅ CORREÇÃO: Usar currentLanguage ao invés de pathname
       const isPortuguese = currentLanguage === 'pt';
       if (isPortuguese && orderCreated && orderCreated.id) {
         console.log('⚠️ [Cakto] Erro ocorreu mas pedido foi criado, tentando redirecionar mesmo assim...', {

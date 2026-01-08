@@ -1,11 +1,10 @@
-import React, { createContext, useContext, ReactNode, useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import lazyTranslations from '@/lib/lazyTranslations';
 import languageAnalytics from '@/lib/languageAnalytics';
 import { detectLanguage, type SupportedLocale } from '@/lib/language-detection';
 import { getOptimizedTimeout, getDeviceInfo } from '@/utils/detection/deviceDetection';
 import { devLogOnce } from '@/utils/debug/devLogDedupe';
-import { agentLog } from '@/utils/debug/devLogger';
 
 // Verificar se está em desenvolvimento
 const isDev = import.meta.env.DEV;
@@ -140,7 +139,7 @@ const LocaleContext = createContext<LocaleContextType>({
 });
 
 // Stub simples - sempre retorna português (sem dependência de hooks)
-export const useLocaleContext = (): LocaleContextType => {
+export const useLocaleContext = () => {
   // Importar i18n diretamente para evitar dependência circular
   let i18n: any;
   try {
@@ -152,7 +151,7 @@ export const useLocaleContext = (): LocaleContextType => {
   return {
     locale: 'pt' as SupportedLocale,
     isLoading: false,
-    changeLocale: (_newLocale: SupportedLocale) => {},
+    changeLocale: () => {},
     error: null,
     redetect: () => {},
     t: (key: string, fallback?: string | Record<string, string | number>) => {
@@ -164,7 +163,7 @@ export const useLocaleContext = (): LocaleContextType => {
       }
     },
     translations: {},
-    forceLocale: (_newLocale: SupportedLocale) => {},
+    forceLocale: () => {},
     isLocaleForced: false
   };
 };
@@ -306,15 +305,8 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
   }, [locale, isLocaleForced, isAdminRoute]); // ✅ CORREÇÃO CRÍTICA: Remover location.pathname para evitar loops
 
   // ✅ CORREÇÃO: Sincronizar automaticamente o locale com o prefixo de URL
-  // Isso garante que quando o usuário acessa /checkout, o locale seja atualizado corretamente
-  const lastPathnameRef = useRef<string>('');
+  // Isso garante que quando o usuário acessa /pt/checkout, o locale seja atualizado para 'pt'
   useEffect(() => {
-    // ✅ OTIMIZAÇÃO: Evitar processamento se pathname não mudou
-    if (lastPathnameRef.current === location.pathname) {
-      return;
-    }
-    lastPathnameRef.current = location.pathname;
-    
     // Detectar locale da URL atual
     const detected = detectLanguage(location.pathname);
     
@@ -464,29 +456,18 @@ export const LocaleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  useEffect(() => {
-    agentLog({
-      location: 'LocaleContext.tsx',
-      message: 'context state changed',
-      data: { locale, isLoading, isLocaleForced },
-      timestamp: Date.now(),
-    });
-  }, [locale, isLoading, isLocaleForced]);
-
   // ✅ OTIMIZAÇÃO: Memoizar o valor do contexto para evitar re-renders desnecessários
-  const contextValue = useMemo(() => {
-    return {
-      locale,
-      isLoading,
-      changeLocale,
-      error,
-      redetect,
-      t,
-      translations,
-      forceLocale,
-      isLocaleForced
-    };
-  }, [locale, isLoading, changeLocale, error, redetect, t, translations, forceLocale, isLocaleForced]);
+  const contextValue = useMemo(() => ({
+    locale,
+    isLoading,
+    changeLocale,
+    error,
+    redetect,
+    t,
+    translations,
+    forceLocale,
+    isLocaleForced
+  }), [locale, isLoading, changeLocale, error, redetect, t, translations, forceLocale, isLocaleForced]);
 
   return (
     <LocaleContext.Provider value={contextValue}>

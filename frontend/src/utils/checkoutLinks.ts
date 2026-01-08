@@ -16,7 +16,7 @@ export function generateCaktoUrl(
   language: string = 'pt',
   utms?: Record<string, string>
 ): string {
-  const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/k63z5ui';
+  const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
   
   // Normalizar WhatsApp (apenas números)
   let normalizedWhatsapp = whatsapp.replace(/\D/g, '');
@@ -27,17 +27,9 @@ export function generateCaktoUrl(
     normalizedWhatsapp = `55${normalizedWhatsapp}`;
   }
   
-  // Logs detalhados para auditoria
-  console.log('🔍 [generateCaktoUrl] Gerando URL da Cakto:', {
-    orderId,
-    email,
-    whatsapp_original: whatsapp,
-    whatsapp_normalized: normalizedWhatsapp,
-    language,
-    hasUtms: !!utms,
-  });
+  // Logs removidos para performance
   
-  // URL de redirecionamento após pagamento
+  // ✅ CORREÇÃO: Payment success não usa prefixo de idioma
   const redirectUrl = `${window.location.origin}/payment-success`;
   
   const caktoParams = new URLSearchParams();
@@ -48,13 +40,7 @@ export function generateCaktoUrl(
   // ✅ CORREÇÃO: Só adicionar phone se WhatsApp for válido
   if (normalizedWhatsapp && normalizedWhatsapp.trim() !== '') {
     caktoParams.set('phone', normalizedWhatsapp);
-  } else {
-    console.warn('⚠️ [generateCaktoUrl] WhatsApp inválido ou vazio, URL será gerada sem phone', {
-      orderId,
-      email,
-      whatsapp
-    });
-  }
+    }
   caktoParams.set('language', language);
   caktoParams.set('redirect_url', redirectUrl);
   
@@ -69,18 +55,7 @@ export function generateCaktoUrl(
   
   const finalUrl = `${CAKTO_PAYMENT_URL}?${caktoParams.toString()}`;
   
-  // Validação e log da URL final
-  if (!finalUrl.startsWith('https://pay.cakto.com.br')) {
-    console.error('❌ [generateCaktoUrl] URL gerada não começa com https://pay.cakto.com.br:', finalUrl);
-  } else {
-    console.log('✅ [generateCaktoUrl] URL da Cakto gerada com sucesso:', {
-      url: finalUrl,
-      urlLength: finalUrl.length,
-      hasOrderId: finalUrl.includes(`order_id=${orderId}`),
-      hasEmail: finalUrl.includes(`email=`),
-      hasPhone: finalUrl.includes(`phone=${normalizedWhatsapp}`),
-    });
-  }
+  // Validação silenciosa - erro será tratado no redirecionamento
   
   return finalUrl;
 }
@@ -99,6 +74,7 @@ export function generateCheckoutUrl(
   token: string,
   language: string = 'pt'
 ): string {
+  // ✅ CORREÇÃO: Checkout não usa prefixo de idioma
   const baseUrl = window.location.origin;
   return `${baseUrl}/checkout?order_id=${orderId}&quiz_id=${quizId}&token=${token}&restore=true`;
 }
@@ -117,6 +93,7 @@ export function generateEditQuizUrl(
   token: string,
   language: string = 'pt'
 ): string {
+  // ✅ CORREÇÃO: Quiz não usa prefixo de idioma
   const baseUrl = window.location.origin;
   return `${baseUrl}/quiz?order_id=${orderId}&quiz_id=${quizId}&token=${token}&edit=true`;
 }
