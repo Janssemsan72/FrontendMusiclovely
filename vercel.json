@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd frontend && npm run build",
-  "installCommand": "cd frontend && npm install",
-  "outputDirectory": "frontend/dist",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/download/:id/:token",
@@ -14,7 +14,6 @@
   ],
   "headers": [
     {
-<<<<<<< Updated upstream
       "source": "/(.*)",
       "headers": [
         {
@@ -55,9 +54,6 @@
     },
     {
       "source": "/video/:path*",
-=======
-      "source": "/assets/:path*",
->>>>>>> Stashed changes
       "headers": [
         {
           "key": "Cache-Control",
