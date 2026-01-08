@@ -3,6 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+// Importar avatares diretamente para garantir que funcionem
+import avatar1 from '@/assets/testimonial-1.webp';
+import avatar2 from '@/assets/testimonial-2.webp';
+import avatar3 from '@/assets/testimonial-3.webp';
 
 interface Testimonial {
   id: string;
@@ -63,7 +67,7 @@ export default function Testimonials() {
       content: 'Encomendei uma música para meu casamento e foi simplesmente perfeita! Todos os convidados choraram. A qualidade de produção é incrível, parece música de rádio!',
       content_en: null,
       content_es: null,
-      avatar_url: '/testimonials/avatar-1.webp',
+      avatar_url: avatar1,
       rating: 5
     },
     {
@@ -77,7 +81,7 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: '/testimonials/avatar-2.webp',
+      avatar_url: avatar2,
       rating: 5
     },
     {
@@ -91,7 +95,7 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: '/testimonials/avatar-3.webp',
+      avatar_url: avatar3,
       rating: 5
     }
   ];
