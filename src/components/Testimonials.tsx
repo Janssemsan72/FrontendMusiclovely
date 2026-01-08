@@ -53,7 +53,21 @@ export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+<<<<<<< Updated upstream
   
+=======
+  const defaultAvatars = [avatar1, avatar2, avatar3];
+  const resolveAvatarUrl = (testimonial: { avatar_url: string | null; name: string }, index: number) => {
+    const normalizedName = testimonial.name.trim().toLowerCase();
+    const nameParts = normalizedName.split(/\s+/).filter(Boolean);
+    if (nameParts.includes('mariana')) return avatar2;
+    if (nameParts.includes('ana')) return avatar1;
+    if (nameParts.includes('carlos')) return avatar3;
+    if (testimonial.avatar_url) return testimonial.avatar_url;
+    return defaultAvatars[index % defaultAvatars.length];
+  };
+
+>>>>>>> Stashed changes
   // Dados mockados para desenvolvimento quando Supabase não está configurado
   const MOCK_TESTIMONIALS: Testimonial[] = [
     {
@@ -99,8 +113,11 @@ export default function Testimonials() {
       rating: 5
     }
   ];
+<<<<<<< Updated upstream
   
   console.log('🖼️ MOCK_TESTIMONIALS definidos:', MOCK_TESTIMONIALS.map(t => ({ name: t.name, avatar: t.avatar_url })));
+=======
+>>>>>>> Stashed changes
 
   useEffect(() => {
     async function fetchTestimonials() {
@@ -211,6 +228,7 @@ export default function Testimonials() {
 
   // Debug: sempre logar o estado
   console.log('Testimonials component - testimonials.length:', testimonials.length, 'loading:', loading);
+<<<<<<< Updated upstream
   if (testimonials.length > 0) {
     console.log('🖼️ Testimonials com avatares:', testimonials.map(t => ({ name: t.name, avatar: t.avatar_url, hasAvatar: !!t.avatar_url })));
   }
@@ -259,6 +277,53 @@ export default function Testimonials() {
     );
   }
 
+=======
+
+  // Sempre mostrar a seção, mesmo sem depoimentos
+  if (testimonials.length === 0 && !loading) {
+    return (
+      <section className="py-6 sm:py-12 px-3 sm:px-4 overflow-hidden">
+        <div className="container mx-auto">
+          <div className="text-center mb-3 sm:mb-5">
+            <div className="inline-flex items-center gap-1 sm:gap-1.5 bg-primary/10 text-primary px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span>{t('testimonials.badge')}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {t('testimonials.title')}
+              </span>
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+              {t('testimonials.subtitle')}
+            </p>
+          </div>
+
+          {/* Stats - sempre mostrar mesmo sem depoimentos */}
+          <div className="mt-8 sm:mt-12 mb-4 text-center">
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-4 sm:p-6 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">500+</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Músicas Criadas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">5.0</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+>>>>>>> Stashed changes
   // Garantir que o índice seja válido
   const validIndex = currentIndex >= 0 && currentIndex < testimonials.length 
     ? currentIndex 
@@ -272,6 +337,10 @@ export default function Testimonials() {
   const displayTestimonial = currentTestimonial || (testimonials.length > 0 
     ? getTranslatedTestimonial(testimonials[0], currentLanguage)
     : null);
+<<<<<<< Updated upstream
+=======
+  const featuredAvatarUrl = displayTestimonial ? resolveAvatarUrl(displayTestimonial, validIndex) : null;
+>>>>>>> Stashed changes
 
   if (!displayTestimonial) {
     // Fallback: mostrar apenas stats se não houver depoimentos válidos
@@ -354,6 +423,7 @@ export default function Testimonials() {
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+<<<<<<< Updated upstream
                   {displayTestimonial.avatar_url ? (
                     <img 
                       src={displayTestimonial.avatar_url} 
@@ -371,6 +441,22 @@ export default function Testimonials() {
                     />
                   ) : null}
                   <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+=======
+                  <img 
+                    src={featuredAvatarUrl || undefined} 
+                    alt={displayTestimonial.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('❌ Erro ao carregar avatar:', featuredAvatarUrl, e);
+                      e.currentTarget.style.display = 'none';
+                      (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Avatar carregado com sucesso:', featuredAvatarUrl);
+                    }}
+                  />
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base" style={{ display: featuredAvatarUrl ? 'none' : 'flex' }}>
+>>>>>>> Stashed changes
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -423,6 +509,7 @@ export default function Testimonials() {
         <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {testimonials.slice(0, 3).map((testimonial, index) => {
             const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            const avatarUrl = resolveAvatarUrl(translatedTestimonial, index);
             return (
               <Card 
                 key={testimonial.id} 
@@ -442,6 +529,7 @@ export default function Testimonials() {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+<<<<<<< Updated upstream
                       {translatedTestimonial.avatar_url ? (
                         <img 
                           src={translatedTestimonial.avatar_url} 
@@ -458,6 +546,22 @@ export default function Testimonials() {
                         />
                       ) : null}
                       <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+=======
+                      <img 
+                        src={avatarUrl} 
+                        alt={translatedTestimonial.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('❌ Erro ao carregar avatar no grid:', avatarUrl, e);
+                          e.currentTarget.style.display = 'none';
+                          (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Avatar do grid carregado:', avatarUrl);
+                        }}
+                      />
+                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm" style={{ display: avatarUrl ? 'none' : 'flex' }}>
+>>>>>>> Stashed changes
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
