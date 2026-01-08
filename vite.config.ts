@@ -4,11 +4,15 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  // ✅ CORREÇÃO: Garantir base URL correto para produção
+  base: "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // ✅ CORREÇÃO: Configuração de assets para garantir processamento correto
+  assetsInclude: ["**/*.webp", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.svg"],
   build: {
     // Usar esbuild para minificação mais rápida (mais rápido que terser)
     minify: "esbuild",
@@ -42,13 +46,15 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split(".") || [];
           const ext = info[info.length - 1];
+          // ✅ CORREÇÃO: Garantir que imagens sejam processadas corretamente
           if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext || "")) {
-            return "assets/img/[name]-[hash].[ext]";
+            // Manter nome original para facilitar debug e garantir que imports funcionem
+            return "assets/img/[name]-[hash:8].[ext]";
           }
           if (/woff2?|eot|ttf|otf/i.test(ext || "")) {
-            return "assets/fonts/[name]-[hash].[ext]";
+            return "assets/fonts/[name]-[hash:8].[ext]";
           }
-          return "assets/[ext]/[name]-[hash].[ext]";
+          return "assets/[ext]/[name]-[hash:8].[ext]";
         },
       },
     },

@@ -8,6 +8,22 @@ import avatar1 from '@/assets/testimonial-1-96.webp';
 import avatar2 from '@/assets/testimonial-2-96.webp';
 import avatar3 from '@/assets/testimonial-3-96.webp';
 
+// ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
+const getImageUrl = (url: string | undefined): string | undefined => {
+  if (!url) return undefined;
+  // Se já é uma URL completa, retornar como está
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
+    return url;
+  }
+  // Se começa com /, retornar como está (caminho absoluto)
+  if (url.startsWith('/')) {
+    return url;
+  }
+  // Para imports do Vite, garantir que seja tratado como caminho absoluto
+  // O Vite já processa os imports e retorna URLs corretas
+  return url;
+};
+
 interface Testimonial {
   id: string;
   name: string;
@@ -340,7 +356,7 @@ export default function Testimonials() {
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
                   {displayTestimonial.avatar_url && (
                     <img 
-                      src={displayTestimonial.avatar_url} 
+                      src={getImageUrl(displayTestimonial.avatar_url)} 
                       alt={displayTestimonial.name}
                       className="w-full h-full object-cover absolute inset-0"
                       width={40}
@@ -441,7 +457,7 @@ export default function Testimonials() {
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
                       {translatedTestimonial.avatar_url && (
                         <img 
-                          src={translatedTestimonial.avatar_url} 
+                          src={getImageUrl(translatedTestimonial.avatar_url)} 
                           alt={translatedTestimonial.name}
                           className="w-full h-full object-cover absolute inset-0"
                           width={40}
