@@ -349,7 +349,6 @@ export default function Testimonials() {
                       decoding="async"
                       onError={(e) => {
                         // Fallback para avatar padrão se a imagem não carregar
-                        // Log removido
                         e.currentTarget.style.display = 'none';
                         (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
                       }}
@@ -440,7 +439,6 @@ export default function Testimonials() {
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            // Log removido
                             e.currentTarget.style.display = 'none';
                             (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
                           }}

@@ -18,6 +18,9 @@ import {
   Quote
 } from 'lucide-react';
 import { useScrollAnimations } from '@/hooks/use-scroll-animations';
+import testimonial1 from '@/assets/testimonial-1.webp';
+import testimonial2 from '@/assets/testimonial-2.webp';
+import testimonial3 from '@/assets/testimonial-3.webp';
 
 // NOTA: Esta página NÃO renderiza Header ou Footer - página standalone
 export default function Company() {
@@ -95,21 +98,21 @@ export default function Company() {
       role: 'Cliente',
       content: 'Fiquei emocionada ao ouvir a música criada para o aniversário do meu pai. A equipe capturou perfeitamente nossas memórias em forma de melodia. Recomendo de coração!',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=47'
+      avatar: testimonial1
     },
     {
       name: 'João Santos',
       role: 'Cliente',
       content: 'Surpreendente! A música para o casamento foi perfeita. Todos os convidados ficaram encantados. Profissionalismo e qualidade excepcionais.',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=33'
+      avatar: testimonial3
     },
     {
       name: 'Ana Costa',
       role: 'Cliente',
       content: 'Criei uma homenagem para minha avó e foi a melhor surpresa que já dei. A letra tocou o coração de toda a família. Obrigada Music Lovely!',
       rating: 5,
-      avatar: 'https://i.pravatar.cc/150?img=45'
+      avatar: testimonial2
     }
   ];
 
