@@ -56,9 +56,10 @@ export default function Testimonials() {
   const defaultAvatars = [avatar1, avatar2, avatar3];
   const resolveAvatarUrl = (testimonial: { avatar_url: string | null; name: string }, index: number) => {
     const normalizedName = testimonial.name.trim().toLowerCase();
-    if (normalizedName.includes('ana')) return avatar1;
-    if (normalizedName.includes('mariana')) return avatar3;
-    if (normalizedName.includes('carlos')) return avatar2;
+    const nameParts = normalizedName.split(/\s+/).filter(Boolean);
+    if (nameParts.includes('mariana')) return avatar2;
+    if (nameParts.includes('ana')) return avatar1;
+    if (nameParts.includes('carlos')) return avatar3;
     if (testimonial.avatar_url) return testimonial.avatar_url;
     return defaultAvatars[index % defaultAvatars.length];
   };

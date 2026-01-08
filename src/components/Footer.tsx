@@ -5,6 +5,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 // Locale removido - apenas português
 import { Mail, Heart, Music } from "lucide-react";
 import { useUtmParams } from "@/hooks/useUtmParams";
+import { LinkWithUtms } from "@/components/LinkWithUtms";
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -109,28 +110,28 @@ export default function Footer() {
                 <h3 className="font-semibold text-foreground mb-4">{t('footer.quickLinks')}</h3>
                 <ul className="space-y-2">
                   <li>
-                    <button
-                      onClick={() => handlePageClick('/')}
+                    <LinkWithUtms
+                      to="/"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.home')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                   <li>
-                    <button
-                      onClick={() => handlePageClick('/quiz')}
+                    <LinkWithUtms
+                      to="/quiz"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('navigation.createMusic')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                   <li>
-                    <button
-                      onClick={() => handleSectionClick('radiola')}
+                    <LinkWithUtms
+                      to="/#radiola"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.listenExample')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                 </ul>
               </div>
@@ -140,36 +141,36 @@ export default function Footer() {
                 <h3 className="font-semibold text-foreground mb-4">{t('footer.support')}</h3>
                 <ul className="space-y-2">
                   <li>
-                    <button
-                      onClick={() => handleSectionClick('faq')}
+                    <LinkWithUtms
+                      to="/#faq"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.faq')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                   <li>
-                    <button
-                      onClick={() => handleSectionClick('pricing')}
+                    <LinkWithUtms
+                      to="/#pricing"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.pricing')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                   <li>
-                    <button
-                      onClick={() => handlePageClick('/terms')}
+                    <LinkWithUtms
+                      to="/terms"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.terms')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                   <li>
-                    <button
-                      onClick={() => handlePageClick('/privacy')}
+                    <LinkWithUtms
+                      to="/privacy"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
                       {t('footer.privacy')}
-                    </button>
+                    </LinkWithUtms>
                   </li>
                 </ul>
               </div>

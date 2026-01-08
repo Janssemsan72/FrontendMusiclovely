@@ -137,6 +137,14 @@ export default function HeroSection() {
         <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-3 sm:mb-4 px-2 sm:px-4 leading-relaxed">
           {t('hero.subtitle')}
         </p>
+        
+        <div className="max-w-3xl mx-auto px-2 sm:px-4 mb-4 sm:mb-6">
+          <p className="text-sm sm:text-base text-muted-foreground/90 leading-relaxed text-center">
+            Crie músicas personalizadas de alta qualidade para casamentos, aniversários, homenagens e momentos especiais. 
+            Nossa equipe de músicos profissionais trabalha com você para criar uma canção única que capture suas emoções e histórias. 
+            Produção de estúdio profissional, letras personalizadas e entrega rápida garantida.
+          </p>
+        </div>
 
         <div className="flex justify-center items-center mb-4 sm:mb-6 px-2">
           <Button

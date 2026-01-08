@@ -105,14 +105,14 @@ export default function Company() {
       role: 'Cliente',
       content: 'Surpreendente! A música para o casamento foi perfeita. Todos os convidados ficaram encantados. Profissionalismo e qualidade excepcionais.',
       rating: 5,
-      avatar: testimonial2
+      avatar: testimonial3
     },
     {
       name: 'Ana Costa',
       role: 'Cliente',
       content: 'Criei uma homenagem para minha avó e foi a melhor surpresa que já dei. A letra tocou o coração de toda a família. Obrigada Music Lovely!',
       rating: 5,
-      avatar: testimonial3
+      avatar: testimonial2
     }
   ];
 
