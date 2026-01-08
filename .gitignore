@@ -42,3 +42,14 @@ SOLUCAO_SECRET*.md
 CORRIGIR_*.md
 .cursor/plans/*.plan.md
 custom-sound-forge-main*/
+
+# Arquivos que não são do frontend
+backend/
+backups/
+supabase/functions/
+scripts-admin/
+test-avatar-*.svg
+test-avatar-*.jpg
+test-avatar-*.png
+Musiclovelyoficial-main/
+frontendmusiclovely-clone/
