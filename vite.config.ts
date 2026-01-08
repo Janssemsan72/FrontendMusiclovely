@@ -21,42 +21,41 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Chunks manuais para melhor cache e carregamento paralelo
-        // ✅ CORREÇÃO: Lógica mais específica para evitar dependências circulares
+        // ✅ CORREÇÃO: Lógica simplificada e segura para evitar quebrar dependências
         manualChunks: (id) => {
           // Vendor chunks separados para melhor cache
           if (id.includes("node_modules")) {
-            // React core - verificar primeiro e ser mais específico
-            if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) {
-              return "vendor-react-core";
+            // React e React DOM devem estar juntos para evitar problemas de dependência
+            if (id.includes("react") && (id.includes("/react/") || id.includes("/react-dom/"))) {
+              return "vendor-react";
             }
-            if (id.includes("node_modules/react-router")) {
-              return "vendor-react-router";
+            // React Router - pode estar separado
+            if (id.includes("react-router")) {
+              return "vendor-router";
             }
-            // UI libraries - verificar antes de outros
-            if (id.includes("node_modules/@radix-ui")) {
+            // UI libraries
+            if (id.includes("@radix-ui")) {
               return "vendor-ui";
             }
             // Query library
-            if (id.includes("node_modules/@tanstack/react-query")) {
+            if (id.includes("@tanstack/react-query")) {
               return "vendor-query";
             }
             // Supabase
-            if (id.includes("node_modules/@supabase")) {
+            if (id.includes("@supabase")) {
               return "vendor-supabase";
             }
             // i18n
-            if (id.includes("node_modules/react-i18next") || id.includes("node_modules/i18next")) {
+            if (id.includes("react-i18next") || id.includes("/i18next/")) {
               return "vendor-i18n";
             }
             // Lucide icons
-            if (id.includes("node_modules/lucide-react")) {
+            if (id.includes("lucide-react")) {
               return "vendor-icons";
             }
-            // Outros vendors - apenas se não foi categorizado acima
+            // Outros vendors
             return "vendor-other";
           }
-          // Retornar undefined para código da aplicação (não chunk manual)
-          return undefined;
         },
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
