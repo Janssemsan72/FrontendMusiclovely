@@ -337,27 +337,37 @@ export default function Testimonials() {
               </blockquote>
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  {displayTestimonial.avatar_url ? (
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                  {displayTestimonial.avatar_url && (
                     <img 
                       src={displayTestimonial.avatar_url} 
                       alt={displayTestimonial.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover absolute inset-0"
                       width={40}
                       height={40}
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
                         // Fallback para avatar padrão se a imagem não carregar
-                        e.currentTarget.style.display = 'none';
-                        (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'flex';
+                        }
                       }}
-                      onLoad={() => {
-                        // Log removido
+                      onLoad={(e) => {
+                        // Garantir que a imagem seja exibida quando carregar
+                        const target = e.currentTarget;
+                        target.style.display = 'block';
+                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'none';
+                        }
                       }}
                     />
-                  ) : null}
-                  <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                  )}
+                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -428,26 +438,36 @@ export default function Testimonials() {
                     "{translatedTestimonial.content}"
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      {translatedTestimonial.avatar_url ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                      {translatedTestimonial.avatar_url && (
                         <img 
                           src={translatedTestimonial.avatar_url} 
                           alt={translatedTestimonial.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover absolute inset-0"
                           width={40}
                           height={40}
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            (e.currentTarget.nextElementSibling as HTMLElement | null)?.style.setProperty('display', 'flex');
+                            const target = e.currentTarget;
+                            target.style.display = 'none';
+                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'flex';
+                            }
                           }}
-                          onLoad={() => {
-                            // Log removido
+                          onLoad={(e) => {
+                            // Garantir que a imagem seja exibida quando carregar
+                            const target = e.currentTarget;
+                            target.style.display = 'block';
+                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'none';
+                            }
                           }}
                         />
-                      ) : null}
-                      <div className="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                      )}
+                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
