@@ -89,6 +89,12 @@ const getCaktoConfig = () => {
   };
 };
 
+// ✅ Alias para getCaktoConfig (compatibilidade)
+const getCaktoConfigByDomain = () => getCaktoConfig();
+
+// ✅ Alias para getCaktoConfig (compatibilidade)
+const getCaktoConfigByDomain = () => getCaktoConfig();
+
 export default function Checkout() {
   logger.debug('Checkout component mounted');
   
