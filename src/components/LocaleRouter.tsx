@@ -38,28 +38,43 @@ function LocaleRouterWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // ✅ CORREÇÃO: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
-  useEffect(() => {
-    const currentPath = location.pathname;
+  // ✅ CORREÇÃO CRÍTICA: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
+  // Fazer verificação síncrona ANTES de qualquer renderização para evitar 404 em produção
+  const currentPath = location.pathname;
+  const shouldRedirect = currentPath.startsWith('/pt/') || currentPath === '/pt' ||
+                         currentPath.startsWith('/en/') || currentPath === '/en' ||
+                         currentPath.startsWith('/es/') || currentPath === '/es';
+  
+  // ✅ CORREÇÃO: Redirecionar imediatamente se necessário, sem esperar useEffect
+  if (shouldRedirect) {
+    const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
+    const newPath = `${pathWithoutLocale}${location.search || ''}${location.hash || ''}`;
     
-    // Se a rota começa com /pt/, /en/ ou /es/, redirecionar para a mesma rota sem o prefixo
-    if (currentPath.startsWith('/pt/') || currentPath === '/pt' ||
-        currentPath.startsWith('/en/') || currentPath === '/en' ||
-        currentPath.startsWith('/es/') || currentPath === '/es') {
-      const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
-      const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
+    // Usar navigate de forma síncrona para garantir redirecionamento imediato
+    navigate(newPath, { replace: true });
+    
+    // Retornar null enquanto redireciona para evitar renderização com rota inválida
+    return null;
+  }
+  
+  // ✅ CORREÇÃO: Também usar useEffect como fallback para casos edge
+  useEffect(() => {
+    const path = location.pathname;
+    
+    // Verificação dupla para garantir que não perdemos nenhum caso
+    if (path.startsWith('/pt/') || path === '/pt' ||
+        path.startsWith('/en/') || path === '/en' ||
+        path.startsWith('/es/') || path === '/es') {
+      const pathWithoutLocale = path.replace(/^\/(pt|en|es)/, '') || '/';
+      const newPath = `${pathWithoutLocale}${location.search || ''}${location.hash || ''}`;
       
-      console.log('🔄 [LocaleRouter] Redirecionando rota com prefixo de idioma:', {
-        from: currentPath,
-        to: newPath
-      });
-      
-      navigate(newPath, { replace: true });
+      if (path !== newPath) {
+        navigate(newPath, { replace: true });
+      }
     }
   }, [location.pathname, location.search, location.hash, navigate]);
   
   // Verificar se já tem locale válido ANTES de qualquer hook
-  const currentPath = location.pathname;
   const localeFromPath = getCurrentLocale(currentPath);
   const hasValidLocale = !!(
     localeFromPath && 
@@ -67,7 +82,7 @@ function LocaleRouterWrapper() {
   );
   
   // ✅ CORREÇÃO: Se tem locale válido (pt, en, es), NÃO renderizar PublicRoutes diretamente
-  // O useEffect acima vai redirecionar primeiro
+  // O redirecionamento acima já foi feito
   // Se não tem locale válido, renderizar LocaleRouter para processar
   return <LocaleRouterInternal />;
 }

@@ -737,6 +737,12 @@
       }
     }
   },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "A página que você está procurando não existe ou foi movida.",
+    "backHome": "Voltar para Home",
+    "goBack": "Voltar"
+  },
   "privacy": {
     "title": "Política de Privacidade",
     "lastUpdated": "Última atualização",
