@@ -224,6 +224,9 @@ export default function SongDownload() {
       const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
       const functionUrl = `https://${projectRef}.functions.supabase.co/download-song`;
 
+      // ✅ CORREÇÃO: Não depender de song.orders quando song é null (tela de sucesso)
+      const customerEmail = email || (song?.orders?.customer_email) || null;
+
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
@@ -232,7 +235,7 @@ export default function SongDownload() {
         },
         body: JSON.stringify({
           song_id: songId,
-          email: email || song.orders?.customer_email,
+          email: customerEmail,
           magic_token: magicToken,
         }),
       });
@@ -391,16 +394,50 @@ export default function SongDownload() {
                 <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h2 className="text-2xl font-bold text-foreground">
-                  {t('songDownload.download.success') || 'Download iniciado com sucesso!'}
+                  {t('songDownload.download.success') || 'Download efetuado com sucesso!'}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  {t('songDownload.download.instructions') || 'O arquivo já foi baixado. Procure na pasta de Downloads do seu aparelho.'}
-                </p>
+                <div className="p-3 sm:p-4 bg-green-50 dark:bg-green-950 border-2 border-green-200 dark:border-green-800 rounded-lg">
+                  <p className="text-sm sm:text-base font-medium text-green-900 dark:text-green-100 mb-3">
+                    O arquivo foi baixado com sucesso!
+                  </p>
+                  <div className="text-xs sm:text-sm text-green-800 dark:text-green-200 leading-relaxed">
+                    <p className="font-bold mb-2 text-sm sm:text-base">Como encontrar seu arquivo:</p>
+                    <ul className="space-y-1.5 list-none pl-0">
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 flex-shrink-0">•</span>
+                        <span><strong>Celular:</strong> App "Arquivos" → pasta <strong>"Downloads"</strong></span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 flex-shrink-0">•</span>
+                        <span><strong>Computador:</strong> Pasta <strong>"Downloads"</strong></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               <div className="w-full space-y-3 pt-4">
+                <Button
+                  onClick={() => id && handleDownload(id)}
+                  disabled={downloading === id}
+                  className="w-full flex items-center justify-center gap-2"
+                  size="lg"
+                >
+                  {downloading === id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t('songDownload.downloading') || 'Baixando...'}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4" />
+                      {t('songDownload.downloadAgain') || 'Baixar Novamente'}
+                    </>
+                  )}
+                </Button>
+
                 <Button
                   onClick={handleCopyLink}
                   variant="outline"
