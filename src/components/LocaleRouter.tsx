@@ -161,15 +161,35 @@ function LocaleRouterInternal() {
     );
     
     if (hasValidLocaleCheck) {
-      // Se já tem locale válido, apenas atualizar contexto e retornar
+      // ✅ CORREÇÃO: Se tem locale válido na URL, redirecionar para remover prefixo
+      const pathWithoutLocale = removeLocalePrefix(currentPathCheck);
+      const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
+      const search = location.search || '';
+      const hash = location.hash || '';
+      const finalPath = `${newPath}${search}${hash}`;
+      
+      // Atualizar contexto
       forceLocaleRef.current(localeFromPathCheck);
-      lastProcessedRouteKeyRef.current = routeKey;
+      
+      // ✅ FASE 5: Marcar como navegando usando estado global
+      globalNavigationState.isNavigating = true;
+      globalNavigationState.lastNavigationTime = Date.now();
+      
       globalNavigationState.hasProcessed.set(routeKey, Date.now());
       globalNavigationState.isProcessing = false;
       if (globalNavigationState.processingTimeout) {
         clearTimeout(globalNavigationState.processingTimeout);
         globalNavigationState.processingTimeout = null;
       }
+      
+      setTimeout(() => {
+        navigate(finalPath, { replace: true });
+        setTimeout(() => {
+          globalNavigationState.isNavigating = false;
+          lastProcessedRouteKeyRef.current = finalPath;
+        }, 100);
+      }, 0);
+      
       return;
     }
     
@@ -234,24 +254,43 @@ function LocaleRouterInternal() {
       return;
     }
 
-    // ✅ FASE 3: Desabilitar LocaleRouter para Rotas com Locale Correto
-    // Se já tem locale na URL e é válido, apenas fixar contexto e retornar
+    // ✅ CORREÇÃO: Se tem locale na URL, SEMPRE redirecionar para remover o prefixo
+    // Nunca manter prefixo /pt, /en ou /es na URL
     if (localeFromPath && SUPPORTED_LOCALES.includes(localeFromPath as any)) {
       // ✅ FASE 2: Adicionar ao cache com timestamp
       globalNavigationState.hasProcessed.set(routeKey, Date.now());
       
-      // ✅ FASE 5: Resetar flags imediatamente
+      // ✅ CORREÇÃO CRÍTICA: Redirecionar para remover prefixo de locale
+      const pathWithoutLocale = removeLocalePrefix(currentPath);
+      const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
+      const search = location.search || '';
+      const hash = location.hash || '';
+      const finalPath = `${newPath}${search}${hash}`;
+      
+      // Atualizar contexto com o locale detectado
+      forceLocaleRef.current(localeFromPath);
+      languageAnalytics.trackUrlAccess(localeFromPath, currentPath);
+      
+      // ✅ FASE 5: Marcar como navegando usando estado global
+      globalNavigationState.isNavigating = true;
+      globalNavigationState.lastNavigationTime = Date.now();
+      
+      // ✅ FASE 5: Resetar flags antes de navegar
       globalNavigationState.isProcessing = false;
       if (globalNavigationState.processingTimeout) {
         clearTimeout(globalNavigationState.processingTimeout);
         globalNavigationState.processingTimeout = null;
       }
       
-      // Apenas atualizar contexto, sem navegar
-      forceLocaleRef.current(localeFromPath);
-      languageAnalytics.trackUrlAccess(localeFromPath, currentPath);
-      // ✅ CORREÇÃO CRÍTICA: Atualizar ref quando não há navegação
-      lastProcessedRouteKeyRef.current = routeKey;
+      setTimeout(() => {
+        navigate(finalPath, { replace: true });
+        // ✅ CORREÇÃO CRÍTICA: Atualizar ref após navegação
+        setTimeout(() => {
+          globalNavigationState.isNavigating = false;
+          lastProcessedRouteKeyRef.current = finalPath;
+        }, 100);
+      }, 0);
+      
       return;
     }
 
@@ -433,17 +472,36 @@ function LocaleRouterInternal() {
       }
     };
 
-    // ✅ CORREÇÃO CRÍTICA: Verificar hasValidLocale ANTES de executar detectAndRedirect
+    // ✅ CORREÇÃO CRÍTICA: Se tem locale válido na URL, redirecionar para remover prefixo
     if (hasValidLocale) {
-      // Se já tem locale válido, apenas atualizar contexto e retornar
+      const pathWithoutLocale = removeLocalePrefix(location.pathname);
+      const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
+      const search = location.search || '';
+      const hash = location.hash || '';
+      const finalPath = `${newPath}${search}${hash}`;
+      
+      // Atualizar contexto
       forceLocaleRef.current(localeFromPath);
-      lastProcessedRouteKeyRef.current = routeKey;
+      
+      // ✅ FASE 5: Marcar como navegando usando estado global
+      globalNavigationState.isNavigating = true;
+      globalNavigationState.lastNavigationTime = Date.now();
+      
       globalNavigationState.hasProcessed.set(routeKey, Date.now());
       globalNavigationState.isProcessing = false;
       if (globalNavigationState.processingTimeout) {
         clearTimeout(globalNavigationState.processingTimeout);
         globalNavigationState.processingTimeout = null;
       }
+      
+      setTimeout(() => {
+        navigate(finalPath, { replace: true });
+        setTimeout(() => {
+          globalNavigationState.isNavigating = false;
+          lastProcessedRouteKeyRef.current = finalPath;
+        }, 100);
+      }, 0);
+      
       return;
     }
     
@@ -543,15 +601,35 @@ function LocaleRouterInternal() {
       );
       
       if (hasValidLocaleCheck) {
-        // Se já tem locale válido, apenas atualizar contexto e retornar
+        // ✅ CORREÇÃO: Se tem locale válido na URL, redirecionar para remover prefixo
+        const pathWithoutLocale = removeLocalePrefix(currentPathCheck);
+        const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
+        const search = location.search || '';
+        const hash = location.hash || '';
+        const finalPath = `${newPath}${search}${hash}`;
+        
+        // Atualizar contexto
         forceLocaleRef.current(localeFromPathCheck);
-        lastProcessedRouteKeyRef.current = routeKey;
+        
+        // ✅ FASE 5: Marcar como navegando usando estado global
+        globalNavigationState.isNavigating = true;
+        globalNavigationState.lastNavigationTime = Date.now();
+        
         globalNavigationState.hasProcessed.set(routeKey, Date.now());
         globalNavigationState.isProcessing = false;
         if (globalNavigationState.processingTimeout) {
           clearTimeout(globalNavigationState.processingTimeout);
           globalNavigationState.processingTimeout = null;
         }
+        
+        setTimeout(() => {
+          navigate(finalPath, { replace: true });
+          setTimeout(() => {
+            globalNavigationState.isNavigating = false;
+            lastProcessedRouteKeyRef.current = finalPath;
+          }, 100);
+        }, 0);
+        
         return;
       }
       
