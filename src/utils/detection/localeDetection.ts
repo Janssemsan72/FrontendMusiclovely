@@ -41,18 +41,17 @@ export function detectAndPersistLocale(): SupportedLocale {
 
 /**
  * Gera path localizado para uma rota
+ * ✅ CORREÇÃO: Nunca adicionar prefixo /pt - sempre retornar caminho sem prefixo
  */
 export function getLocalizedPath(path: string, locale: SupportedLocale): string {
   // Remover barra final se existir
   const cleanPath = path.endsWith('/') && path !== '/' ? path.slice(0, -1) : path;
   
-  // Se já tem prefixo de idioma, retornar como está
-  if (cleanPath.startsWith('/pt') || cleanPath.startsWith('/en') || cleanPath.startsWith('/es')) {
-    return cleanPath;
-  }
+  // Remover prefixo de idioma se existir
+  const pathWithoutLocale = cleanPath.replace(/^\/(pt|en|es)/, '') || '/';
   
-  // Adicionar prefixo de idioma
-  return `/${locale}${cleanPath === '/' ? '' : cleanPath}`;
+  // ✅ CORREÇÃO: Nunca adicionar prefixo - sempre retornar caminho sem prefixo
+  return pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
 }
 
 /**

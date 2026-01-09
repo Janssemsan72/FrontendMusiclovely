@@ -36,6 +36,27 @@ const MAX_CACHE_SIZE = 100; // Máximo de rotas no cache
 // ✅ SOLUÇÃO ULTRA RADICAL: Wrapper que verifica locale ANTES de renderizar LocaleRouter
 function LocaleRouterWrapper() {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  // ✅ CORREÇÃO: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
+  useEffect(() => {
+    const currentPath = location.pathname;
+    
+    // Se a rota começa com /pt/, /en/ ou /es/, redirecionar para a mesma rota sem o prefixo
+    if (currentPath.startsWith('/pt/') || currentPath === '/pt' ||
+        currentPath.startsWith('/en/') || currentPath === '/en' ||
+        currentPath.startsWith('/es/') || currentPath === '/es') {
+      const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
+      const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
+      
+      console.log('🔄 [LocaleRouter] Redirecionando rota com prefixo de idioma:', {
+        from: currentPath,
+        to: newPath
+      });
+      
+      navigate(newPath, { replace: true });
+    }
+  }, [location.pathname, location.search, location.hash, navigate]);
   
   // Verificar se já tem locale válido ANTES de qualquer hook
   const currentPath = location.pathname;
@@ -45,11 +66,8 @@ function LocaleRouterWrapper() {
     SUPPORTED_LOCALES.includes(localeFromPath as any)
   );
   
-  // Se já tem locale válido, retornar PublicRoutes diretamente SEM renderizar LocaleRouter
-  if (hasValidLocale) {
-    return <PublicRoutes />;
-  }
-  
+  // ✅ CORREÇÃO: Se tem locale válido (pt, en, es), NÃO renderizar PublicRoutes diretamente
+  // O useEffect acima vai redirecionar primeiro
   // Se não tem locale válido, renderizar LocaleRouter para processar
   return <LocaleRouterInternal />;
 }
@@ -269,14 +287,9 @@ function LocaleRouterInternal() {
           }
           
           // Redirecionar para o idioma preferido
+          // ✅ CORREÇÃO: Nunca adicionar prefixo /pt - sempre usar caminho sem prefixo
           const pathWithoutLocale = removeLocalePrefix(currentPath);
-          // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
-          const isMusicLovelyShop = typeof window !== 'undefined' && 
-            (window.location.hostname.includes('musiclovely.shop') || 
-             window.location.hostname === 'www.musiclovely.shop');
-          const newPath = (isMusicLovelyShop && preferred === 'pt')
-            ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
-            : `/${preferred}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
+          const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
           const finalPath = `${newPath}${location.search || ''}${location.hash || ''}`;
           
           localStorage.setItem('musiclovely_language', preferred);
@@ -362,11 +375,6 @@ function LocaleRouterInternal() {
         // ✅ FASE 2: Marcar como processado antes de redirecionar
         globalNavigationState.hasProcessed.set(routeKey, Date.now());
         
-        // ✅ NOVO: Para musiclovely.shop, português não usa prefixo /pt
-        const isMusicLovelyShop = typeof window !== 'undefined' && 
-          (window.location.hostname.includes('musiclovely.shop') || 
-           window.location.hostname === 'www.musiclovely.shop');
-        
         // ✅ FASE 3: Se já está correto, só fixa contexto e grava preferências
         if (localeFromPath === final) {
           forceLocaleRef.current(final);
@@ -385,11 +393,9 @@ function LocaleRouterInternal() {
         }
         
         // Redirecionar para o idioma decidido
+        // ✅ CORREÇÃO: Nunca adicionar prefixo /pt - sempre usar caminho sem prefixo
         const pathWithoutLocale = removeLocalePrefix(currentPath);
-        // ✅ NOVO: Para musiclovely.shop, português não usa prefixo
-        const newPath = (isMusicLovelyShop && final === 'pt') 
-          ? `${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
-          : `/${final}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
+        const newPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
         const search = location.search || '';
         const hash = location.hash || '';
         const finalPath = `${newPath}${search}${hash}`;

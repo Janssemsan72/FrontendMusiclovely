@@ -3237,8 +3237,8 @@ export default function AdminWhatsappFunnel() {
                                 .single()
                                 .then(({ data: link }) => {
                                   if (link?.token) {
-                                    const locale = selectedFunnel.quiz?.language || 'pt';
-                                    const editUrl = `${window.location.origin}/${locale}/quiz?order_id=${orderId}&quiz_id=${quizId}&token=${link.token}&edit=true`;
+                                    // ✅ CORREÇÃO: Remover prefixo /pt - sempre usar caminho sem prefixo
+                                    const editUrl = `${window.location.origin}/quiz?order_id=${orderId}&quiz_id=${quizId}&token=${link.token}&edit=true`;
                                     window.open(editUrl, '_blank');
                                     toast.success('Abrindo página de edição do quiz...');
                                   } else {
