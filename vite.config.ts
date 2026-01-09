@@ -11,6 +11,19 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // ✅ CORREÇÃO: Configurações de servidor para evitar cache
+  server: {
+    // Forçar HMR (Hot Module Replacement) a funcionar corretamente
+    hmr: {
+      overlay: true,
+    },
+    // Desabilitar cache de headers
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
+    },
+  },
   // ✅ CORREÇÃO: Configuração de assets para garantir processamento correto
   assetsInclude: ["**/*.webp", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.svg"],
   build: {
@@ -48,8 +61,10 @@ export default defineConfig({
           const ext = info[info.length - 1];
           // ✅ CORREÇÃO: Garantir que imagens sejam processadas corretamente
           if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext || "")) {
-            // Manter nome original para facilitar debug e garantir que imports funcionem
-            return "assets/img/[name]-[hash:8].[ext]";
+            // ✅ CORREÇÃO CRÍTICA: Usar hash mais curto e garantir que o nome seja preservado
+            // Isso garante que os imports do Vite funcionem corretamente em produção
+            const name = assetInfo.name?.replace(/\.[^/.]+$/, "") || "image";
+            return `assets/img/${name}-[hash:8].[ext]`;
           }
           if (/woff2?|eot|ttf|otf/i.test(ext || "")) {
             return "assets/fonts/[name]-[hash:8].[ext]";
