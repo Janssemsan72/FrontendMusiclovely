@@ -1,0 +1,556 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+// Importar avatares diretamente para garantir que funcionem
+import avatar1 from '@/assets/testimonial-1.webp';
+import avatar2 from '@/assets/testimonial-2.webp';
+import avatar3 from '@/assets/testimonial-3.webp';
+
+// ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
+const getImageUrl = (url: string | undefined | null): string | undefined => {
+  if (!url) return undefined;
+  
+  // Converter para string se necessário (imports do Vite podem retornar diferentes tipos)
+  const urlString = String(url).trim();
+  if (!urlString) return undefined;
+  
+  // Se já é uma URL completa (http/https/data), retornar como está
+  if (urlString.startsWith('http://') || urlString.startsWith('https://') || urlString.startsWith('data:')) {
+    return urlString;
+  }
+  
+  // ✅ CORREÇÃO CRÍTICA: Para imports do Vite em produção, o Vite retorna uma string que:
+  // - Em dev: pode ser "/src/assets/testimonial-1.webp" ou "/@fs/..."
+  // - Em produção: deve ser "/assets/img/testimonial-1-[hash].webp"
+  // Se começar com /, retornar como está (caminho absoluto) - funciona em dev e produção
+  if (urlString.startsWith('/')) {
+    return urlString;
+  }
+  
+  // Se não começar com /, pode ser um problema em produção
+  // Mas imports do Vite geralmente retornam caminhos absolutos
+  // Se for um caminho relativo, adicionar / no início
+  console.warn('⚠️ [Testimonials] URL de imagem não começa com /, adicionando /:', urlString);
+  return '/' + urlString;
+};
+
+interface Testimonial {
+  id: string;
+  name: string;
+  name_en: string | null;
+  name_es: string | null;
+  role: string | null;
+  role_en: string | null;
+  role_es: string | null;
+  content: string;
+  content_en: string | null;
+  content_es: string | null;
+  avatar_url: string | null;
+  rating: number | null;
+}
+
+// Função para traduzir testimonial baseado no idioma atual
+const getTranslatedTestimonial = (testimonial: Testimonial, language: string) => {
+  if (language === 'en') {
+    return {
+      ...testimonial,
+      name: testimonial.name_en || testimonial.name,
+      role: testimonial.role_en || testimonial.role,
+      content: testimonial.content_en || testimonial.content
+    };
+  } else if (language === 'es') {
+    return {
+      ...testimonial,
+      name: testimonial.name_es || testimonial.name,
+      role: testimonial.role_es || testimonial.role,
+      content: testimonial.content_es || testimonial.content
+    };
+  }
+  // Português (padrão)
+  return testimonial;
+};
+
+export default function Testimonials() {
+  const { t, currentLanguage } = useTranslation();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Dados mockados para desenvolvimento quando Supabase não está configurado
+  const MOCK_TESTIMONIALS: Testimonial[] = [
+    {
+      id: 'mock-1',
+      name: 'Ana Silva',
+      name_en: null,
+      name_es: null,
+      role: 'Noiva',
+      role_en: null,
+      role_es: null,
+      content: 'Encomendei uma música para meu casamento e foi simplesmente perfeita! Todos os convidados choraram. A qualidade de produção é incrível, parece música de rádio!',
+      content_en: null,
+      content_es: null,
+      // ✅ CORREÇÃO: Garantir que avatar_url seja sempre uma string válida
+      // O Vite processa imports de imagens e retorna uma string com a URL
+      avatar_url: typeof avatar1 === 'string' ? avatar1 : String(avatar1),
+      rating: 5
+    },
+    {
+      id: 'mock-2',
+      name: 'Carlos Mendes',
+      name_en: null,
+      name_es: null,
+      role: 'Empresário',
+      role_en: null,
+      role_es: null,
+      content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
+      content_en: null,
+      content_es: null,
+      avatar_url: typeof avatar2 === 'string' ? avatar2 : String(avatar2),
+      rating: 5
+    },
+    {
+      id: 'mock-3',
+      name: 'Mariana Costa',
+      name_en: null,
+      name_es: null,
+      role: 'Filha',
+      role_en: null,
+      role_es: null,
+      content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
+      content_en: null,
+      content_es: null,
+      avatar_url: typeof avatar3 === 'string' ? avatar3 : String(avatar3),
+      rating: 5
+    }
+  ];
+  
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        // Verificar se o Supabase está configurado (não é dummy client)
+        const isDummyClient = !import.meta.env.VITE_SUPABASE_ANON_KEY && !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        
+        if (isDummyClient) {
+          setTestimonials(MOCK_TESTIMONIALS);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('testimonials')
+          .select('id, name, name_en, name_es, role, role_en, role_es, content, content_en, content_es, avatar_url, rating, is_active, display_order')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        if (error) {
+          // Tentar buscar todos os depoimentos (sem filtro is_active) para debug
+          const { data: allData, error: allError } = await supabase
+            .from('testimonials')
+            .select('id, name, name_en, name_es, role, role_en, role_es, content, content_en, content_es, avatar_url, rating, is_active, display_order')
+            .order('display_order', { ascending: true });
+          
+          if (!allError && allData && allData.length > 0) {
+            // Se houver depoimentos mas nenhum ativo, usar os primeiros 3
+            // ✅ CORREÇÃO: Garantir que avatares sejam strings válidas
+            const processedData = allData.slice(0, 3).map(t => ({
+              ...t,
+              avatar_url: t.avatar_url || null
+            }));
+            setTestimonials(processedData);
+          } else {
+            setTestimonials(MOCK_TESTIMONIALS);
+          }
+        } else if (data && data.length > 0) {
+          // ✅ CORREÇÃO: Garantir que avatares sejam strings válidas
+          const processedData = data.map(t => ({
+            ...t,
+            avatar_url: t.avatar_url || null
+          }));
+          setTestimonials(processedData);
+        } else {
+          setTestimonials(MOCK_TESTIMONIALS);
+        }
+      } catch (err) {
+        setTestimonials(MOCK_TESTIMONIALS);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTestimonials();
+  }, []);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (testimonials.length > 1 && isAutoPlaying) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex((prevIndex) => 
+          prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 5000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [testimonials.length, isAutoPlaying]);
+
+  const nextTestimonial = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1
+    );
+    setIsAutoPlaying(false);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
+    );
+    setIsAutoPlaying(false);
+  };
+
+  const goToTestimonial = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              {t('testimonials.title')}
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              {t('common.loading')}...
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Sempre mostrar a seção, mesmo sem depoimentos
+  if (testimonials.length === 0 && !loading) {
+    return (
+      <section className="py-6 sm:py-12 px-3 sm:px-4 overflow-hidden">
+        <div className="container mx-auto">
+          <div className="text-center mb-3 sm:mb-5">
+            <div className="inline-flex items-center gap-1 sm:gap-1.5 bg-primary/10 text-primary px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span>{t('testimonials.badge')}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {t('testimonials.title')}
+              </span>
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+              {t('testimonials.subtitle')}
+            </p>
+          </div>
+
+          {/* Stats - sempre mostrar mesmo sem depoimentos */}
+          <div className="mt-8 sm:mt-12 mb-4 text-center">
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-4 sm:p-6 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">500+</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Músicas Criadas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">5.0</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Garantir que o índice seja válido
+  const validIndex = currentIndex >= 0 && currentIndex < testimonials.length 
+    ? currentIndex 
+    : 0;
+  
+  const currentTestimonial = testimonials[validIndex] 
+    ? getTranslatedTestimonial(testimonials[validIndex], currentLanguage)
+    : null;
+
+  // Se não há depoimento válido, usar o primeiro disponível
+  const displayTestimonial = currentTestimonial || (testimonials.length > 0 
+    ? getTranslatedTestimonial(testimonials[0], currentLanguage)
+    : null);
+
+  if (!displayTestimonial) {
+    // Fallback: mostrar apenas stats se não houver depoimentos válidos
+    return (
+      <section className="py-6 sm:py-12 px-3 sm:px-4 overflow-hidden">
+        <div className="container mx-auto">
+          <div className="text-center mb-3 sm:mb-5">
+            <div className="inline-flex items-center gap-1 sm:gap-1.5 bg-primary/10 text-primary px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              <span>{t('testimonials.badge')}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {t('testimonials.title')}
+              </span>
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+              {t('testimonials.subtitle')}
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-8 sm:mt-12 mb-4 text-center">
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-4 sm:p-6 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">500+</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Músicas Criadas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">5.0</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                  <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-6 sm:py-12 px-3 sm:px-4 overflow-hidden">
+      <div className="container mx-auto">
+        <div className="text-center mb-3 sm:mb-5">
+          <div className="inline-flex items-center gap-1 sm:gap-1.5 bg-primary/10 text-primary px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            <span>{t('testimonials.badge')}</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {t('testimonials.title')}
+            </span>
+          </h2>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl sm:max-w-3xl mx-auto leading-relaxed">
+            {t('testimonials.subtitle')}
+          </p>
+        </div>
+
+        {/* Featured Testimonial */}
+        <div className="max-w-2xl sm:max-w-3xl mx-auto mb-3 sm:mb-4">
+          <Card className="shadow-2xl hover:shadow-3xl transition-all duration-300 ease-in-out border-primary/20 border-2 relative overflow-hidden min-h-[300px] sm:min-h-[280px] md:min-h-[260px]">
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 text-primary/20">
+              <Quote className="h-6 w-6 sm:h-8 sm:w-8" />
+            </div>
+            <CardContent className="p-3 sm:p-4 md:p-5 text-center min-h-[280px] sm:min-h-[260px] md:min-h-[240px] flex flex-col justify-center">
+              <div className="flex justify-center gap-0.5 mb-2 sm:mb-2.5">
+                {Array.from({ length: displayTestimonial.rating || 5 }).map((_, i) => (
+                  <Star key={i} className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              
+              <blockquote className="text-sm sm:text-base md:text-lg text-foreground mb-2.5 sm:mb-3 italic leading-relaxed max-h-[150px] overflow-y-auto">
+                "{displayTestimonial.content}"
+              </blockquote>
+              
+              <div className="flex items-center justify-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                  {displayTestimonial.avatar_url ? (
+                    <img 
+                      src={getImageUrl(displayTestimonial.avatar_url) || undefined} 
+                      alt={displayTestimonial.name}
+                      className="w-full h-full object-cover absolute inset-0 z-10"
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.avatar_url);
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        target.style.visibility = 'hidden';
+                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'flex';
+                          fallback.style.zIndex = '10';
+                        }
+                      }}
+                      onLoad={(e) => {
+                        // Garantir que a imagem seja exibida quando carregar
+                        const target = e.currentTarget;
+                        target.style.display = 'block';
+                        target.style.visibility = 'visible';
+                        target.style.opacity = '1';
+                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                        if (fallback) {
+                          fallback.style.display = 'none';
+                        }
+                      }}
+                    />
+                  ) : null}
+                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0 z-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                    {displayTestimonial.name.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-foreground text-sm sm:text-base md:text-lg">{displayTestimonial.name}</p>
+                  {displayTestimonial.role && (
+                    <p className="text-muted-foreground text-xs sm:text-sm">{displayTestimonial.role}</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Navigation Controls */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={prevTestimonial}
+            className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-all hover:scale-110"
+            aria-label="Depoimento anterior"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          
+          <div className="flex gap-2">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToTestimonial(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === currentIndex 
+                    ? 'bg-primary scale-125' 
+                    : 'bg-primary/30 hover:bg-primary/50'
+                }`}
+                aria-label={`Ir para depoimento ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          <button
+            onClick={nextTestimonial}
+            className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-all hover:scale-110"
+            aria-label="Próximo depoimento"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* All Testimonials Grid */}
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
+          {testimonials.slice(0, 3).map((testimonial, index) => {
+            const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            return (
+              <Card 
+                key={testimonial.id} 
+                className={`shadow-soft hover:shadow-medium transition-all cursor-pointer ${
+                  index === currentIndex ? 'ring-2 ring-primary/50' : ''
+                }`}
+                onClick={() => goToTestimonial(index)}
+              >
+                <CardContent className="p-3">
+                  <div className="flex gap-1 mb-2">
+                    {Array.from({ length: testimonial.rating || 5 }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-foreground mb-2 italic text-base leading-relaxed line-clamp-3">
+                    "{translatedTestimonial.content}"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
+                      {translatedTestimonial.avatar_url ? (
+                        <img 
+                          src={getImageUrl(translatedTestimonial.avatar_url) || undefined} 
+                          alt={translatedTestimonial.name}
+                          className="w-full h-full object-cover absolute inset-0 z-10"
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url);
+                            const target = e.currentTarget;
+                            target.style.display = 'none';
+                            target.style.visibility = 'hidden';
+                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'flex';
+                              fallback.style.zIndex = '10';
+                            }
+                          }}
+                          onLoad={(e) => {
+                            // Garantir que a imagem seja exibida quando carregar
+                            const target = e.currentTarget;
+                            target.style.display = 'block';
+                            target.style.visibility = 'visible';
+                            target.style.opacity = '1';
+                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'none';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0 z-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                        {translatedTestimonial.name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-base">{translatedTestimonial.name}</p>
+                      {translatedTestimonial.role && (
+                        <p className="text-sm text-muted-foreground">{translatedTestimonial.role}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Stats */}
+        <div className="mt-8 sm:mt-12 mb-4 text-center">
+          <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl p-4 sm:p-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              <div className="text-center">
+                <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">500+</div>
+                <div className="text-base sm:text-lg text-muted-foreground">Músicas Criadas</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">5.0</div>
+                <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

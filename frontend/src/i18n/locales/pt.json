@@ -1,0 +1,792 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Ver",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "refresh": "Atualizar",
+    "update": "Atualizar",
+    "create": "Criar",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não"
+  },
+  "navigation": {
+    "home": "Início",
+    "about": "Sobre",
+    "contact": "Contato",
+    "pricing": "Preços",
+    "createMusic": "Criar Música",
+    "admin": "Admin",
+    "dashboard": "Painel",
+    "orders": "Pedidos",
+    "songs": "Músicas",
+    "releases": "Lançamentos",
+    "lyrics": "Letras",
+    "media": "Mídia",
+    "settings": "Configurações",
+    "logs": "Logs",
+    "listenExample": "Ouça Exemplo",
+    "howItWorks": "Como Funciona",
+    "faq": "FAQ"
+  },
+  "hero": {
+    "platform": "A plataforma #1 de músicas personalizadas",
+    "title": "Músicas Personalizadas para Seus Momentos Especiais",
+    "subtitle": "Propostas, casamentos, tributos — feitos com amor. Crie música personalizada que conta sua história única.",
+    "cta": "Criar Sua Música Aqui",
+    "watchDemo": "Ver Demo",
+    "deliveredWithLove": "Entregue com amor",
+    "over500Songs": "Mais de 1000 músicas criadas",
+    "twoVersionsBenefit": "Pague 1, Leve 2 Versões"
+  },
+  "features": {
+    "badge": "Processo Simples",
+    "title": "Como Funciona",
+    "subtitle": "Criar sua música personalizada é simples e mágico",
+    "step1": {
+      "title": "Conte Sua História",
+      "description": "Responda algumas perguntas sobre seu momento especial, a pessoa e as emoções que deseja transmitir.",
+      "time": "2 minutos",
+      "highlight": "Fácil e rápido"
+    },
+    "step2": {
+      "title": "Nossa Equipe Cria Sua Música",
+      "description": "Entregamos uma música única, criada com dedicação para transformar sua história em melodia e palavras.",
+      "time": "48 horas",
+      "highlight": "Profissionais experientes"
+    },
+    "step3": {
+      "title": "Receba Sua Obra-Prima",
+      "description": "Receba sua música personalizada em alta qualidade, pronta para compartilhar com o mundo.",
+      "time": "Imediato",
+      "highlight": "Alta qualidade"
+    },
+    "cta": {
+      "title": "Pronto para criar sua música?",
+      "subtitle": "Junte-se a mais de 1000 pessoas que já criaram momentos inesquecíveis",
+      "button": "Criar Minha Música Agora"
+    }
+  },
+  "pricing": {
+    "title": "Planos Transparentes",
+    "subtitle": "Sem taxas escondidas. Sem surpresas. Apenas música de qualidade profissional.",
+    "badge": "Planos Transparentes",
+    "mostPopular": "Mais Popular",
+    "deliveryIn": "Entrega em",
+    "createMyMusic": "Criar Minha Música",
+    "paymentQuestions": "Perguntas sobre Pagamento",
+    "regionLocked": "Preços para",
+    "regionInfo": "Os preços são bloqueados pela sua localização geográfica para garantir preços justos em cada região.",
+    "regionDetails": "Região detectada: {country} | Idioma: {language} | Sessão válida até: {expiresAt}",
+    "securePayment": "Pagamento 100% Seguro",
+    "guaranteeText": "Garantia de 30 dias",
+    "whyChoose": "Por que escolher o Music Lovely?",
+    "twoVersionsBenefit": "Pague 1, Leve 2 Versões",
+    "freeVersionGift": "Ganhe uma versão grátis!",
+    "paymentMethods": {
+      "title": "Formas de Pagamento",
+      "description": "Aceitamos cartões de crédito via Cakto. Pagamento 100% seguro e criptografado."
+    },
+    "deliveryTime": "Entrega em 48 horas",
+    "deliveryTimeDetails": {
+      "title": "Prazo de Entrega",
+      "description": "Sua música personalizada é entregue em até 48 horas após confirmação do pagamento."
+    },
+    "whatsIncluded": {
+      "title": "O que está incluído?",
+      "description": "Arquivo MP3 de alta qualidade."
+    },
+    "guarantee": {
+      "title": "Garantia",
+      "description": "Se não ficar satisfeito, faremos ajustes sem custo adicional. Sua felicidade é nossa prioridade."
+    },
+    "cta": {
+      "title": "Pronto para começar?",
+      "subtitle": "Crie sua primeira música personalizada hoje"
+    },
+    "features": {
+      "highQualityMP3": "MP3 alta qualidade",
+      "customCover": "Capa personalizada",
+      "fullLyrics": "Letra completa",
+      "unlimitedDownload": "Download ilimitado",
+      "delivery48h": "Entrega em 48h"
+    },
+    "benefits": {
+      "unlimitedDownload": {
+        "title": "Download Ilimitado",
+        "description": "Baixe quantas vezes quiser"
+      },
+      "fastDelivery": {
+        "title": "Entrega Rápida",
+        "description": "Pronto em 48 horas"
+      },
+      "guarantee": {
+        "title": "Garantia Total",
+        "description": "30 dias de garantia"
+      }
+    }
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "description": "Entre em contato conosco. Estamos prontos para ajudar você a criar a música perfeita para seus momentos especiais!",
+    "subtitle": "Estamos aqui para ajudar você a criar a música perfeita para seus momentos especiais",
+    "methods": {
+      "email": {
+        "title": "E-mail",
+        "subtitle": "Resposta em até 48h"
+      },
+      "whatsapp": {
+        "title": "WhatsApp",
+        "subtitle": "Atendimento rápido"
+      },
+      "hours": {
+        "title": "Horário de Atendimento",
+        "description": "Segunda a Sexta: 9h às 18h",
+        "subtitle": "Sábado: 9h às 12h"
+      }
+    },
+    "form": {
+      "title": "Envie sua Mensagem",
+      "description": "Conte-nos sobre sua música ideal e responderemos em breve",
+      "fields": {
+        "name": "Nome",
+        "email": "E-mail",
+        "subject": "Assunto",
+        "message": "Mensagem"
+      },
+      "sending": "Enviando...",
+      "sendButton": "Enviar Mensagem",
+      "success": {
+        "title": "Mensagem Enviada!",
+        "message": "Recebemos sua mensagem e entraremos em contato em breve."
+      }
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "subtitle": "Respostas rápidas para suas dúvidas",
+      "description": "Respostas rápidas para suas dúvidas",
+      "questions": {
+        "musicStyles": {
+          "question": "Quais estilos musicais vocês produzem?",
+          "answer": "Produzimos diversos estilos musicais, incluindo pop, rock, sertanejo, MPB, forró, romântico, e muitos outros. Nossa equipe de músicos profissionais pode criar a música perfeita para o seu momento especial."
+        },
+        "deliveryTimes": {
+          "question": "Como funcionam os prazos?",
+          "answer": "Nossa entrega padrão é de 48 horas. Para pedidos expressos, podemos entregar em até 12 horas. Você receberá sua música personalizada no prazo combinado, pronta para compartilhar."
+        },
+        "whatYouGet": {
+          "question": "O que recebo ao final?",
+          "answer": "Você recebe um arquivo MP3 de alta qualidade. Tudo isso pronto para download ilimitado."
+        },
+        "commercialUse": {
+          "question": "Posso usar a música comercialmente?",
+          "answer": "Sim! Você tem total liberdade para usar sua música personalizada como desejar, incluindo uso comercial, redes sociais, eventos e muito mais."
+        }
+      },
+      "deliveryTime": {
+        "question": "Quanto tempo leva para criar minha música?",
+        "answer": "Nossa entrega padrão é de 48 horas. Para pedidos expressos, podemos entregar em até 12 horas."
+      },
+      "adjustments": {
+        "question": "Posso pedir ajustes na música?",
+        "answer": "Sim! Oferecemos até 2 revisões gratuitas para garantir que você fique 100% satisfeito."
+      },
+      "musicians": {
+        "question": "Quem são os músicos?",
+        "answer": "Trabalhamos com músicos e compositores profissionais experientes, especializados em diferentes estilos musicais."
+      },
+      "viewAll": "Ver todas as perguntas"
+    },
+    "whyChoose": {
+      "title": "Por que Escolher o MusicLovely?",
+      "professionalTeam": {
+        "title": "Equipe Profissional",
+        "description": "Músicos e compositores experientes"
+      },
+      "qualityGuaranteed": {
+        "title": "Qualidade Garantida",
+        "description": "Somos comprometidos com a excelência"
+      },
+      "madeWithLove": {
+        "title": "Feito com amor para momentos especiais",
+        "description": "Cada música é criada com carinho e dedicação"
+      }
+    }
+  },
+  "testimonials": {
+    "badge": "Depoimentos",
+    "title": "O Que Nossos Clientes Dizem",
+    "subtitle": "Histórias reais de pessoas reais que criaram momentos mágicos",
+    "deliveredWithLove": "Entregue com amor, cuidado e dedicação em 7 dias",
+    "moreThan500Songs": "Mais de 1000 músicas criadas"
+  },
+  "checkout": {
+    "whatYouWillReceive": "O Que Você Receberá",
+    "title": "Quase Lá! Complete Seu Pedido",
+    "subtitle": "Você está a um clique de criar uma linda música personalizada para",
+    "completeOrder": "Complete Seu Pedido",
+    "emailDescription": "Digite seu e-mail e seu WhatsApp para receber sua música",
+    "emailPlaceholder": "seu@email.com",
+    "whatsappLabel": "WhatsApp",
+    "whatsappPlaceholder": "(11) 99999-9999",
+    "whatsappError": {
+      "invalid": "WhatsApp inválido. Digite DDD + número (ex: (11) 99999-9999)",
+      "required": "WhatsApp é obrigatório"
+    },
+    "createMyMusic": "Criar Minha Música",
+    "processing": "Processando...",
+    "trying": "Tentando...",
+    "guarantee30Days": "Garantia de 30 Dias",
+    "securePayment": "🔒 Pagamento 100% seguro via Cakto",
+    "caktoPayment": "Pagamento via Cakto",
+    "processingPayment": "Processando pagamento...",
+    "waitingConfirmation": "Aguardando confirmação do pagamento",
+    "paymentPending": "Seu pagamento está sendo processado. Você receberá um email assim que for confirmado.",
+    "musicFor": "Música para:",
+    "style": "Estilo:",
+    "delivery": "Entrega:",
+    "delivery24h": "48 horas ⚡",
+    "delivery48h": "48 horas ⚡",
+    "total": "Total:",
+    "customSongOrder": "Seu Pedido de Música Personalizada",
+    "deliveryIn48h": "Em 48 horas",
+    "deliveryIn7Days": "Em 7 dias",
+    "twoVersionsBenefit": "Pague 1, Leve 2 Versões",
+    "personalizedMusic": "Música Personalizada",
+    "discount70": "70% OFF",
+    "reviewQuestionnaire": "Revisar ou Editar Questionário",
+    "expressPlan": "Plano Expresso",
+    "choosePlan": "Escolha Seu Plano",
+    "selected": "Selecionado",
+    "mostPopular": "Mais Popular",
+    "deliveryIn": "Entrega em",
+    "limitedTimeDiscount": "Desconto por Tempo Limitado",
+    "normalPrice": "Nossas músicas normalmente custam",
+    "butWeBelieve": "mas acreditamos que todos merecem ouvir uma música especial por apenas",
+    "forLimitedTime": "por tempo limitado",
+    "whyOnly": "Por que apenas",
+    "weArePassionate": "Somos apaixonados por criar momentos inesquecíveis",
+    "hearOtherSongs": "Ouça Outras Músicas Que Criamos",
+    "orderedBy": "Pedido por",
+    "moneyBackGuarantee": "Garantia de 100% do Dinheiro de Volta",
+    "notSatisfied": "Não satisfeito? Receba reembolso total",
+    "noQuestions": "Sem perguntas, sem complicação",
+    "guarantee30DaysFull": "Garantia de 30 dias",
+    "timeToDecide": "Tempo suficiente para ouvir e decidir",
+    "riskFreePurchase": "Compra sem risco",
+    "satisfactionPriority": "Sua satisfação é nossa prioridade",
+    "radioQuality": "Música com Qualidade de studio HD",
+    "radioQualitySubtitle": "Música profissional, pronta para compartilhar",
+    "personalizedLyrics": "Letra Personalizada",
+    "writtenFor": "Escrita especialmente para",
+    "delivery24hTitle": "Entrega em 48 Horas",
+    "delivery48hTitle": "Entrega em 48 Horas",
+    "delivery7DaysTitle": "Entrega em 7 Dias",
+    "perfectForLastMinute": "Perfeito para presentes de última hora",
+    "whyChooseMusicLovely": "⭐ Por Que Escolher o MusicLovely?",
+    "caktoReturn": {
+      "checking": {
+        "title": "Verificando Pagamento",
+        "description": "Aguarde enquanto verificamos o status do seu pagamento..."
+      },
+      "approved": {
+        "title": "Pagamento Aprovado!",
+        "description": "Seu pagamento foi processado com sucesso.",
+        "successMessage": "Redirecionando para a página de sucesso..."
+      },
+      "pending": {
+        "title": "Pagamento Pendente",
+        "description": "Seu pagamento está sendo processado. Isso pode levar alguns minutos.",
+        "progress": "Aguardando confirmação..."
+      },
+      "failed": {
+        "title": "Pagamento Não Processado",
+        "description": "Houve um problema com seu pagamento.",
+        "errorMessage": "Tente novamente ou entre em contato conosco se o problema persistir.",
+        "redirecting": "Redirecionando em {countdown} segundos...",
+        "tryAgain": "Tentar Novamente"
+      },
+      "goHome": "Voltar ao Início",
+      "orderId": "ID do Pedido: {orderId}"
+    },
+    "over1000Clients": "Mais de 1.000 clientes satisfeitos",
+    "satisfactionGuarantee": "Garantia de 100% de satisfação",
+    "securePaymentProcessing": "Processamento de pagamento seguro",
+    "deliveredIn7Days": "Entregue no prazo determinado, sem atraso!",
+    "features": {
+      "highQualityMP3": "MP3 alta qualidade",
+      "customCover": "Capa personalizada",
+      "fullLyrics": "Letra completa",
+      "unlimitedDownload": "Download ilimitado",
+      "professionalProduction": "Produção profissional",
+      "delivery24h": "Entrega em 48h ⚡",
+      "delivery48h": "Entrega em 48h ⚡"
+    },
+    "errors": {
+      "invalidEmail": "Email inválido",
+      "emailTooLong": "Email muito longo",
+      "wait5Seconds": "Aguarde 5 segundos entre tentativas",
+      "enterValidEmail": "Por favor, insira um email válido",
+      "errorProcessing": "Erro ao processar pedido. Tente novamente.",
+      "quizNotFound": "Quiz não encontrado. Por favor, preencha o quiz primeiro.",
+      "errorLoadingQuiz": "Erro ao carregar dados do quiz",
+      "orderRecovered": "Pedido anterior recuperado. Continue de onde parou!",
+      "planNotFound": "Plano não encontrado",
+      "quizDataInvalid": "Dados do questionário inválidos",
+      "orderDataInvalid": "Dados do pedido inválidos",
+      "timeoutExceeded": "Tempo limite excedido. Tente novamente.",
+      "connectionError": "Erro ao conectar com servidor de pagamento. Verifique sua internet.",
+      "tooManyAttempts": "⏰ Muitas tentativas de pagamento. Por favor, aguarde 1 hora ou use outro email.",
+      "rateLimitExceeded": "Rate limit excedido",
+      "errorCreatingPayment": "Erro ao criar pagamento:",
+      "stripeResponseIncomplete": "Resposta do Stripe incompleta. Tente novamente.",
+      "invalidPaymentUrl": "URL de pagamento inválida. Tente novamente.",
+      "serverResponseIncomplete": "Resposta do servidor incompleta. Por favor, tente novamente.",
+      "paymentSystemNotConfigured": "Sistema de pagamento não configurado. Contate o suporte.",
+      "timeout": "Tempo limite excedido. Verifique sua conexão e tente novamente.",
+      "orderAlreadyPaid": "Este pedido já foi pago.",
+      "emailNotMatchOrder": "Email não corresponde ao pedido.",
+      "orderNotFound": "Pedido não encontrado. Por favor, tente novamente.",
+      "tooManyAttemptsShort": "Muitas tentativas. Por favor, aguarde alguns minutos e tente novamente.",
+      "priceError": "Erro ao processar pagamento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "stripeError": "Erro ao processar pagamento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "urlMatchError": "Erro ao processar URL de pagamento. Por favor, tente novamente.",
+      "invalidUrl": "URL de pagamento inválida. Por favor, tente novamente.",
+      "undefined": "Resposta do servidor incompleta. Por favor, tente novamente.",
+      "tryAgain": "Tentar Novamente",
+      "errorProcessingPayment": "Erro ao processar pagamento. Tente novamente."
+    }
+  },
+  "checkoutProcessing": {
+    "title": "Processando Seu Pedido",
+    "errorTitle": "Erro no Processamento",
+    "timeoutTitle": "Tempo Esgotado",
+    "steps": {
+      "quiz": "Salvando dados do questionário...",
+      "order": "Criando pedido...",
+      "payment": "Gerando link de pagamento..."
+    },
+    "progress": "concluído",
+    "error": "Tempo limite excedido. Por favor, tente novamente.",
+    "incompleteData": "Dados incompletos. Redirecionando...",
+    "tryAgain": "Tentar Novamente",
+    "back": "Voltar",
+    "cancel": "Cancelar"
+  },
+  "paymentSuccess": {
+    "title": "Pagamento Confirmado!",
+    "description": "Sua música personalizada está sendo criada com carinho pela nossa equipe.",
+    "paymentProcessed": "Pagamento processado com segurança. Você receberá um email de confirmação em breve.",
+    "emailTracking": {
+      "title": "Acompanhe seu pedido",
+      "description": "Enviaremos atualizações por email conforme o progresso da sua música."
+    },
+    "deliveryTime": {
+      "title": "Tempo de Entrega",
+      "mainMessage": "Sua música estará pronta em 48 horas!",
+      "description": "São 48 horas para entregar seu pedido. Nossa equipe trabalhará com dedicação para criar sua música personalizada e entregá-la no prazo prometido."
+    },
+    "socialMedia": {
+      "title": "Siga-nos nas redes sociais",
+      "instagram": "Seguir no Instagram",
+      "tiktok": "Seguir no TikTok"
+    },
+    "backToHome": "Voltar ao Início",
+    "viewPlans": "Ver Planos",
+    "redirecting": "Redirecionando em {countdown} segundos..."
+  },
+  "admin": {
+    "mediaManagement": "Gestão de Mídia",
+    "generation": {
+      "twoVersionsBenefit": "Pague 1, Leve 2 Versões",
+      "generating2Versions": "Gerando suas 2 versões da música...",
+      "received2Versions": "Você recebeu 2 versões pelo preço de 1!"
+    },
+    "stats": {
+      "activeTestimonials": "Depoimentos Ativos",
+      "activeFaqs": "FAQs Ativos", 
+      "withAvatar": "Com Avatar",
+      "averageRating": "Avaliação Média"
+    },
+    "tabs": {
+      "hero": "Hero",
+      "track": "Faixa",
+      "testimonials": "Dep.",
+      "faqs": "FAQs"
+    },
+    "hero": {
+      "title": "Vídeo Hero da Home",
+      "currentVideo": "Vídeo Atual",
+      "newVideo": "Novo Vídeo",
+      "uploading": "Enviando...",
+      "uploadVideo": "Enviar Vídeo"
+    },
+    "track": {
+      "title": "Faixa Exemplo (Vinyl Player)",
+      "currentTrack": "Faixa Atual",
+      "titleLabel": "Título *",
+      "titlePlaceholder": "Nome da música",
+      "artistLabel": "Artista",
+      "artistPlaceholder": "Nome do artista",
+      "audioLabel": "Áudio *",
+      "coverLabel": "Capa (opcional)",
+      "uploading": "Enviando...",
+      "uploadTrack": "Enviar Faixa"
+    },
+    "testimonials": {
+      "title": "Gerenciar Depoimentos",
+      "generateAvatars": "Gerar Avatares",
+      "new": "Novo",
+      "edit": "Editar",
+      "newTestimonial": "Novo Depoimento",
+      "editTestimonial": "Editar Depoimento",
+      "avatar": "Avatar",
+      "generateRandom": "Gerar Aleatório",
+      "name": "Nome *",
+      "role": "Cargo/Função",
+      "testimonial": "Depoimento *",
+      "rating": "Avaliação (1-5)",
+      "displayOrder": "Ordem de Exibição",
+      "active": "Ativo",
+      "save": "Salvar",
+      "preview": "Preview (como aparece na home)",
+      "inactive": "Inativo",
+      "noPhoto": "Sem foto",
+      "delete": "Excluir"
+    },
+    "faqs": {
+      "title": "Gerenciar FAQs",
+      "new": "Novo",
+      "edit": "Editar",
+      "newFaq": "Novo FAQ",
+      "editFaq": "Editar FAQ",
+      "question": "Pergunta *",
+      "answer": "Resposta *",
+      "category": "Categoria",
+      "displayOrder": "Ordem de Exibição",
+      "active": "Ativo",
+      "save": "Salvar",
+      "inactive": "Inativo",
+      "delete": "Excluir"
+    },
+    "messages": {
+      "errorLoadingTestimonials": "Erro ao carregar depoimentos",
+      "errorLoadingFaqs": "Erro ao carregar FAQs",
+      "errorLoadingHeroVideo": "Erro ao carregar vídeo hero",
+      "errorLoadingTrack": "Erro ao carregar faixa exemplo",
+      "generateAvatarsConfirm": "Gerar avatares aleatórios para todos os depoimentos sem foto?",
+      "avatarsGenerated": "avatares gerados!",
+      "errorGeneratingAvatars": "Erro ao gerar avatares",
+      "selectVideo": "Selecione um vídeo",
+      "heroVideoUploaded": "Vídeo hero enviado com sucesso!",
+      "errorUpload": "Erro ao fazer upload",
+      "selectAudioAndTitle": "Selecione um áudio e preencha o título",
+      "trackUploaded": "Faixa exemplo enviada com sucesso!",
+      "fillNameAndTestimonial": "Preencha nome e depoimento",
+      "testimonialUpdated": "Depoimento atualizado!",
+      "testimonialCreated": "Depoimento criado!",
+      "deleteTestimonialConfirm": "Deseja deletar este depoimento?",
+      "errorDeleting": "Erro ao deletar",
+      "testimonialDeleted": "Depoimento deletado!",
+      "fillQuestionAndAnswer": "Preencha pergunta e resposta",
+      "faqUpdated": "FAQ atualizado!",
+      "faqCreated": "FAQ criado!",
+      "deleteFaqConfirm": "Deseja deletar este FAQ?",
+      "faqDeleted": "FAQ deletado!"
+    }
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tudo que você precisa saber sobre criar sua música personalizada",
+    "questions": {
+      "musicStyles": {
+        "question": "Quais estilos musicais vocês produzem?",
+        "answer": "Produzimos músicas em todos os estilos: Pop, Rock, MPB, Sertanejo, Forró, Jazz, Gospel, Reggae, Eletrônico e muito mais. Nossos músicos são especialistas em cada gênero."
+      },
+      "deliveryTimes": {
+        "question": "Como funcionam os prazos?",
+        "answer": "No plano Padrão, sua música fica pronta em até 7 dias. No plano Expresso, entregamos em até 48 horas. Você recebe uma prévia antes da liberação final."
+      },
+      "whatYouGet": {
+        "question": "O que recebo ao final?",
+        "answer": "Você recebe um arquivo MP3 de alta qualidade. Pode baixar e usar quantas vezes quiser."
+      },
+      "commercialUse": {
+        "question": "Posso usar a música comercialmente?",
+        "answer": "Sim! Você tem direitos totais sobre a música criada. Pode usar em eventos, redes sociais, campanhas de marca ou qualquer outro propósito."
+      }
+    }
+  },
+  "footer": {
+    "description": "Criamos músicas personalizadas. Cada composição é única, criada especialmente para emocionar quem você ama.",
+    "navigation": "Navegação",
+    "support": "Suporte",
+    "legal": "Legal",
+    "contact": "Contato",
+    "email": "contato@musiclovely.com",
+    "quickLinks": "Links Rápidos",
+    "home": "Início",
+    "listenExample": "Ouça Exemplo",
+    "faq": "FAQ",
+    "pricing": "Preços",
+    "terms": "Termos",
+    "privacy": "Privacidade",
+    "links": {
+      "about": "Sobre Nós",
+      "privacy": "Política de Privacidade",
+      "terms": "Termos de Serviço"
+    },
+    "copyright": "Todos os direitos reservados."
+  },
+  "vinyl": {
+    "title": "Ouça um Exemplo",
+    "subtitle": "Cada faixa é produzida com instrumentos reais e vocais profissionais"
+  },
+  "vinylPlayer": {
+    "defaultTitle": "Música de Exemplo",
+    "defaultArtist": "MusicLovely",
+    "changingMusic": "Mudando música...",
+    "tracks": {
+      "pt": {
+        "title": "La na Escola",
+        "artist": "MusicLovely",
+        "audioUrl": "/audio/la_na_escola-2.mp3"
+      },
+      "es": {
+        "title": "La na Escola",
+        "artist": "MusicLovely", 
+        "audioUrl": "/audio/la_na_escola-2.mp3"
+      },
+      "en": {
+        "title": "Happy Pop",
+        "artist": "MusicLovely",
+        "audioUrl": "/audio/pop_feliz.mp3"
+      }
+    }
+  },
+  "quiz": {
+    "title": "Conte-nos Sobre Seu Momento Especial",
+    "subtitle": "Ajude-nos a criar a música perfeita para você",
+    "stepTitles": {
+      "step1": "Vamos começar com o básico",
+      "step2": "Escolha um estilo musical",
+      "step3": "O que torna essa pessoa especial?",
+      "step4": "Compartilhe suas memórias favoritas",
+      "step5": "Uma mensagem do coração"
+    },
+    "questions": {
+      "occasion": "Qual é a ocasião?",
+      "person": "Para quem é esta música?",
+      "relationship": "Qual é seu relacionamento?",
+      "emotions": "Que emoções você quer transmitir?",
+      "style": "Que estilo musical você prefere?",
+      "message": "Alguma mensagem ou história especial?",
+      "forWho": "Para quem é essa música?",
+      "name": "Qual é o nome da pessoa homenageada?",
+      "namePlaceholder": "Digite o primeiro nome...",
+      "nameHint": "Adicione pronúncia para clareza (ex: Alícia, ah-lee-sha)",
+      "enterRelationship": "Digite o relacionamento...",
+      "styleQuestion": "Qual estilo combina mais?",
+      "styleDescription": "Selecione o estilo musical para sua canção personalizada",
+      "vocalPreference": "Preferência de Voz",
+      "vocalDescription": "Recomendamos escolher o gênero que melhor se encaixa na personalidade da música",
+      "qualities": "Qualidades que você mais ama",
+      "qualitiesDescription": "Descreva o caráter e qualidades que você valoriza",
+      "qualitiesPlaceholder": "Eles são pacientes, sábios, engraçados, protetores, encorajadores? O que os torna a pessoa incrível que são?",
+      "memories": "Momentos especiais juntos",
+      "memoriesDescription": "Que momentos com eles você mais valoriza?",
+      "memoriesPlaceholder": "Compartilhe como se conheceram, anos especiais, piadas internas, ou momentos que tornaram seu relacionamento único...",
+      "heartMessage": "Uma mensagem do coração",
+      "heartMessageDescription": "Escreva qualquer coisa que você sinta que seria relevante para incluir na música, e faremos o nosso melhor para incluí-la!",
+      "heartMessagePlaceholder": "O que você quer que eles saibam, sintam ou lembrem?"
+    },
+    "relationships": {
+      "spouse": "Esposo(a)",
+      "child": "Filho(a)",
+      "father": "Pai",
+      "mother": "Mãe",
+      "sibling": "Irmão(ã)",
+      "friend": "Amigo(a)",
+      "myself": "Eu mesmo(a)",
+      "other": "Outro"
+    },
+    "styles": {
+      "pop": "Romântico",
+      "rock": "Rock",
+      "mpb": "MPB",
+      "sertanejo": "Sertanejo",
+      "forro": "Forró",
+      "jazz": "Jazz",
+      "gospel": "Gospel",
+      "louvor": "Louvor",
+      "reggae": "Reggae",
+      "electronic": "Eletrônico",
+      "rap": "Rap/Hip-Hop"
+    },
+    "vocalOptions": {
+      "noPreference": "Sem Preferência",
+      "female": "Voz Feminina",
+      "male": "Voz Masculina"
+    },
+    "buttons": {
+      "back": "Voltar",
+      "next": "Próximo",
+      "continueToPayment": "Continuar para Pagamento"
+    },
+    "progress": {
+      "step": "Passo",
+      "of": "de",
+      "complete": "Completo"
+    },
+    "validation": {
+      "selectRelationship": "Selecione um relacionamento",
+      "enterRelationship": "Digite o relacionamento",
+      "enterName": "Digite o nome",
+      "nameTooLong": "Nome muito longo (máximo 100 caracteres)",
+      "selectStyle": "Selecione um estilo musical",
+      "describeQualities": "Descreva as qualidades",
+      "maxCharacters": "Máximo 500 caracteres",
+      "shareMemories": "Compartilhe suas memórias",
+      "maxMemories": "Máximo 800 caracteres",
+      "maxMessage": "Máximo 500 caracteres"
+    },
+    "messages": {
+      "dataLoaded": "Dados carregados! Você pode revisar e editar suas respostas.",
+      "quizComplete": "Quiz completo! Redirecionando para pagamento...",
+      "errorSaving": "Erro ao salvar formulário. Tente novamente."
+    },
+    "characterCount": {
+      "characters": "caracteres",
+      "optional": "opcional",
+      "maxExceeded": "máximo excedido"
+    },
+    "answers": {
+      "occasion": {
+        "proposal": "Proposta",
+        "wedding": "Casamento",
+        "anniversary": "Aniversário",
+        "birthday": "Aniversário",
+        "tribute": "Tributo",
+        "other": "Outro"
+      },
+      "relationship": {
+        "partner": "Parceiro",
+        "spouse": "Cônjuge",
+        "family": "Família",
+        "friend": "Amigo",
+        "parent": "Pai/Mãe",
+        "other": "Outro"
+      },
+      "style": {
+        "pop": "Pop",
+        "rock": "Rock",
+        "ballad": "Balada",
+        "country": "Country",
+        "jazz": "Jazz",
+        "classical": "Clássico"
+      }
+    }
+  },
+  "terms": {
+    "title": "Termos de Serviço",
+    "lastUpdated": "Última atualização",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceitação dos Termos",
+        "content": "Ao acessar e usar o MusicLovely, você concorda em estar vinculado a estes Termos de Serviço e a todas as leis e regulamentos aplicáveis."
+      },
+      "services": {
+        "title": "2. Serviços Oferecidos",
+        "content": "O MusicLovely oferece serviços de criação de músicas personalizadas. Nos comprometemos a entregar produtos de alta qualidade dentro dos prazos estabelecidos (7 dias para Plano Padrão, 48 horas para Plano Expresso)."
+      },
+      "copyright": {
+        "title": "3. Direitos Autorais e Propriedade",
+        "content": "Ao adquirir uma música personalizada, você recebe os direitos de uso pessoal e comercial da música criada. O MusicLovely retém os direitos autorais sobre a composição musical, mas concede a você uma licença perpétua e irrevogável para usar a música conforme desejar."
+      },
+      "payments": {
+        "title": "4. Pagamentos e Reembolsos",
+        "content": "Todos os pagamentos são processados de forma segura através do Stripe e Cakto. Em caso de insatisfação, oferecemos revisões gratuitas. Reembolsos são avaliados caso a caso."
+      },
+      "acceptableUse": {
+        "title": "5. Uso Aceitável",
+        "content": "Você concorda em usar nossos serviços apenas para fins legais e de acordo com estes Termos. Não é permitido usar o serviço para criar conteúdo ilegal, difamatório ou que viole direitos de terceiros."
+      },
+      "liability": {
+        "title": "6. Limitação de Responsabilidade",
+        "content": "O MusicLovely não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso ou incapacidade de usar nossos serviços."
+      },
+      "modifications": {
+        "title": "7. Modificações dos Termos",
+        "content": "Reservamo-nos o direito de modificar estes termos a qualquer momento. As alterações entrarão em vigor imediatamente após a publicação no site."
+      },
+      "contact": {
+        "title": "8. Contato",
+        "content": "Para questões sobre estes Termos de Serviço, entre em contato através de nossa página de contato."
+      }
+    }
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "A página que você está procurando não existe ou foi movida.",
+    "backHome": "Voltar para Home",
+    "goBack": "Voltar"
+  },
+  "privacy": {
+    "title": "Política de Privacidade",
+    "lastUpdated": "Última atualização",
+    "notice": {
+      "title": "Importante",
+      "content": "Esta Política de Privacidade descreve como coletamos, usamos e protegemos suas informações pessoais. Ao usar nossos serviços, você concorda com as práticas descritas nesta política."
+    },
+    "sections": {
+      "information": {
+        "title": "1. Informações que Coletamos",
+        "content": "Coletamos informações que você nos fornece diretamente, como nome, e-mail, informações de pagamento e detalhes sobre a música que deseja criar."
+      },
+      "usage": {
+        "title": "2. Como Usamos suas Informações",
+        "content": "Usamos suas informações para: criar e entregar sua música personalizada, processar pagamentos, enviar atualizações sobre seu pedido e melhorar nossos serviços."
+      },
+      "sharing": {
+        "title": "3. Compartilhamento de Informações",
+        "content": "Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto quando necessário para processar pagamentos (Stripe e Cakto) ou quando exigido por lei."
+      },
+      "security": {
+        "title": "4. Segurança dos Dados",
+        "content": "Implementamos medidas de segurança técnicas e organizacionais para proteger suas informações pessoais contra acesso não autorizado, alteração, divulgação ou destruição."
+      },
+      "cookies": {
+        "title": "5. Cookies",
+        "content": "Usamos cookies para melhorar sua experiência no site, manter você conectado e analisar o tráfego do site. Você pode configurar seu navegador para recusar cookies."
+      },
+      "rights": {
+        "title": "6. Seus Direitos",
+        "content": "Você tem o direito de acessar, corrigir ou excluir suas informações pessoais a qualquer momento. Entre em contato conosco para exercer esses direitos."
+      },
+      "retention": {
+        "title": "7. Retenção de Dados",
+        "content": "Mantemos suas informações pelo tempo necessário para fornecer nossos serviços e cumprir obrigações legais. Músicas criadas são armazenadas por tempo indeterminado em sua conta."
+      },
+      "changes": {
+        "title": "8. Alterações nesta Política",
+        "content": "Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos você sobre mudanças significativas através de e-mail ou aviso em nosso site."
+      },
+      "contact": {
+        "title": "9. Contato",
+        "content": "Para questões sobre esta Política de Privacidade ou sobre como tratamos seus dados, entre em contato através de nossa página de contato."
+      }
+    }
+  }
+}
