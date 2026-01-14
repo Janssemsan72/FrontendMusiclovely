@@ -146,10 +146,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "app/**": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
