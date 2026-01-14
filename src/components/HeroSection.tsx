@@ -166,7 +166,7 @@ export default function HeroSection() {
                 fetchPriority="high"
                 width={640}
                 height={269}
-                sizes="(max-width: 640px) 384px, 640px"
+                sizes="(max-width: 640px) 384px, (max-width: 1024px) 640px, 1024px"
                 loading="eager"
                 decoding="async"
                 onError={(e) => {
@@ -262,13 +262,13 @@ export default function HeroSection() {
         <div className="flex items-center justify-center gap-2 sm:gap-4 px-2">
           <div className="flex -space-x-2 sm:-space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft aspect-square">
-              <img src={heroAvatar1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} sizes="48px" loading="lazy" decoding="async" fetchPriority="low" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft aspect-square">
-              <img src={heroAvatar2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} sizes="48px" loading="lazy" decoding="async" fetchPriority="low" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft aspect-square">
-              <img src={heroAvatar3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} sizes="48px" loading="lazy" decoding="async" fetchPriority="low" />
             </div>
           </div>
           <div className="text-left">

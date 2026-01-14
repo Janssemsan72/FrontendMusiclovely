@@ -133,7 +133,8 @@
       *{will-change:auto}
     </style>
     
-    <!-- ✅ OTIMIZAÇÃO: CSS completo carregado de forma diferida -->
+    <!-- ✅ OTIMIZAÇÃO: CSS carregado de forma não-bloqueante -->
+    <link rel="preload" href="/src/index.css" as="style" />
     <link rel="stylesheet" href="/src/index.css" media="print" onload="this.media='all';this.onload=null" />
     <noscript><link rel="stylesheet" href="/src/index.css" /></noscript>
     <script>
@@ -145,7 +146,7 @@
             if (link.media === 'print') {
               link.media = 'all';
             }
-          }, 100);
+          }, 50); // Reduzido de 100ms para 50ms
           if (link.onload) {
             var originalOnload = link.onload;
             link.onload = function() {

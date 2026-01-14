@@ -71,20 +71,33 @@ export default defineConfig({
         compact: true,
         // ✅ CORREÇÃO: Remover experimentalMinChunkSize que pode estar impedindo geração de chunks
         // experimentalMinChunkSize: 20000, // Comentado - estava impedindo geração de arquivos JS
-        // ✅ CORREÇÃO: Simplificar manualChunks - apenas separar vendors muito grandes
+        // ✅ OTIMIZAÇÃO PERFORMANCE: Melhorar code splitting para reduzir bundle inicial
         manualChunks: (id) => {
-          // ✅ CRÍTICO: NUNCA separar código fonte - deixar no entry principal
+          // ✅ CRÍTICO: Separar código admin e quiz (não crítico para primeira renderização)
           if (id.includes('src/') && !id.includes('node_modules')) {
-            return undefined; // Deixar TODO código fonte no chunk principal
+            if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
+              return "admin"; // Admin carrega sob demanda
+            }
+            if (id.includes('src/pages/Quiz') || id.includes('src/pages/QuizSteps')) {
+              return "quiz"; // Quiz carrega sob demanda
+            }
+            if (id.includes('src/pages/Checkout')) {
+              return "checkout"; // Checkout carrega sob demanda
+            }
+            // Deixar código crítico (Index, Header, HeroSection) no chunk principal
+            return undefined;
           }
           
-          // Apenas separar node_modules muito grandes
+          // Separar node_modules grandes
           if (id.includes("node_modules")) {
             if (id.includes("@radix-ui")) {
               return "vendor-radix";
             }
             if (id.includes("recharts")) {
               return "vendor-recharts";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-icons"; // Ícones podem ser carregados sob demanda
             }
             // Deixar React e resto no chunk principal
           }
