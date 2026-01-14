@@ -81,30 +81,10 @@ export default defineConfig({
       output: {
         // ✅ OTIMIZAÇÃO PRODUÇÃO: Compact output para reduzir tamanho
         compact: true,
-        // ✅ OTIMIZAÇÃO PRODUÇÃO: Chunks menores para melhor cache
-        experimentalMinChunkSize: 20000,
-        // ✅ CORREÇÃO CRÍTICA: Simplificar manualChunks para garantir geração do entry point
-        // Apenas separar vendors muito grandes, deixar código fonte no entry principal
-        manualChunks: (id) => {
-          // ✅ CRÍTICO: NUNCA separar o entry point principal
-          if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx') || 
-              id.includes('src/') && !id.includes('node_modules')) {
-            return undefined; // Deixar TODO código fonte no chunk principal
-          }
-          
-          // Apenas separar node_modules em vendors
-          if (id.includes("node_modules")) {
-            // Separar apenas bibliotecas muito grandes
-            if (id.includes("@radix-ui")) {
-              return "vendor-radix";
-            }
-            if (id.includes("recharts")) {
-              return "vendor-recharts";
-            }
-            // Deixar React e tudo relacionado no chunk principal junto com o código
-          }
-          return undefined;
-        },
+        // ✅ CORREÇÃO: Remover experimentalMinChunkSize que pode estar impedindo geração de chunks
+        // experimentalMinChunkSize: 20000, // Comentado - estava impedindo geração de arquivos JS
+        // ✅ TESTE: Desabilitar manualChunks completamente para verificar se entry point é gerado
+        // manualChunks: undefined,
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
         entryFileNames: (chunkInfo) => {
