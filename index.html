@@ -28,25 +28,66 @@
     <!-- ✅ Meta tags adicionais -->
     <meta name="description" content="Transforme memórias em música! Crie uma música única e personalizada para quem você ama. Plataforma #1 de músicas personalizadas no Brasil." />
     <meta name="keywords" content="música personalizada, música para presente, música única, música sob medida, presente criativo, música para aniversário" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="author" content="Musiclovely" />
     <link rel="canonical" href="https://www.musiclovely.com.br/" />
     
-    <!-- ✅ OTIMIZAÇÃO: DNS prefetch para domínios de terceiros -->
-    <link rel="dns-prefetch" href="https://zagkvtxarndluusiluhb.supabase.co" />
+    <!-- ✅ Structured Data (JSON-LD) para SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Musiclovely",
+      "url": "https://www.musiclovely.com.br",
+      "logo": "https://www.musiclovely.com.br/logo-white-new.png",
+      "description": "Plataforma #1 de músicas personalizadas no Brasil. Transforme memórias em música única para quem você ama.",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "Portuguese"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Musiclovely",
+      "url": "https://www.musiclovely.com.br",
+      "description": "Transforme memórias em música! Crie uma música única e personalizada para quem você ama.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.musiclovely.com.br/?s={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "serviceType": "Música Personalizada",
+      "provider": {
+        "@type": "Organization",
+        "name": "Musiclovely"
+      },
+      "areaServed": "BR",
+      "description": "Criação de músicas personalizadas e únicas para presentes especiais"
+    }
+    </script>
+    
+    <!-- ✅ OTIMIZAÇÃO: Preconnect para recursos críticos PRIMEIRO (mais importante) -->
+    <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://pay.hotmart.com" crossorigin />
+    
+    <!-- ✅ OTIMIZAÇÃO: DNS prefetch para domínios de terceiros (menos críticos) -->
     <link rel="dns-prefetch" href="https://cdn.utmify.com.br" />
     <link rel="dns-prefetch" href="https://connect.facebook.net" />
     <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
-    <!-- ✅ OTIMIZAÇÃO: DNS prefetch para gateways de pagamento -->
     <link rel="dns-prefetch" href="https://pay.cakto.com.br" />
-    <link rel="dns-prefetch" href="https://pay.hotmart.com" />
-    <!-- ✅ NOVO: DNS prefetch para Random User API (avatares reais) -->
     <link rel="dns-prefetch" href="https://randomuser.me" />
-    <link rel="preconnect" href="https://randomuser.me" crossorigin />
-    
-    <!-- ✅ OTIMIZAÇÃO: Preconnect para recursos críticos -->
-    <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
-    <!-- ✅ OTIMIZAÇÃO: Preconnect para gateways de pagamento (reduz latência de redirecionamento) -->
-    <link rel="preconnect" href="https://pay.cakto.com.br" crossorigin />
-    <link rel="preconnect" href="https://pay.hotmart.com" crossorigin />
     
     <!-- ✅ OTIMIZAÇÃO: Preload de imagem LCP crítica apenas na página inicial (evita aviso em outras rotas) -->
     <script>

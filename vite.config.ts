@@ -112,6 +112,8 @@ export default defineConfig({
     },
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Limite de aviso otimizado (500KB é razoável para chunks grandes)
     chunkSizeWarningLimit: 500,
+    // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizar carregamento de fontes
+    assetsInlineLimit: 4096, // Inline assets menores que 4KB
     // Source maps apenas em dev (economia de ~30% no bundle)
     sourcemap: process.env.NODE_ENV === "development",
     // Code splitting de CSS
