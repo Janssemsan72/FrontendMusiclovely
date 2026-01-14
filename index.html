@@ -38,9 +38,8 @@
         // ✅ OTIMIZAÇÃO: Preload INSTANTÂNEO do vídeo 240p (163KB - versão única para mobile)
         // Prioridade baixa para não competir com recursos críticos, mas começar o mais cedo possível
         const minimalVideoLink = document.createElement('link');
-        minimalVideoLink.rel = 'preload';
+        minimalVideoLink.rel = 'prefetch';
         minimalVideoLink.href = '/video/musiclovaly-240p.webm';
-        minimalVideoLink.as = 'video';
         minimalVideoLink.setAttribute('fetchpriority', 'low');
         document.head.appendChild(minimalVideoLink);
       }
@@ -96,16 +95,8 @@
   <body>
     <div id="root"></div>
     <!-- ✅ OTIMIZAÇÃO: Script principal com defer para não bloquear parsing -->
-    <script type="module" src="/src/main.tsx" defer></script>
+    <script type="module" src="/src/main.tsx"></script>
     
-    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Preload de módulo principal -->
-    <link rel="modulepreload" href="/src/main.tsx" />
-    
-    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Resource hints para melhorar LCP -->
-    <link rel="preload" href="/src/index.css" as="style" />
-    
-    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Prefetch de recursos críticos -->
-    <link rel="prefetch" href="/images/collage-memories-new.webp" as="image" />
     
     <!-- ✅ Script UTMify UTMs (substituído pelo formato fornecido) -->
     <script
