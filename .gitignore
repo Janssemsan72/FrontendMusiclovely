@@ -55,6 +55,20 @@ CORRIGIR_*.md
 .cursor/plans/*.plan.md
 custom-sound-forge-main*/
 
+# Arquivos de documentação/auditoria desnecessários
+*AUDITORIA*.md
+*CORRECAO*.md
+*MIGRATION*.md
+*TESTE*.md
+*VERIFICACAO*.md
+*RESUMO*.md
+*EXECUTAR*.md
+*GERAR*.md
+*SOLUCAO*.md
+*DEPLOY*.md
+*ATUALIZACOES*.md
+*ESTRUTURA*.md
+
 # Arquivos que não são do frontend
 backend/
 backups/
