@@ -20,6 +20,4 @@ Disallow: /payment-success
 Disallow: /checkout-processing
 Disallow: /cakto-return
 Disallow: /approve-lyrics
-Disallow: /song-download
-
-Sitemap: https://www.musiclovely.com.br/sitemap.xml
+Disallow: /song-downloadSitemap: https://www.musiclovely.com.br/sitemap.xml
