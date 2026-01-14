@@ -37,7 +37,10 @@ export function injectScriptPlugin(): Plugin {
         }
         
         // Priorizar arquivos não-vendor, mas se não houver, usar o maior vendor
-        const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || jsFiles[0];
+        // O maior arquivo geralmente contém React + código principal da aplicação
+        const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || 
+                        jsFiles.find(f => f.size > 100000) || // Arquivos grandes geralmente contêm código principal
+                        jsFiles[0];
         
         if (mainFile && !html.includes(mainFile.name)) {
           // Injetar o script antes do fechamento do body
