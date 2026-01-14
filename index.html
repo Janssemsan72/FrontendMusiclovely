@@ -96,6 +96,65 @@
     <!-- ✅ OTIMIZAÇÃO: Preload removido temporariamente para evitar bloqueios -->
     <!-- A imagem será carregada normalmente quando o componente HeroSection renderizar -->
     
+    <!-- ✅ CORREÇÃO CRÍTICA: Script para verificar e corrigir cache ANTES de carregar qualquer JS -->
+    <script>
+      (function() {
+        // ✅ VERIFICAÇÃO CRÍTICA: Verificar se há arquivos JS antigos em cache ANTES de carregar o bundle principal
+        // Isso previne que o bundle principal antigo seja carregado
+        const oldFileHashes = ['6kmaUs1Q', 'BqFpQ0Rn'];
+        const currentUrl = window.location.href;
+        
+        // Verificar se a URL já tem ?nocache (indica que já tentamos corrigir)
+        const hasNoCache = currentUrl.includes('?nocache=');
+        
+        // Se não tem ?nocache, verificar se há referências a arquivos antigos no HTML
+        if (!hasNoCache) {
+          // Verificar se o HTML tem referências a arquivos antigos
+          const htmlContent = document.documentElement.outerHTML;
+          const hasOldFiles = oldFileHashes.some(hash => htmlContent.includes(hash));
+          
+          if (hasOldFiles) {
+            console.warn('⚠️ [Cache Fix] Detectado HTML com referências a arquivos antigos. Limpando cache...');
+            // Limpar cache e recarregar
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                for (let name of names) {
+                  caches.delete(name);
+                }
+              });
+            }
+            // Forçar reload com bypass de cache
+            window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?nocache=' + Date.now());
+            return; // Não continuar carregando scripts
+          }
+        }
+        
+        // ✅ VERIFICAÇÃO: Interceptar tentativas de carregar arquivos antigos
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(this, tagName);
+          
+          if (tagName.toLowerCase() === 'script') {
+            const originalSetAttribute = element.setAttribute;
+            element.setAttribute = function(name, value) {
+              if (name === 'src' && typeof value === 'string') {
+                // Verificar se está tentando carregar arquivo antigo
+                const isOldFile = oldFileHashes.some(hash => value.includes(hash));
+                if (isOldFile) {
+                  console.error('⚠️ [Cache Fix] Tentativa de carregar arquivo antigo bloqueada:', value);
+                  // Não definir o src, prevenindo o carregamento
+                  return;
+                }
+              }
+              return originalSetAttribute.call(this, name, value);
+            };
+          }
+          
+          return element;
+        };
+      })();
+    </script>
+    
     <!-- ✅ CORREÇÃO CRÍTICA: Script principal deve estar no HTML para o Vite processar -->
     <script type="module" src="/src/main.tsx"></script>
     
