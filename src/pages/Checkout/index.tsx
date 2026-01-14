@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -2081,58 +2082,118 @@ export default function Checkout() {
         transaction_id: transactionId
       };
       
-      // ✅ RESTAURAR FLUXO ANTIGO: Criar pedido diretamente no banco (como era antes)
-      // Não precisa de RPC ou edge function - insert direto funciona automaticamente
+      // ✅ RESTAURAR FLUXO ANTIGO: Criar quiz e pedido diretamente (como era antes)
+      // Usar insertQuizWithRetry para criar quiz (com retry e validação)
+      // Depois criar pedido diretamente com insert simples
       let orderCreated = false;
       let orderId = null;
+      let quizData: any = null;
       
       try {
-        // Primeiro, garantir que o quiz existe no banco
-        let quizData: any = null;
-        
-        // Tentar encontrar quiz existente por session_id
+        // PASSO 1: Verificar se quiz já existe no banco
         const { data: existingQuiz } = await supabase
           .from('quizzes')
-          .select('id')
+          .select('id, customer_email, customer_whatsapp')
           .eq('session_id', quizSessionIdForRedirect)
           .single();
         
         if (existingQuiz) {
           quizData = existingQuiz;
           logger.debug('✅ [Checkout] Quiz encontrado no banco', { quiz_id: quizData.id });
-        } else {
-          // Se não existe, criar o quiz primeiro
-          logger.debug('📝 [Checkout] Criando quiz no banco...');
-          const { data: newQuiz, error: quizError } = await supabase
-            .from('quizzes')
-            .insert({
-              session_id: quizSessionIdForRedirect,
-              about_who: quizForCheckoutPrep.about_who,
-              relationship: quizForCheckoutPrep.relationship,
-              style: quizForCheckoutPrep.style,
-              language: quizForCheckoutPrep.language || 'pt',
-              vocal_gender: quizForCheckoutPrep.vocal_gender,
-              qualities: quizForCheckoutPrep.qualities,
-              memories: quizForCheckoutPrep.memories,
-              message: quizForCheckoutPrep.message,
-              key_moments: quizForCheckoutPrep.key_moments,
-              occasion: quizForCheckoutPrep.occasion,
-              desired_tone: quizForCheckoutPrep.desired_tone,
-              answers: quizForCheckoutPrep.answers || {}
-            })
-            .select('id')
-            .single();
           
-          if (quizError || !newQuiz) {
-            logger.error('❌ [Checkout] Erro ao criar quiz', quizError);
-            throw new Error(`Erro ao criar quiz: ${quizError?.message || 'Erro desconhecido'}`);
+          // Atualizar quiz com email e whatsapp se necessário
+          if (existingQuiz.customer_email !== normalizedEmail || existingQuiz.customer_whatsapp !== normalizedWhatsApp) {
+            const { data: updatedQuiz, error: updateError } = await supabase
+              .from('quizzes')
+              .update({
+                customer_email: normalizedEmail,
+                customer_whatsapp: normalizedWhatsApp as string,
+                answers: { ...quiz.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp },
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', quizData.id)
+              .select()
+              .single();
+            
+            if (updateError || !updatedQuiz) {
+              logger.warn('⚠️ [Checkout] Erro ao atualizar quiz existente (não crítico)', updateError);
+            } else {
+              quizData = updatedQuiz;
+              logger.debug('✅ [Checkout] Quiz atualizado com email/whatsapp');
+            }
+          }
+        } else {
+          // PASSO 2: Criar quiz usando insertQuizWithRetry (como na versão antiga)
+          logger.info('📝 [Checkout] Criando quiz no banco usando insertQuizWithRetry...', {
+            session_id: quizSessionIdForRedirect
+          });
+          
+          // Validar quiz antes de criar
+          const quizForValidation: ValidationQuizData = {
+            about_who: quiz.about_who,
+            relationship: quiz.relationship,
+            style: quiz.style,
+            language: currentLanguage,
+            vocal_gender: quiz.vocal_gender || null,
+            qualities: quiz.qualities,
+            memories: quiz.memories,
+            message: quiz.message,
+          };
+          
+          const validationResult = validateQuiz(quizForValidation, { strict: false });
+          if (!validationResult.valid) {
+            const errorMessage = formatValidationErrors(validationResult.errors);
+            throw new Error(`Dados do questionário inválidos: ${errorMessage}`);
           }
           
-          quizData = newQuiz;
-          logger.debug('✅ [Checkout] Quiz criado no banco', { quiz_id: quizData.id });
+          // Sanitizar quiz
+          const sanitizedQuiz = sanitizeQuiz(quizForValidation);
+          
+          // Preparar payload do quiz (como na versão antiga)
+          const quizPayload: QuizPayload = {
+            user_id: null,
+            customer_email: normalizedEmail,
+            customer_whatsapp: normalizedWhatsApp as string,
+            about_who: sanitizedQuiz.about_who,
+            relationship: sanitizedQuiz.relationship,
+            style: sanitizedQuiz.style,
+            language: currentLanguage,
+            vocal_gender: sanitizedQuiz.vocal_gender || null,
+            qualities: sanitizedQuiz.qualities,
+            memories: sanitizedQuiz.memories,
+            message: sanitizedQuiz.message,
+            key_moments: quiz.key_moments,
+            occasion: quiz.occasion || null,
+            desired_tone: quiz.desired_tone || null,
+            answers: { ...quiz.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp, session_id: quizSessionIdForRedirect },
+            transaction_id: transactionId,
+            session_id: quizSessionIdForRedirect as string // ✅ Usar session_id para UPSERT idempotente
+          };
+          
+          // Criar quiz com retry (como na versão antiga)
+          const insertResult = await insertQuizWithRetry(quizPayload);
+          if (!insertResult.success || !insertResult.data || !insertResult.data.id) {
+            // Se falhou, tentar adicionar à fila antes de lançar erro
+            try {
+              const queued = await enqueueQuizToServer(quizPayload, insertResult.error);
+              if (queued) {
+                logger.warn('⚠️ [Checkout] Quiz adicionado à fila do servidor', { 
+                  customer_email: normalizedEmail,
+                });
+              }
+            } catch (queueError) {
+              logger.error('❌ [Checkout] Erro ao adicionar quiz à fila', queueError);
+            }
+            throw new Error(`Erro ao salvar questionário: ${insertResult.error?.message || 'Erro desconhecido'}`);
+          }
+          
+          quizData = insertResult.data;
+          logger.info('✅ [Checkout] Quiz criado com sucesso', {
+            quiz_id: quizData.id
+          });
         }
         
-        // Agora criar o pedido diretamente (fluxo antigo)
+        // PASSO 3: Criar pedido diretamente (fluxo antigo - como era antes)
         logger.debug('📦 [Checkout] Criando pedido diretamente no banco...', {
           provider: 'hotmart',
           email: normalizedEmail,
@@ -2142,25 +2203,43 @@ export default function Checkout() {
         const orderPayload = {
           quiz_id: quizData.id,
           user_id: null,
-          plan: selectedPlan,
+          plan: selectedPlan as 'standard' | 'express',
           amount_cents: amountCentsForRedirect,
           status: 'pending' as const,
-          provider: 'hotmart' as const,
-          payment_provider: 'hotmart' as const,
+          provider: 'hotmart' as 'hotmart' | 'cakto' | 'stripe',
+          payment_provider: 'hotmart' as 'hotmart' | 'cakto' | 'stripe',
           customer_email: normalizedEmail,
-          customer_whatsapp: normalizedWhatsApp,
+          customer_whatsapp: normalizedWhatsApp as string,
           transaction_id: transactionId || null
-        };
+        } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
         
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert(orderPayload)
-          .select('id')
+          .select()
           .single();
         
-        if (orderError || !orderData) {
-          logger.error('❌ [Checkout] Erro ao criar pedido', orderError);
-          throw new Error(`Erro ao criar pedido: ${orderError?.message || 'Erro desconhecido'}`);
+        if (orderError) {
+          logger.error('❌ [Checkout] Erro ao criar pedido', orderError, { step: 'order_creation' });
+          // Tentar limpar quiz órfão se order falhar
+          try {
+            const { error: deleteError } = await supabase
+              .from('quizzes')
+              .delete()
+              .eq('id', quizData.id);
+            
+            if (deleteError) {
+              logger.error('❌ [Checkout] Erro ao fazer rollback do quiz', deleteError, { step: 'rollback_quiz' });
+            }
+          } catch (rollbackError) {
+            logger.error('❌ [Checkout] Erro ao executar rollback', rollbackError);
+          }
+          throw new Error(`Erro ao criar pedido: ${orderError.message}`);
+        }
+        
+        if (!orderData || !orderData.id) {
+          logger.error('❌ [Checkout] Order data or ID missing', undefined, { step: 'order_creation' });
+          throw new Error('Dados do pedido inválidos');
         }
         
         orderId = orderData.id;
@@ -2170,6 +2249,10 @@ export default function Checkout() {
           quiz_id: quizData.id,
           provider: 'hotmart'
         });
+        
+        // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso (como na versão antiga)
+        clearQuizSessionId();
+        logger.info('✅ [Checkout] session_id limpo após criar pedido');
         
         // Atualizar URL de redirecionamento com order_id real
         redirectUrl = generateHotmartUrl(
