@@ -108,7 +108,11 @@ export default defineConfig({
               return undefined; // Deixar Radix UI no chunk principal com React
             }
             if (id.includes("recharts")) {
-              return "vendor-recharts";
+              // ✅ CORREÇÃO: Recharts usado principalmente no admin, mas também em chart.tsx
+              // Para evitar dependência circular (vendor-recharts -> admin -> vendor-recharts),
+              // deixar recharts no chunk principal ou incluir no admin
+              // Verificando se é usado apenas no admin
+              return undefined; // Deixar recharts no chunk principal para evitar circular
             }
             if (id.includes("lucide-react")) {
               return "vendor-icons"; // Ícones podem ser carregados sob demanda
@@ -155,8 +159,6 @@ export default defineConfig({
     target: "es2020", // Reduzir transpilação desnecessária
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Habilitar report de tamanhos comprimidos apenas em produção para análise
     reportCompressedSize: process.env.NODE_ENV === "production",
-    // ✅ OTIMIZAÇÃO PRODUÇÃO: Otimizar assets inline
-    assetsInlineLimit: 4096, // Inline assets menores que 4KB
     // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizações adicionais
     commonjsOptions: {
       include: [/node_modules/],
