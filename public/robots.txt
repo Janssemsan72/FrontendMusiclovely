@@ -12,3 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /download
+Disallow: /redeem
+Disallow: /payment-success
+Disallow: /checkout-processing
+Disallow: /cakto-return
+Disallow: /approve-lyrics
+Disallow: /song-download
+
+Sitemap: https://www.musiclovely.com.br/sitemap.xml
