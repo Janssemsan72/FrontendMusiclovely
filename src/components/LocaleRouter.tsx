@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useLocaleContext } from '@/contexts/LocaleContext';
 import { getCurrentLocale, removeLocalePrefix } from '@/lib/i18nRoutes';
@@ -45,42 +45,28 @@ function LocaleRouterWrapper() {
                          currentPath.startsWith('/en/') || currentPath === '/en' ||
                          currentPath.startsWith('/es/') || currentPath === '/es';
   
-  // ✅ CORREÇÃO: Redirecionar imediatamente se necessário, sem esperar useEffect
-  if (shouldRedirect) {
-    const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
-    const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
-    
-    // ✅ CORREÇÃO CRÍTICA: Usar window.location.replace para redirecionamento imediato e síncrono
-    // Isso garante que o redirecionamento acontece ANTES do React Router tentar renderizar
-    if (typeof window !== 'undefined' && window.location.pathname !== newPath) {
-      window.location.replace(newPath);
-      // Retornar componente vazio enquanto redireciona
-      return <div style={{ display: 'none' }} />;
-    }
-    
-    // Fallback: usar navigate se window.location não estiver disponível
-    navigate(newPath, { replace: true });
-    
-    // Retornar componente vazio enquanto redireciona para evitar renderização com rota inválida
-    return <div style={{ display: 'none' }} />;
-  }
-  
-  // ✅ CORREÇÃO: Também usar useEffect como fallback para casos edge
+  // ✅ CORREÇÃO: Redirecionar usando useEffect para evitar problemas durante render
   useEffect(() => {
-    const path = location.pathname;
-    
-    // Verificação dupla para garantir que não perdemos nenhum caso
-    if (path.startsWith('/pt/') || path === '/pt' ||
-        path.startsWith('/en/') || path === '/en' ||
-        path.startsWith('/es/') || path === '/es') {
-      const pathWithoutLocale = path.replace(/^\/(pt|en|es)/, '') || '/';
+    if (shouldRedirect) {
+      const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
       const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
       
-      if (path !== newPath) {
-        navigate(newPath, { replace: true });
+      // ✅ CORREÇÃO CRÍTICA: Usar window.location.replace para redirecionamento imediato
+      // Isso garante que o redirecionamento acontece ANTES do React Router tentar renderizar
+      if (typeof window !== 'undefined' && window.location.pathname !== newPath) {
+        window.location.replace(newPath);
+        return;
       }
+      
+      // Fallback: usar navigate se window.location não estiver disponível
+      navigate(newPath, { replace: true });
     }
-  }, [location.pathname, location.search, location.hash, navigate]);
+  }, [shouldRedirect, currentPath, location.search, location.hash, navigate]);
+  
+  // ✅ CORREÇÃO: Retornar null durante redirecionamento para evitar renderização com rota inválida
+  if (shouldRedirect) {
+    return null;
+  }
   
   // Verificar se já tem locale válido ANTES de qualquer hook
   const localeFromPath = getCurrentLocale(currentPath);
