@@ -190,34 +190,73 @@
     <!-- ✅ CORREÇÃO CRÍTICA: Script para detectar e corrigir cache de arquivos JS antigos -->
     <script>
       (function() {
+        let reloadAttempted = false;
+        
+        function forceReload() {
+          if (reloadAttempted) return;
+          reloadAttempted = true;
+          console.warn('⚠️ [Cache Fix] Detectado cache de arquivos JS antigos. Forçando reload completo...');
+          // Limpar todos os caches possíveis
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (let name of names) {
+                caches.delete(name);
+              }
+            });
+          }
+          // Forçar reload com cache bypass
+          setTimeout(function() {
+            window.location.href = window.location.href.split('?')[0] + '?nocache=' + Date.now();
+          }, 50);
+        }
+        
         // Detectar se há erro ao carregar chunks antigos
         window.addEventListener('error', function(e) {
-          // Verificar se é um erro de carregamento de arquivo JS
-          if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
-            const src = e.target.src || e.target.href || '';
-            // Verificar se é um arquivo JS antigo conhecido
-            const oldFiles = ['admin-6kmaUs1Q.js', 'VinylPlayer-BqFpQ0Rn.js'];
-            const isOldFile = oldFiles.some(oldFile => src.includes(oldFile));
-            
-            if (isOldFile || (src.includes('/assets/js/') && e.message && e.message.includes('Unexpected token'))) {
-              console.warn('⚠️ [Cache Fix] Detectado arquivo JS antigo em cache. Forçando reload...', src);
-              // Forçar reload completo após 100ms
-              setTimeout(function() {
-                window.location.reload(true);
-              }, 100);
-            }
+          const errorMsg = e.message || '';
+          const errorSrc = (e.target && (e.target.src || e.target.href)) || '';
+          
+          // Verificar se é um erro relacionado a arquivos JS antigos
+          const oldFiles = ['admin-6kmaUs1Q.js', 'VinylPlayer-BqFpQ0Rn.js'];
+          const isOldFile = oldFiles.some(oldFile => errorSrc.includes(oldFile) || errorMsg.includes(oldFile));
+          
+          // Verificar se é erro de "Unexpected token" ou "appendChild" (indicam HTML sendo executado como JS)
+          const isHtmlAsJsError = errorMsg.includes('Unexpected token') || 
+                                  errorMsg.includes('appendChild') ||
+                                  errorMsg.includes('Failed to execute');
+          
+          if (isOldFile || (isHtmlAsJsError && errorSrc.includes('/assets/js/'))) {
+            console.warn('⚠️ [Cache Fix] Erro detectado:', { errorMsg, errorSrc, isOldFile, isHtmlAsJsError });
+            forceReload();
           }
         }, true);
         
-        // Também detectar erros de Promise rejection (lazy loading)
+        // Detectar erros de Promise rejection (lazy loading)
         window.addEventListener('unhandledrejection', function(e) {
-          if (e.reason && e.reason.message && e.reason.message.includes('Unexpected token')) {
-            console.warn('⚠️ [Cache Fix] Erro ao carregar chunk. Forçando reload...');
-            setTimeout(function() {
-              window.location.reload(true);
-            }, 100);
+          const reason = e.reason || {};
+          const errorMsg = (reason.message || reason.toString() || '');
+          
+          if (errorMsg.includes('Unexpected token') || 
+              errorMsg.includes('appendChild') ||
+              errorMsg.includes('Failed to execute') ||
+              errorMsg.includes('admin-6kmaUs1Q') ||
+              errorMsg.includes('VinylPlayer-BqFpQ0Rn')) {
+            console.warn('⚠️ [Cache Fix] Erro de Promise rejection detectado:', errorMsg);
+            forceReload();
           }
         });
+        
+        // Detectar erros de console (backup)
+        const originalError = console.error;
+        console.error = function(...args) {
+          const errorStr = args.join(' ');
+          if (errorStr.includes('admin-6kmaUs1Q') || 
+              errorStr.includes('VinylPlayer-BqFpQ0Rn') ||
+              (errorStr.includes('Unexpected token') && errorStr.includes('/assets/js/'))) {
+            console.warn('⚠️ [Cache Fix] Erro no console detectado:', errorStr);
+            forceReload();
+          }
+          originalError.apply(console, args);
+        };
       })();
     </script>
     
