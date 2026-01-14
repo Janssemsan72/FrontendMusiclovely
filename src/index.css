@@ -181,7 +181,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* MusicLovely warm beige-brown palette */
-    --background: 34 32% 94%;  /* #F6F1EA creme quente */
+    --background: 38 28% 96%;  /* #F7F3ED bege claro/creme suave (cor do header) */
     --foreground: 30 18% 18%;  /* #2E2B27 marrom escuro */
 
     --card: 0 0% 100%;  /* #FFFFFF branco puro */
