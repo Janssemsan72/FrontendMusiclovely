@@ -2081,98 +2081,128 @@ export default function Checkout() {
         transaction_id: transactionId
       };
       
-      // ✅ CORREÇÃO: Criar pedido SINCRONAMENTE via Supabase RPC
-      // Usar create_order_atomic diretamente (mais confiável que edge function)
+      // ✅ RESTAURAR FLUXO ANTIGO: Criar pedido diretamente no banco (como era antes)
+      // Não precisa de RPC ou edge function - insert direto funciona automaticamente
       let orderCreated = false;
       let orderId = null;
       
       try {
-        logger.debug('📤 [Checkout] Criando pedido via RPC create_order_atomic...', {
-          provider: 'hotmart',
-          email: normalizedEmail,
-          session_id: quizSessionIdForRedirect
-        });
+        // Primeiro, garantir que o quiz existe no banco
+        let quizData: any = null;
         
-        // Chamar RPC diretamente (mais confiável)
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('create_order_atomic', {
-          p_session_id: quizSessionIdForRedirect,
-          p_customer_email: normalizedEmail,
-          p_customer_whatsapp: normalizedWhatsApp,
-          p_quiz_data: quizForCheckoutPrep,
-          p_plan: selectedPlan,
-          p_amount_cents: amountCentsForRedirect,
-          p_provider: 'hotmart',
-          p_transaction_id: transactionId || null,
-          p_source: 'checkout_frontend',
-          p_ip_address: 'unknown',
-          p_user_agent: navigator.userAgent || 'unknown'
-        });
+        // Tentar encontrar quiz existente por session_id
+        const { data: existingQuiz } = await supabase
+          .from('quizzes')
+          .select('id')
+          .eq('session_id', quizSessionIdForRedirect)
+          .single();
         
-        if (rpcError) {
-          logger.error('❌ [Checkout] Erro ao chamar RPC create_order_atomic', {
-            error: rpcError,
-            message: rpcError.message,
-            details: rpcError.details,
-            hint: rpcError.hint
-          });
-          throw new Error(`Erro ao criar pedido: ${rpcError.message || 'Erro desconhecido'}`);
+        if (existingQuiz) {
+          quizData = existingQuiz;
+          logger.debug('✅ [Checkout] Quiz encontrado no banco', { quiz_id: quizData.id });
+        } else {
+          // Se não existe, criar o quiz primeiro
+          logger.debug('📝 [Checkout] Criando quiz no banco...');
+          const { data: newQuiz, error: quizError } = await supabase
+            .from('quizzes')
+            .insert({
+              session_id: quizSessionIdForRedirect,
+              about_who: quizForCheckoutPrep.about_who,
+              relationship: quizForCheckoutPrep.relationship,
+              style: quizForCheckoutPrep.style,
+              language: quizForCheckoutPrep.language || 'pt',
+              vocal_gender: quizForCheckoutPrep.vocal_gender,
+              qualities: quizForCheckoutPrep.qualities,
+              memories: quizForCheckoutPrep.memories,
+              message: quizForCheckoutPrep.message,
+              key_moments: quizForCheckoutPrep.key_moments,
+              occasion: quizForCheckoutPrep.occasion,
+              desired_tone: quizForCheckoutPrep.desired_tone,
+              answers: quizForCheckoutPrep.answers || {}
+            })
+            .select('id')
+            .single();
+          
+          if (quizError || !newQuiz) {
+            logger.error('❌ [Checkout] Erro ao criar quiz', quizError);
+            throw new Error(`Erro ao criar quiz: ${quizError?.message || 'Erro desconhecido'}`);
+          }
+          
+          quizData = newQuiz;
+          logger.debug('✅ [Checkout] Quiz criado no banco', { quiz_id: quizData.id });
         }
         
-        if (rpcResult && rpcResult.success && rpcResult.order_id) {
-          orderId = rpcResult.order_id;
-          orderCreated = true;
-          logger.info('✅ [Checkout] Pedido criado com sucesso via RPC!', {
-            order_id: orderId,
-            quiz_id: rpcResult.quiz_id,
-            provider: 'hotmart'
-          });
+        // Agora criar o pedido diretamente (fluxo antigo)
+        logger.debug('📦 [Checkout] Criando pedido diretamente no banco...', {
+          provider: 'hotmart',
+          email: normalizedEmail,
+          quiz_id: quizData.id
+        });
+        
+        const orderPayload = {
+          quiz_id: quizData.id,
+          user_id: null,
+          plan: selectedPlan,
+          amount_cents: amountCentsForRedirect,
+          status: 'pending' as const,
+          provider: 'hotmart' as const,
+          payment_provider: 'hotmart' as const,
+          customer_email: normalizedEmail,
+          customer_whatsapp: normalizedWhatsApp,
+          transaction_id: transactionId || null
+        };
+        
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .insert(orderPayload)
+          .select('id')
+          .single();
+        
+        if (orderError || !orderData) {
+          logger.error('❌ [Checkout] Erro ao criar pedido', orderError);
+          throw new Error(`Erro ao criar pedido: ${orderError?.message || 'Erro desconhecido'}`);
+        }
+        
+        orderId = orderData.id;
+        orderCreated = true;
+        logger.info('✅ [Checkout] Pedido criado com sucesso!', {
+          order_id: orderId,
+          quiz_id: quizData.id,
+          provider: 'hotmart'
+        });
+        
+        // Atualizar URL de redirecionamento com order_id real
+        redirectUrl = generateHotmartUrl(
+          orderId,
+          normalizedEmail,
+          normalizedWhatsApp,
+          currentLanguage,
+          utms || {}
+        );
+        
+        // Salvar URL da Hotmart no pedido
+        try {
+          const { error: updateError } = await supabase
+            .from('orders')
+            .update({ hotmart_payment_url: redirectUrl })
+            .eq('id', orderId);
           
-          // Atualizar URL de redirecionamento com order_id real
-          redirectUrl = generateHotmartUrl(
-            orderId,
-            normalizedEmail,
-            normalizedWhatsApp,
-            currentLanguage,
-            utms || {}
-          );
-          
-          // Salvar URL da Hotmart no pedido
-          try {
-            const { error: updateError } = await supabase
-              .from('orders')
-              .update({ hotmart_payment_url: redirectUrl })
-              .eq('id', orderId);
-            
-            if (updateError) {
-              logger.warn('⚠️ [Checkout] Erro ao salvar URL da Hotmart no pedido', updateError);
-            } else {
-              logger.debug('✅ [Checkout] URL da Hotmart salva no pedido');
-            }
-          } catch (updateErr) {
-            logger.warn('⚠️ [Checkout] Erro ao atualizar pedido com URL', updateErr);
+          if (updateError) {
+            logger.warn('⚠️ [Checkout] Erro ao salvar URL da Hotmart no pedido', updateError);
+          } else {
+            logger.debug('✅ [Checkout] URL da Hotmart salva no pedido');
           }
-        } else {
-          const errorMsg = rpcResult?.error || 'Falha ao criar pedido';
-          logger.error('❌ [Checkout] RPC retornou erro', {
-            result: rpcResult,
-            errorMsg
-          });
-          throw new Error(errorMsg);
+        } catch (updateErr) {
+          logger.warn('⚠️ [Checkout] Erro ao atualizar pedido com URL', updateErr);
         }
       } catch (createError: any) {
         logger.error('❌ [Checkout] Erro ao criar pedido', {
           error: createError.message,
-          stack: createError.stack,
-          errorName: createError.name
+          stack: createError.stack
         });
         
-        // ✅ FALLBACK: Se falhar, continuar mesmo assim - dados estão no localStorage
-        // O webhook da Hotmart pode criar o pedido depois usando os dados do localStorage
-        logger.warn('⚠️ [Checkout] Continuando sem pedido criado - dados salvos no localStorage como backup');
-        logger.warn('⚠️ [Checkout] O webhook da Hotmart tentará criar o pedido usando email/telefone');
-        
-        // Não bloquear o redirecionamento - dados estão salvos e podem ser recuperados
-        // O webhook da Hotmart vai tentar criar o pedido usando email/telefone
+        // Não bloquear - dados estão no localStorage e webhook pode criar depois
+        logger.warn('⚠️ [Checkout] Continuando sem pedido criado - dados salvos no localStorage');
       }
       
       // ✅ REDIRECIONAR APÓS criar pedido (ou tentar criar)
