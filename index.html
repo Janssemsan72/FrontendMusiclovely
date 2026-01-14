@@ -190,12 +190,49 @@
     <!-- ✅ CORREÇÃO CRÍTICA: Script para detectar e corrigir cache de arquivos JS antigos -->
     <script>
       (function() {
-        let reloadAttempted = false;
+        // ✅ CORREÇÃO: Prevenir loop infinito de reloads
+        const MAX_RELOADS = 2;
+        const RELOAD_COOLDOWN = 5000; // 5 segundos entre reloads
+        const storageKey = 'cache_fix_reload_count';
+        const lastReloadKey = 'cache_fix_last_reload';
+        
+        // Verificar se já tentamos reload muitas vezes
+        const reloadCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
+        const lastReload = parseInt(sessionStorage.getItem(lastReloadKey) || '0', 10);
+        const timeSinceLastReload = Date.now() - lastReload;
+        
+        if (reloadCount >= MAX_RELOADS) {
+          console.warn('⚠️ [Cache Fix] Limite de reloads atingido. Por favor, limpe o cache manualmente (Ctrl+Shift+R)');
+          // Limpar contador após 30 segundos para permitir nova tentativa
+          setTimeout(function() {
+            sessionStorage.removeItem(storageKey);
+            sessionStorage.removeItem(lastReloadKey);
+          }, 30000);
+          return; // Não executar script se já tentamos muitas vezes
+        }
+        
+        // Se tentou reload recentemente, aguardar antes de tentar novamente
+        if (timeSinceLastReload < RELOAD_COOLDOWN && reloadCount > 0) {
+          console.warn('⚠️ [Cache Fix] Aguardando cooldown antes de próximo reload...');
+          return;
+        }
         
         function forceReload() {
-          if (reloadAttempted) return;
-          reloadAttempted = true;
-          console.warn('⚠️ [Cache Fix] Detectado cache de arquivos JS antigos. Forçando reload completo...');
+          const currentCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
+          if (currentCount >= MAX_RELOADS) {
+            console.warn('⚠️ [Cache Fix] Limite de reloads atingido. Limpe o cache manualmente.');
+            return;
+          }
+          
+          // Incrementar contador
+          sessionStorage.setItem(storageKey, (currentCount + 1).toString());
+          sessionStorage.setItem(lastReloadKey, Date.now().toString());
+          
+          console.warn('⚠️ [Cache Fix] Detectado cache de arquivos JS antigos. Forçando reload completo...', {
+            attempt: currentCount + 1,
+            maxAttempts: MAX_RELOADS
+          });
+          
           // Limpar todos os caches possíveis
           if ('caches' in window) {
             caches.keys().then(function(names) {
@@ -204,10 +241,12 @@
               }
             });
           }
-          // Forçar reload com cache bypass
+          
+          // Forçar reload com cache bypass - usar replace para não adicionar ao histórico
           setTimeout(function() {
-            window.location.href = window.location.href.split('?')[0] + '?nocache=' + Date.now();
-          }, 50);
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            window.location.replace(baseUrl + '?nocache=' + Date.now());
+          }, 100);
         }
         
         // Detectar se há erro ao carregar chunks antigos
