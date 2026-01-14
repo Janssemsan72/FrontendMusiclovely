@@ -16,8 +16,15 @@ export function mimeTypesPlugin(): Plugin {
         // ✅ CORREÇÃO: Garantir MIME type correto para arquivos JS
         if (url.endsWith('.js') || url.endsWith('.mjs')) {
           res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          // ✅ CORREÇÃO: Adicionar headers para evitar cache de arquivos antigos
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          // ✅ CORREÇÃO CRÍTICA: Headers anti-cache mais agressivos
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+        }
+        // ✅ CORREÇÃO: Headers anti-cache para HTML também
+        if (url === '/' || url?.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
         }
@@ -31,8 +38,15 @@ export function mimeTypesPlugin(): Plugin {
         // ✅ CORREÇÃO: Garantir MIME type correto para arquivos JS no preview
         if (url.endsWith('.js') || url.endsWith('.mjs')) {
           res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          // ✅ CORREÇÃO: Adicionar headers para evitar cache de arquivos antigos
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          // ✅ CORREÇÃO CRÍTICA: Headers anti-cache mais agressivos
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+        }
+        // ✅ CORREÇÃO: Headers anti-cache para HTML também
+        if (url === '/' || url?.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
         }
