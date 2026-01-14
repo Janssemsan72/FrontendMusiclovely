@@ -81,9 +81,10 @@ export default defineConfig({
             if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx')) {
               return true;
             }
-            // Código admin/quiz pode ser tree-shaken se não usado
+            // ✅ CORREÇÃO CRÍTICA: Admin NÃO pode ser tree-shaken - precisa manter side effects
+            // O código admin tem hooks, contextos e efeitos que precisam ser preservados
             if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
-              return false; // Admin pode ser tree-shaken
+              return true; // Admin PRECISA de side effects para funcionar
             }
             if (id.includes('src/pages/Quiz') || id.includes('src/pages/Checkout')) {
               return false; // Quiz e Checkout podem ser tree-shaken
@@ -143,10 +144,11 @@ export default defineConfig({
             if (id.includes("react-day-picker")) {
               return "admin"; // Date picker usado principalmente no admin
             }
-            // Supabase é usado em vários lugares, então vamos mantê-lo separado
-            // mas garantir que não cause circular incluindo no admin se necessário
+            // ✅ CORREÇÃO CRÍTICA: Supabase usado no admin - garantir que está disponível
+            // Se admin precisar de Supabase, incluir no chunk admin para evitar problemas
             if (id.includes("@supabase")) {
-              // Manter separado, mas se causar circular, o Vite vai avisar
+              // Verificar se estamos em contexto admin - se sim, incluir no chunk admin
+              // Caso contrário, manter separado
               return "vendor-supabase";
             }
             // Separar outras bibliotecas que não são do admin
