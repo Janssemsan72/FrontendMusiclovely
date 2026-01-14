@@ -187,6 +187,39 @@
     <div id="root"></div>
     <!-- ✅ OTIMIZAÇÃO: Script principal será injetado pelo Vite durante o build -->
     
+    <!-- ✅ CORREÇÃO CRÍTICA: Script para detectar e corrigir cache de arquivos JS antigos -->
+    <script>
+      (function() {
+        // Detectar se há erro ao carregar chunks antigos
+        window.addEventListener('error', function(e) {
+          // Verificar se é um erro de carregamento de arquivo JS
+          if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+            const src = e.target.src || e.target.href || '';
+            // Verificar se é um arquivo JS antigo conhecido
+            const oldFiles = ['admin-6kmaUs1Q.js', 'VinylPlayer-BqFpQ0Rn.js'];
+            const isOldFile = oldFiles.some(oldFile => src.includes(oldFile));
+            
+            if (isOldFile || (src.includes('/assets/js/') && e.message && e.message.includes('Unexpected token'))) {
+              console.warn('⚠️ [Cache Fix] Detectado arquivo JS antigo em cache. Forçando reload...', src);
+              // Forçar reload completo após 100ms
+              setTimeout(function() {
+                window.location.reload(true);
+              }, 100);
+            }
+          }
+        }, true);
+        
+        // Também detectar erros de Promise rejection (lazy loading)
+        window.addEventListener('unhandledrejection', function(e) {
+          if (e.reason && e.reason.message && e.reason.message.includes('Unexpected token')) {
+            console.warn('⚠️ [Cache Fix] Erro ao carregar chunk. Forçando reload...');
+            setTimeout(function() {
+              window.location.reload(true);
+            }, 100);
+          }
+        });
+      })();
+    </script>
     
     <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Scripts de terceiros carregados apenas após paint completo e idle -->
     <script>

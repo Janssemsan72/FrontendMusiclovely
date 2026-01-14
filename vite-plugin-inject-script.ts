@@ -44,8 +44,11 @@ export function injectScriptPlugin(): Plugin {
           const mainFile = jsFiles.find(f => f.name.startsWith('index-')) || jsFiles[0];
           
           if (mainFile && !html.includes(mainFile.name)) {
-            // ✅ CORREÇÃO: Adicionar script module correto
-            const scriptTag = `    <script type="module" crossorigin src="/assets/js/${mainFile.name}"></script>\n`;
+            // ✅ CORREÇÃO: Adicionar script module correto com cache busting
+            // Adicionar hash do arquivo como query parameter para forçar reload
+            const fileHash = mainFile.name.match(/-([a-zA-Z0-9]+)\.js$/)?.[1] || '';
+            const cacheBuster = fileHash ? `?v=${fileHash}` : `?t=${Date.now()}`;
+            const scriptTag = `    <script type="module" crossorigin src="/assets/js/${mainFile.name}${cacheBuster}"></script>\n`;
             const bodyEndIndex = html.lastIndexOf('</body>');
             
             if (bodyEndIndex !== -1) {
