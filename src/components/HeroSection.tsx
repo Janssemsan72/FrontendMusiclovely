@@ -163,7 +163,7 @@ export default function HeroSection() {
                 className="absolute inset-0 w-full h-full object-cover"
                 src={heroPoster}
                 alt="Memórias especiais"
-                fetchpriority="high"
+                fetchPriority="high"
                 width={640}
                 height={269}
                 sizes="(max-width: 640px) 384px, 640px"
