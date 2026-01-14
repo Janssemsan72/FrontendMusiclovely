@@ -1453,7 +1453,7 @@ export const Constants = {
         "retry_pending",
       ],
       order_status: ["pending", "paid", "failed", "refunded"],
-      payment_provider: ["stripe", "cakto"],
+      payment_provider: ["stripe", "cakto", "hotmart"],
       plan_type: ["standard", "express"],
       role_t: ["user", "admin"],
       song_status: ["pending", "ready", "released", "approved"],
