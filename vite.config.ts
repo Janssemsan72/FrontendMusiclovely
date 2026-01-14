@@ -72,8 +72,12 @@ export default defineConfig({
       treeshake: {
         preset: 'recommended',
         moduleSideEffects: (id) => {
-          // Permitir side effects apenas para CSS e alguns módulos específicos
-          return id.includes('.css') || id.includes('@radix-ui/react-toast');
+          // ✅ CORREÇÃO: Permitir side effects para código fonte e CSS
+          if (id.includes('src/') || id.includes('.css')) {
+            return true; // Código fonte precisa de side effects
+          }
+          // Permitir side effects para alguns módulos específicos
+          return id.includes('@radix-ui/react-toast');
         },
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
@@ -83,16 +87,28 @@ export default defineConfig({
         compact: true,
         // ✅ CORREÇÃO: Remover experimentalMinChunkSize que pode estar impedindo geração de chunks
         // experimentalMinChunkSize: 20000, // Comentado - estava impedindo geração de arquivos JS
-        // ✅ TESTE: Desabilitar manualChunks completamente para verificar se entry point é gerado
-        // manualChunks: undefined,
+        // ✅ CORREÇÃO: Simplificar manualChunks - apenas separar vendors muito grandes
+        manualChunks: (id) => {
+          // ✅ CRÍTICO: NUNCA separar código fonte - deixar no entry principal
+          if (id.includes('src/') && !id.includes('node_modules')) {
+            return undefined; // Deixar TODO código fonte no chunk principal
+          }
+          
+          // Apenas separar node_modules muito grandes
+          if (id.includes("node_modules")) {
+            if (id.includes("@radix-ui")) {
+              return "vendor-radix";
+            }
+            if (id.includes("recharts")) {
+              return "vendor-recharts";
+            }
+            // Deixar React e resto no chunk principal
+          }
+          return undefined;
+        },
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
-        entryFileNames: (chunkInfo) => {
-          // Garantir que o entry point principal seja gerado corretamente
-          return chunkInfo.name === 'main' 
-            ? "assets/js/main-[hash].js" 
-            : "assets/js/[name]-[hash].js";
-        },
+        entryFileNames: "assets/js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split(".") || [];
           const ext = info[info.length - 1];
