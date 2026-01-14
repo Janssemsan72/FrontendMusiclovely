@@ -83,83 +83,25 @@ export default defineConfig({
         compact: true,
         // ✅ OTIMIZAÇÃO PRODUÇÃO: Chunks menores para melhor cache
         experimentalMinChunkSize: 20000,
-        // Chunks manuais para melhor cache e carregamento paralelo
-        // ✅ CORREÇÃO CRÍTICA: Remover chunking manual problemático e usar estratégia mais segura
-        // O Vite já faz code splitting automático eficiente, então vamos ser mais conservadores
+        // ✅ CORREÇÃO CRÍTICA: Simplificar manualChunks para garantir geração do entry point
+        // Apenas separar vendors muito grandes, deixar código fonte no entry principal
         manualChunks: (id) => {
-          // ✅ CORREÇÃO CRÍTICA: Não separar o entry point principal (main.tsx, App.tsx)
-          // Isso garante que o código principal seja gerado como entry point
-          if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx')) {
-            return undefined; // Deixar no chunk principal
+          // ✅ CRÍTICO: NUNCA separar o entry point principal
+          if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx') || 
+              id.includes('src/') && !id.includes('node_modules')) {
+            return undefined; // Deixar TODO código fonte no chunk principal
           }
           
-          // ✅ OTIMIZAÇÃO PERFORMANCE: Separar código não crítico em chunks menores
-          // Separar i18n em chunk próprio (não crítico)
-          if (id.includes("i18n") || id.includes("i18next") || id.includes("react-i18next")) {
-            return "vendor-i18n";
-          }
-          
-          // Separar error handlers (não crítico)
-          if (id.includes("utils/errors")) {
-            return "vendor-errors";
-          }
-          
-          // ✅ OTIMIZAÇÃO: Separar admin em chunks menores por funcionalidade (não crítico para usuários)
-          if (id.includes("pages/admin") || id.includes("components/admin")) {
-            // Separar AdminDashboard e AdminLayout (mais pesados)
-            if (id.includes("AdminDashboard") || id.includes("AdminLayout")) {
-              return "vendor-admin-core";
-            }
-            // Separar AdminOrders e AdminOrderDetails
-            if (id.includes("AdminOrder")) {
-              return "vendor-admin-orders";
-            }
-            // Separar AdminSongs e AdminSongDetails
-            if (id.includes("AdminSong")) {
-              return "vendor-admin-songs";
-            }
-            // Resto do admin
-            return "vendor-admin";
-          }
-          
+          // Apenas separar node_modules em vendors
           if (id.includes("node_modules")) {
-            // Separar Supabase (carregar apenas quando necessário)
-            if (id.includes("@supabase") && !id.includes("react")) {
-              return "vendor-supabase";
-            }
-            // ✅ OTIMIZAÇÃO: Agrupar Radix UI em chunk único (reduzir número de chunks)
+            // Separar apenas bibliotecas muito grandes
             if (id.includes("@radix-ui")) {
               return "vendor-radix";
             }
-            // Separar bibliotecas pesadas
             if (id.includes("recharts")) {
               return "vendor-recharts";
             }
-            if (id.includes("date-fns")) {
-              return "vendor-date-fns";
-            }
-            if (id.includes("react-router-dom")) {
-              return "vendor-router";
-            }
-            if (id.includes("@tanstack/react-query")) {
-              return "vendor-query";
-            }
-            // Outros vendors grandes
-            if (id.includes("lucide-react")) {
-              return "vendor-icons";
-            }
-            // ✅ OTIMIZAÇÃO FASE 4.1: Separar zod e sonner em chunks próprios
-            if (id.includes("zod")) {
-              return "vendor-zod";
-            }
-            if (id.includes("sonner")) {
-              return "vendor-sonner";
-            }
-            // ✅ OTIMIZAÇÃO: Agrupar outros vendors pequenos
-            if (id.includes("clsx") || id.includes("tailwind-merge") || id.includes("class-variance-authority")) {
-              return "vendor-utils";
-            }
-            // Deixar React e tudo relacionado no chunk padrão
+            // Deixar React e tudo relacionado no chunk principal junto com o código
           }
           return undefined;
         },
