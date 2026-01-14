@@ -3,7 +3,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import RegionalPricingSection from './RegionalPricingSection';
 
 export default function PricingSection() {
-  const { locale } = useTranslation();
+  // Sempre português
+  const locale = 'pt';
   const [useRegionalPricing, setUseRegionalPricing] = useState(true);
 
   // Verificar se deve usar preços regionais

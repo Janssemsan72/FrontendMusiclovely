@@ -74,7 +74,7 @@ export default function Logo({ className = "", size = 40, variant = 'default' }:
         }}
         loading="eager"
         decoding="async"
-        fetchpriority="high"
+                fetchPriority="high"
         onError={handleError}
       />
     </picture>
