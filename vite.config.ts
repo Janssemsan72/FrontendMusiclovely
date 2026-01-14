@@ -2,22 +2,25 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "node:path";
 import { imagetools } from "vite-imagetools";
-import { compression } from "vite-plugin-compression2";
+// ✅ OTIMIZAÇÃO: Removido compression - Vercel já faz compressão automática
+// Isso acelera significativamente o build
+// import { compression } from "vite-plugin-compression2";
 import { injectScriptPlugin } from "./vite-plugin-inject-script";
 
 export default defineConfig({
   plugins: [
     react(), 
     imagetools(),
-    // Compression plugins movidos para o final para não interferir com o processamento do HTML
-    compression({
-      algorithm: 'gzip',
-      exclude: [/\.(br)$/, /\.(gz)$/],
-    }),
-    compression({
-      algorithm: 'brotliCompress',
-      exclude: [/\.(br)$/, /\.(gz)$/],
-    }),
+    // ✅ OTIMIZAÇÃO: Removido compression - Vercel já faz compressão automática
+    // Isso elimina processamento duplo e acelera o build significativamente
+    // compression({
+    //   algorithm: 'gzip',
+    //   exclude: [/\.(br)$/, /\.(gz)$/],
+    // }),
+    // compression({
+    //   algorithm: 'brotliCompress',
+    //   exclude: [/\.(br)$/, /\.(gz)$/],
+    // }),
     // ✅ CORREÇÃO CRÍTICA: Plugin para injetar script principal no HTML
     injectScriptPlugin(),
   ],
