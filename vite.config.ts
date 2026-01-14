@@ -6,6 +6,7 @@ import { imagetools } from "vite-imagetools";
 // Isso acelera significativamente o build
 // import { compression } from "vite-plugin-compression2";
 import { injectScriptPlugin } from "./vite-plugin-inject-script";
+import { mimeTypesPlugin } from "./vite-plugin-mime-types";
 
 export default defineConfig({
   plugins: [
@@ -21,6 +22,8 @@ export default defineConfig({
     //   algorithm: 'brotliCompress',
     //   exclude: [/\.(br)$/, /\.(gz)$/],
     // }),
+    // ✅ CORREÇÃO CRÍTICA: Plugin para garantir MIME types corretos
+    mimeTypesPlugin(),
     // ✅ CORREÇÃO CRÍTICA: Plugin para injetar script principal no HTML
     injectScriptPlugin(),
   ],
