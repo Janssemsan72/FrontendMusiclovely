@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import { RefreshCw } from "@/utils/iconImports";
 
 interface AdminPageLoadingProps {
   text?: string;

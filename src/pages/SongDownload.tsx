@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Music, Calendar, Loader2, AlertCircle, Home, Copy, CheckCircle2 } from 'lucide-react';
+import { Download, Share2, Music, Calendar, Loader2, AlertCircle, Home, Copy, CheckCircle2 } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUtmParams } from '@/hooks/useUtmParams';

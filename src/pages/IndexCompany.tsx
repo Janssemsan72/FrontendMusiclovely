@@ -14,7 +14,7 @@ import {
   MessageCircle,
   Star,
   Quote
-} from 'lucide-react';
+} from '@/utils/iconImports';
 // ✅ CORREÇÃO: Usar avatares de public/testimonials para garantir consistência entre dev e produção
 const testimonial1 = "/testimonials/avatar-1.webp";
 const testimonial2 = "/testimonials/avatar-2.webp";
@@ -131,10 +131,22 @@ export default function IndexCompany() {
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 Music Lovely – <span className="text-primary">Homenagens que Viram Música</span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-4">
+              <p 
+                className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-4"
+                style={{
+                  minHeight: '3rem',
+                  contentVisibility: 'auto'
+                }}
+              >
                 A plataforma que transforma histórias reais em canções personalizadas, criadas com emoção, carinho e produção profissional.
               </p>
-              <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              <p 
+                className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+                style={{
+                  minHeight: '4.5rem',
+                  contentVisibility: 'auto'
+                }}
+              >
                 Com o Music Lovely, você cria homenagens inesquecíveis para aniversários, casamentos, tributos, celebrações de família, reconciliações e momentos especiais. Nossa equipe transforma suas memórias em melodia, letra e emoção — tudo de forma simples, rápida e acessível.
               </p>
             </div>

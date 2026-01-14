@@ -17,7 +17,7 @@ import {
   Calendar,
   MapPin,
   Flag
-} from 'lucide-react';
+} from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface RegionalAnalytics {

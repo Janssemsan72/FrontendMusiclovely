@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, Music, RefreshCw, XCircle } from "lucide-react";
+import { CheckCircle, Clock, Music, RefreshCw, XCircle } from "@/utils/iconImports";
 
 export function getAdminDashboardStatusBadge(status: string) {
   const variants: Record<string, { variant: any; icon: any; label: string }> = {

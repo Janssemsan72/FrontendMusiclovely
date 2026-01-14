@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
-import { Mail, Clock, CheckCircle, Eye, MousePointerClick, XCircle } from "lucide-react";
+import { Mail, Clock, CheckCircle, Eye, MousePointerClick, XCircle } from "@/utils/iconImports";
 
 interface EmailLog {
   id: string;

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SongStatusBadge } from "@/components/admin/SongStatusBadge";
-import { ArrowLeft, Play, Pause, Download, Calendar, Clock, Music2, Globe, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowLeft, Play, Pause, Download, Calendar, Clock, Music2, Globe, RefreshCw, Trash2 } from "@/utils/iconImports";
 import { JobStatusBadge } from "@/components/admin/JobStatusBadge";
 
 interface Song {

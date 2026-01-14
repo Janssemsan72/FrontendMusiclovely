@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, FileCheck, CheckCircle2, XCircle, Loader2, AlertCircle, Download, BarChart3 } from "lucide-react";
+import { Upload, FileCheck, CheckCircle2, XCircle, Loader2, AlertCircle, Download, BarChart3 } from "@/utils/iconImports";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 

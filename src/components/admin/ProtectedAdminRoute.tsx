@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { useCollaboratorPermissions } from '@/hooks/useCollaboratorPermissions';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/utils/iconImports';
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;

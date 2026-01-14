@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, X, Smartphone, Monitor, Zap, Shield, Clock, Sparkles } from "lucide-react";
+import { Download, X, Smartphone, Monitor, Zap, Shield, Clock, Sparkles } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

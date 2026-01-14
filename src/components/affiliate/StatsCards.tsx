@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, ShoppingCart, Wallet, TrendingUp } from 'lucide-react';
+import { DollarSign, ShoppingCart, Wallet, TrendingUp } from '@/utils/iconImports';
 
 interface StatsCardsProps {
   totalSales: number;

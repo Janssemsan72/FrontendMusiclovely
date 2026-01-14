@@ -36,11 +36,17 @@ export default function QuizStep2({
             key={style}
             type="button"
             onClick={() => updateField('style', style)}
-            className={`px-3 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-base md:text-sm ${
+            className={`px-3 py-2 md:px-4 md:py-2 rounded-full !border-2 transition-all font-medium text-base md:text-sm ${
               formData.style === style
-                ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
+                ? '!border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
+                : '!border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:!border-[hsl(var(--quiz-primary))]'
             }`}
+            style={{
+              borderWidth: '2px',
+              borderRadius: '9999px',
+              borderStyle: 'solid',
+              borderColor: formData.style === style ? '#C85A3E' : '#E5E5E5'
+            }}
           >
             {style}
           </button>
@@ -62,11 +68,17 @@ export default function QuizStep2({
               key={option.value}
               type="button"
               onClick={() => updateField('vocalGender', option.value)}
-              className={`px-1 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-xs md:text-sm whitespace-nowrap ${
+              className={`px-1 py-2 md:px-4 md:py-2 rounded-full !border-2 transition-all font-medium text-xs md:text-sm whitespace-nowrap ${
                 formData.vocalGender === option.value
-                  ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                  : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
+                  ? '!border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
+                  : '!border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:!border-[hsl(var(--quiz-primary))]'
               }`}
+              style={{
+                borderWidth: '2px',
+                borderRadius: '9999px',
+                borderStyle: 'solid',
+                borderColor: formData.vocalGender === option.value ? '#C85A3E' : '#E5E5E5'
+              }}
             >
               {option.label}
             </button>

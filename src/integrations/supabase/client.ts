@@ -367,40 +367,75 @@ function createDummyClient(): any {
   };
 }
 
-// ✅ CORREÇÃO: Inicializar apenas uma vez usando variável global
-if (typeof window !== 'undefined') {
-  if (!window.__SUPABASE_CLIENT_INSTANCE__) {
-    try {
-      window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
+// ✅ OTIMIZAÇÃO PERFORMANCE: Deferir inicialização do Supabase até após paint
+let supabaseInitialized = false;
+
+function initializeSupabase() {
+  if (supabaseInitialized && typeof window !== 'undefined' && window.__SUPABASE_CLIENT_INSTANCE__) {
+    supabase = window.__SUPABASE_CLIENT_INSTANCE__;
+    return;
+  }
+
+  if (typeof window !== 'undefined') {
+    if (!window.__SUPABASE_CLIENT_INSTANCE__) {
+      try {
+        window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
+        supabase = window.__SUPABASE_CLIENT_INSTANCE__;
+        
+        // ✅ FASE 3: Validar que o cliente foi criado corretamente
+        if (!supabase || !supabase.auth) {
+          window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
+          supabase = window.__SUPABASE_CLIENT_INSTANCE__;
+        }
+      } catch (error) {
+        window.__SUPABASE_CLIENT_INSTANCE__ = createDummyClient();
+        supabase = window.__SUPABASE_CLIENT_INSTANCE__;
+      }
+    } else {
+      // ✅ CORREÇÃO: SEMPRE reutilizar instância existente (mesmo com HMR)
       supabase = window.__SUPABASE_CLIENT_INSTANCE__;
       
-      // ✅ FASE 3: Validar que o cliente foi criado corretamente
+      // ✅ FASE 3: Validar instância existente
       if (!supabase || !supabase.auth) {
         window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
         supabase = window.__SUPABASE_CLIENT_INSTANCE__;
       }
-    } catch (error) {
-      window.__SUPABASE_CLIENT_INSTANCE__ = createDummyClient();
-      supabase = window.__SUPABASE_CLIENT_INSTANCE__;
     }
+    supabaseInitialized = true;
   } else {
-    // ✅ CORREÇÃO: SEMPRE reutilizar instância existente (mesmo com HMR)
-    supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-    
-    // ✅ FASE 3: Validar instância existente
-    if (!supabase || !supabase.auth) {
-      window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
-      supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-    }
+    // Fallback para SSR - criar instância local
+    supabase = createSupabaseClient();
+    supabaseInitialized = true;
   }
-} else {
-  // Fallback para SSR - criar instância local
-  supabase = createSupabaseClient();
+
+  // ✅ FASE 3: Garantir que supabase nunca seja null ou undefined
+  if (!supabase) {
+    supabase = createDummyClient();
+  }
 }
 
-// ✅ FASE 3: Garantir que supabase nunca seja null ou undefined
-if (!supabase) {
-  supabase = createDummyClient();
+// ✅ OTIMIZAÇÃO PERFORMANCE: Inicializar apenas quando necessário (lazy)
+// Para páginas públicas, inicializar após paint para não bloquear FCP
+if (typeof window !== 'undefined') {
+  // Criar dummy client inicial para evitar erros de import
+  if (!supabase) {
+    supabase = createDummyClient();
+  }
+  
+  // Deferir inicialização real até após paint
+  if ('requestIdleCallback' in window) {
+    const w = window as any;
+    w.requestIdleCallback(() => {
+      initializeSupabase();
+    }, { timeout: 1000 });
+  } else {
+    setTimeout(() => {
+      initializeSupabase();
+    }, 1000);
+  }
+} else {
+  // SSR - inicializar imediatamente
+  initializeSupabase();
 }
 
 export { supabase };

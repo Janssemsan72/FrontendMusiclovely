@@ -18,7 +18,7 @@ import {
   Eye,
   EyeOff,
   Wallet
-} from "lucide-react";
+} from "@/utils/iconImports";
 
 interface DashboardStats {
   totalOrders: number;

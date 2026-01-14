@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Music } from "lucide-react";
+import { Music } from "@/utils/iconImports";
 import { getAdminDashboardStatusBadge } from "./statusBadge";
 
 interface Song {

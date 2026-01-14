@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw } from '@/utils/iconImports';
 import { logErrorToDatabase } from '@/utils/errors/errorHandler';
 import { safeReload } from '@/utils/reload';
 import { isMobileDevice, getDeviceInfo } from '@/utils/detection/deviceDetection';

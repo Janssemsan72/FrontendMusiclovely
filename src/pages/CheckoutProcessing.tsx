@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { safeReload } from '@/utils/reload';

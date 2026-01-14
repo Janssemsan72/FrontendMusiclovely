@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { RefreshCw, AlertCircle, CheckCircle, Clock, X, User } from "lucide-react";
+import { RefreshCw, AlertCircle, CheckCircle, Clock, X, User } from "@/utils/iconImports";
 import {
   Table,
   TableBody,

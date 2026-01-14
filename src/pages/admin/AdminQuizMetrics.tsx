@@ -16,7 +16,7 @@ import {
   ShoppingCart,
   Clock,
   Database
-} from "lucide-react";
+} from "@/utils/iconImports";
 import { AdminPageLoading } from "@/components/admin/AdminPageLoading";
 import {
   LineChart,

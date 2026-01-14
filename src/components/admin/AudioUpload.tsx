@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, Music, X, Loader2 } from "lucide-react";
+import { Upload, Music, X, Loader2 } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";

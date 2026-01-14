@@ -11,7 +11,7 @@ import {
   RefreshCw,
   AlertCircle,
   BarChart3
-} from "lucide-react";
+} from "@/utils/iconImports";
 import { useDashboardStats, useSunoCredits } from "@/hooks/useAdminData";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";

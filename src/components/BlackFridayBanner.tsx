@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Zap } from "lucide-react";
+import { X, Zap } from "@/utils/iconImports";
 
 interface BlackFridayBannerProps {
   onClose?: () => void;

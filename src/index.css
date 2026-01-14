@@ -36,7 +36,7 @@
 /* Para Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D4BAA8 transparent;
+  /* ✅ OTIMIZAÇÃO PERFORMANCE: scrollbar-color removido - não é suportado para composição */
 }
 
 /* Scrollbar mais fina e moderna para cards */
@@ -155,14 +155,17 @@ body[data-admin="true"] .select-text {
 /* Realistic vinyl rotation classes */
 .vinyl-spin {
   animation: vinyl-spin 1.2s linear infinite;
+  will-change: transform; /* ✅ OTIMIZAÇÃO PERFORMANCE: Composição de animação */
 }
 
 .vinyl-spin-slow {
   animation: vinyl-spin-slow 1.5s linear infinite;
+  will-change: transform; /* ✅ OTIMIZAÇÃO PERFORMANCE: Composição de animação */
 }
 
 .vinyl-spin-realistic {
   animation: vinyl-spin-realistic 1.3s linear infinite;
+  will-change: transform; /* ✅ OTIMIZAÇÃO PERFORMANCE: Composição de animação */
 }
 
 /* Play/Pause control classes */
@@ -480,7 +483,7 @@ All colors MUST be HSL.
   /* Firefox */
   .main-scroll-container {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+    /* ✅ OTIMIZAÇÃO PERFORMANCE: scrollbar-color removido - não é suportado para composição */
   }
 
   /* Compact mobile cards */
@@ -843,40 +846,44 @@ All colors MUST be HSL.
 }
 
 /* Pulse animations - usando cores do tema (caramelo/marrom) */
+/* ✅ OTIMIZAÇÃO PERFORMANCE: Animações compostas usando transform e opacity ao invés de box-shadow */
 @keyframes pulse-glow-mobile {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(199, 133, 94, 0.3); /* primary caramelo */
+    opacity: 1;
   }
   50% {
-    transform: scale(1.01);
-    box-shadow: 0 0 8px 2px rgba(199, 133, 94, 0.5); /* primary caramelo mais intenso */
+    transform: scale(1.02);
+    opacity: 0.95;
   }
 }
 
 @keyframes pulse-glow-desktop {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(231, 185, 128, 0.3); /* accent bege claro */
+    opacity: 1;
   }
   50% {
-    transform: scale(1.01);
-    box-shadow: 0 0 8px 2px rgba(231, 185, 128, 0.5); /* accent bege mais intenso */
+    transform: scale(1.02);
+    opacity: 0.95;
   }
 }
 
 @keyframes pulse-badge {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(199, 133, 94, 0.5);
+    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 0 2px 0.5px rgba(199, 133, 94, 0.7);
+    transform: scale(1.05);
+    opacity: 0.9;
   }
 }
 
 /* Botão pulsar - Fallback padrão (mobile) */
 .btn-pulse {
   animation: pulse-glow-mobile 2s ease-in-out infinite;
+  will-change: transform, opacity; /* ✅ OTIMIZAÇÃO PERFORMANCE: Composição de animação */
 }
 
 /* Desktop: Cores mais claras para botões desktop */
@@ -892,6 +899,7 @@ All colors MUST be HSL.
   position: relative;
   z-index: 1;
   isolation: isolate;
+  will-change: transform, opacity; /* ✅ OTIMIZAÇÃO PERFORMANCE: Composição de animação */
 }
 
 /* Reduced motion: desabilitar animação pulsar se usuário preferir */
@@ -899,7 +907,6 @@ All colors MUST be HSL.
   .btn-pulse {
     animation: none;
     transform: none;
-    box-shadow: none;
   }
   
   .badge-pulse {

@@ -100,6 +100,27 @@
         link.type = 'image/webp';
         link.setAttribute('fetchpriority', 'high');
         document.head.appendChild(link);
+        
+        // ✅ CORREÇÃO: Preload do vídeo após paint para não competir com LCP
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(function() {
+            const videoLink = document.createElement('link');
+            videoLink.rel = 'preload';
+            videoLink.href = '/video/musiclovaly-240p.webm';
+            videoLink.as = 'video';
+            videoLink.type = 'video/webm';
+            document.head.appendChild(videoLink);
+          }, { timeout: 1000 });
+        } else {
+          setTimeout(function() {
+            const videoLink = document.createElement('link');
+            videoLink.rel = 'preload';
+            videoLink.href = '/video/musiclovaly-240p.webm';
+            videoLink.as = 'video';
+            videoLink.type = 'video/webm';
+            document.head.appendChild(videoLink);
+          }, 1000);
+        }
       }
     </script>
     
@@ -107,7 +128,7 @@
     <style>
       /* CSS Crítico Mínimo - Above the Fold - Otimizado para Performance */
       *{margin:0;padding:0;box-sizing:border-box}
-      html{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-display:swap;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+      html{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-display:swap;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeSpeed}
       body{color:#1a1a1a;background:#fff;line-height:1.5;margin:0;overflow-x:hidden}
       #root{min-height:100vh;display:flex;flex-direction:column}
       .relative{position:relative}
@@ -120,10 +141,16 @@
       .overflow-hidden{overflow:hidden}
       .shadow-soft{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
       img,video{max-width:100%;height:auto;display:block}
+      /* ✅ OTIMIZAÇÃO CLS: Preservar espaço de imagens críticas */
+      img[width][height]{aspect-ratio:attr(width)/attr(height)}
       /* Header crítico */
       header{position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid rgba(0,0,0,0.1)}
-      /* Hero section crítico */
+      /* ✅ OTIMIZAÇÃO CLS: Hero section com aspect-ratio preservado */
       .hero-container{min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;position:relative}
+      /* ✅ OTIMIZAÇÃO CLS: Container do hero image - preservar espaço antes do carregamento */
+      .hero-image-container{aspect-ratio:640/269;min-height:calc((100vw - 1.5rem) * 269 / 640);background-color:#E7D5C4}
+      @media(min-width:640px){.hero-image-container{min-height:calc((640px - 2rem) * 269 / 640)}}
+      @media(min-width:768px){.hero-image-container{min-height:calc((768px - 5rem) * 269 / 640)}}
       /* Botões críticos */
       button{display:inline-flex;align-items:center;justify-content:center;border-radius:1rem;font-weight:500;transition:all 0.2s;cursor:pointer;border:none}
       .btn-primary{background:#C7916B;color:#fff;padding:1rem 2rem}
@@ -137,6 +164,22 @@
       .items-center{align-items:center}
       .justify-center{justify-content:center}
       .flex-col{flex-direction:column}
+      /* ✅ OTIMIZAÇÃO PERFORMANCE: Estilos críticos adicionais para above-the-fold */
+      .text-center{text-align:center}
+      .mx-auto{margin-left:auto;margin-right:auto}
+      .mb-3{margin-bottom:0.75rem}
+      .mb-4{margin-bottom:1rem}
+      .px-2{padding-left:0.5rem;padding-right:0.5rem}
+      .px-4{padding-left:1rem;padding-right:1rem}
+      .leading-relaxed{line-height:1.625}
+      .text-muted-foreground{color:rgba(0,0,0,0.6)}
+      .max-w-3xl{max-width:48rem}
+      /* Botão crítico */
+      .bg-primary{background-color:#C7916B}
+      .text-white{color:#fff}
+      .rounded-2xl{border-radius:1rem}
+      .px-8{padding-left:2rem;padding-right:2rem}
+      .py-4{padding-top:1rem;padding-bottom:1rem}
     </style>
     
     <!-- ✅ OTIMIZAÇÃO: CSS carregado de forma não-bloqueante (defer total) -->
@@ -167,44 +210,91 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Preload do script principal crítico -->
+    <link rel="modulepreload" href="/src/main.tsx" />
     <!-- ✅ OTIMIZAÇÃO: Script principal com defer para não bloquear parsing -->
     <script type="module" src="/src/main.tsx"></script>
     
     
-    <!-- ✅ OTIMIZAÇÃO: Scripts de terceiros carregados após paint (não bloqueiam renderização) -->
+    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Scripts de terceiros carregados apenas após paint completo e idle -->
     <script>
-      // Carregar scripts de terceiros apenas após paint completo
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          requestAnimationFrame(function() {
-            // UTMify
-            var utmify = document.createElement('script');
-            utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-            utmify.setAttribute('data-utmify-prevent-subids', '');
-            utmify.async = true;
-            document.body.appendChild(utmify);
-            
-            // UTMify Loader
-            var utmifyLoader = document.createElement('script');
-            utmifyLoader.src = '/utmify-loader.js';
-            utmifyLoader.async = true;
-            document.body.appendChild(utmifyLoader);
+      // ✅ OTIMIZAÇÃO: Deferir scripts de terceiros até após paint e idle time
+      const loadThirdPartyScripts = function() {
+        // Aguardar paint completo
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar múltiplos frames para garantir paint completo
+            requestAnimationFrame(function() {
+              requestAnimationFrame(function() {
+                // Aguardar idle time antes de carregar scripts não críticos
+                if ('requestIdleCallback' in window) {
+                  window.requestIdleCallback(function() {
+                    // UTMify
+                    var utmify = document.createElement('script');
+                    utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+                    utmify.setAttribute('data-utmify-prevent-subids', '');
+                    utmify.async = true;
+                    document.body.appendChild(utmify);
+                    
+                    // UTMify Loader
+                    var utmifyLoader = document.createElement('script');
+                    utmifyLoader.src = '/utmify-loader.js';
+                    utmifyLoader.async = true;
+                    document.body.appendChild(utmifyLoader);
+                  }, { timeout: 2000 });
+                } else {
+                  setTimeout(function() {
+                    var utmify = document.createElement('script');
+                    utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+                    utmify.setAttribute('data-utmify-prevent-subids', '');
+                    utmify.async = true;
+                    document.body.appendChild(utmify);
+                    
+                    var utmifyLoader = document.createElement('script');
+                    utmifyLoader.src = '/utmify-loader.js';
+                    utmifyLoader.async = true;
+                    document.body.appendChild(utmifyLoader);
+                  }, 2000);
+                }
+              });
+            });
           });
-        });
-      } else {
-        requestAnimationFrame(function() {
-          var utmify = document.createElement('script');
-          utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-          utmify.setAttribute('data-utmify-prevent-subids', '');
-          utmify.async = true;
-          document.body.appendChild(utmify);
-          
-          var utmifyLoader = document.createElement('script');
-          utmifyLoader.src = '/utmify-loader.js';
-          utmifyLoader.async = true;
-          document.body.appendChild(utmifyLoader);
-        });
-      }
+        } else {
+          // DOM já está pronto
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(function() {
+                  var utmify = document.createElement('script');
+                  utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+                  utmify.setAttribute('data-utmify-prevent-subids', '');
+                  utmify.async = true;
+                  document.body.appendChild(utmify);
+                  
+                  var utmifyLoader = document.createElement('script');
+                  utmifyLoader.src = '/utmify-loader.js';
+                  utmifyLoader.async = true;
+                  document.body.appendChild(utmifyLoader);
+                }, { timeout: 2000 });
+              } else {
+                setTimeout(function() {
+                  var utmify = document.createElement('script');
+                  utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+                  utmify.setAttribute('data-utmify-prevent-subids', '');
+                  utmify.async = true;
+                  document.body.appendChild(utmify);
+                  
+                  var utmifyLoader = document.createElement('script');
+                  utmifyLoader.src = '/utmify-loader.js';
+                  utmifyLoader.async = true;
+                  document.body.appendChild(utmifyLoader);
+                }, 2000);
+              }
+            });
+          });
+        }
+      };
+      loadThirdPartyScripts();
     </script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 // Force rebuild: 2025-10-21 - Fix edge functions deployment
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,16 +42,9 @@ const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"))
 // AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
-const Quiz = lazyWithRetry(() => import("./pages/Quiz"));
-const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
 const CheckoutProcessing = lazyWithRetry(() => import("./pages/CheckoutProcessing"));
 const PaymentSuccess = lazyWithRetry(() => import("./pages/PaymentSuccess"));
 const CaktoReturn = lazyWithRetry(() => import("./pages/CaktoReturn"));
-const Pricing = lazyWithRetry(() => import("./pages/Pricing"));
-const Terms = lazyWithRetry(() => import("./pages/Terms"));
-const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
-const About = lazyWithRetry(() => import("./pages/About"));
-const HowItWorks = lazyWithRetry(() => import("./pages/HowItWorks"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const SongDownload = lazyWithRetry(() => import("./pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("./pages/ApproveLyrics"));
@@ -72,7 +65,43 @@ const AdminRouteFallback = () => (
 // ✅ OTIMIZAÇÃO: QueryClient otimizado importado de @/lib/queryClient
 // Configuração balanceada: cache de 5min, stale de 1min, refetch inteligente
 
+// ✅ OTIMIZAÇÃO PERFORMANCE: Deferir React Query até após paint
 const App = () => {
+  const [queryClientReady, setQueryClientReady] = useState(false);
+
+  useEffect(() => {
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) {
+      setQueryClientReady(true);
+      return;
+    }
+
+    // Deferir inicialização do QueryClient até após paint
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(() => {
+        setQueryClientReady(true);
+      }, { timeout: 500 });
+      return () => {
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(() => setQueryClientReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!queryClientReady) {
+    // Renderizar estrutura básica sem QueryClient para FCP mais rápido
+    return (
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AppContent />
+      </BrowserRouter>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -182,8 +211,7 @@ const AppContent = () => {
     });
   }
 
-  // ✅ OTIMIZAÇÃO: Prefetch automático de rotas críticas após carregamento inicial
-  // Reduzido para 1 segundo e apenas rotas essenciais para melhorar performance inicial
+  // ✅ OTIMIZAÇÃO PERFORMANCE: Prefetch automático de rotas críticas apenas após paint e idle
   useEffect(() => {
     if (isLoading) return;
     if (isAdminRoute) return;
@@ -201,10 +229,9 @@ const AppContent = () => {
     let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     const prefetch = () => {
       if (cancelled) return;
-      // ✅ OTIMIZAÇÃO: Prefetch mais agressivo do Checkout
       Promise.all([
         import('./pages/Quiz').catch(() => {}),
-        import('./pages/Checkout').catch(() => {}),
+        import('./pages/Checkout/index').catch(() => {}),
         // Prefetch de componentes UI críticos do Checkout
         import('./components/ui/button').catch(() => {}),
         import('./components/ui/card').catch(() => {}),
@@ -264,12 +291,43 @@ const AppContent = () => {
   //   );
   // }
 
+  // ✅ OTIMIZAÇÃO PERFORMANCE: Deferir renderização de componentes não críticos
+  const [nonCriticalReady, setNonCriticalReady] = useState(false);
+
+  useEffect(() => {
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) {
+      setNonCriticalReady(true);
+      return;
+    }
+
+    // Deferir até após paint
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(() => {
+        setNonCriticalReady(true);
+      }, { timeout: 1000 });
+      return () => {
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(() => setNonCriticalReady(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <ScrollToTop />
-      <ScrollRestoration />
+      {nonCriticalReady && (
+        <>
+          <Toaster />
+          <Sonner />
+          <ScrollToTop />
+          <ScrollRestoration />
+        </>
+      )}
       <PublicErrorBoundary>
         <Suspense fallback={null}>
           <Routes>

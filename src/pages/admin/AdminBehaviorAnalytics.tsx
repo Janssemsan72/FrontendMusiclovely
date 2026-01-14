@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, BarChart3, AlertCircle, Trash2 } from "lucide-react";
+import { RefreshCw, BarChart3, AlertCircle, Trash2 } from "@/utils/iconImports";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BehaviorAnalyticsKPICards } from "@/components/admin/BehaviorAnalyticsKPICards";

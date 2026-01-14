@@ -18,27 +18,6 @@ const Privacy = lazyWithRetry(() => import("../pages/Privacy"));
 const Quiz = lazyWithRetry(() => import("../pages/Quiz"));
 const Checkout = lazyWithRetry(() => import("../pages/Checkout/index"));
 
-// ✅ OTIMIZAÇÃO: Preload agressivo do Checkout imediatamente (não esperar)
-if (typeof window !== 'undefined') {
-  // Preload Checkout imediatamente quando a aplicação carrega
-  const preloadCheckout = () => {
-    import("../pages/Checkout/index").catch(() => {});
-    // Preload de componentes UI críticos
-    Promise.all([
-      import("../components/ui/button").catch(() => {}),
-      import("../components/ui/card").catch(() => {}),
-      import("../components/ui/input").catch(() => {}),
-      import("../components/ui/badge").catch(() => {}),
-    ]).catch(() => {});
-  };
-  
-  // ✅ OTIMIZAÇÃO: Preload imediato (sem delay) para garantir que está pronto quando usuário clicar
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', preloadCheckout);
-  } else {
-    preloadCheckout();
-  }
-}
 const CheckoutProcessing = lazyWithRetry(() => import("../pages/CheckoutProcessing"));
 const PaymentSuccess = lazyWithRetry(() => import("../pages/PaymentSuccess"));
 const SongDownload = lazyWithRetry(() => import("../pages/SongDownload"));

@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Home } from "lucide-react";
+import { AlertCircle, Home } from "@/utils/iconImports";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { useUtmifyTracking } from "@/hooks/useUtmifyTracking";

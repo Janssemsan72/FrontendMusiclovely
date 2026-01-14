@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Activity, Edit, Mail, Calendar, Shield, CheckCircle2, XCircle, Save, Loader2, Copy, Check } from "lucide-react";
+import { Trash2, Activity, Edit, Mail, Calendar, Shield, CheckCircle2, XCircle, Save, Loader2, Copy, Check } from "@/utils/iconImports";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

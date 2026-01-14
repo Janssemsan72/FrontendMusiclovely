@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Users, AlertTriangle, MousePointerClick, Scroll, Bug } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, AlertTriangle, MousePointerClick, Scroll, Bug } from "@/utils/iconImports";
 import { useBehaviorAnalytics } from "@/hooks/useBehaviorAnalytics";
 
 export function BehaviorAnalyticsKPICards() {

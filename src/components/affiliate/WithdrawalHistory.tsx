@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, DollarSign } from 'lucide-react';
+import { Calendar, DollarSign } from '@/utils/iconImports';
 
 interface Withdrawal {
   id: string;

@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Shield, CreditCard, Users, AlertTriangle, Edit, Mail } from 'lucide-react';
+import { FileText, Shield, CreditCard, Users, AlertTriangle, Edit, Mail } from '@/utils/iconImports';
 
 export default function Terms() {
   const { t } = useTranslation();

@@ -11,7 +11,7 @@ import {
   CheckSquare,
   Users,
   BarChart3,
-} from "lucide-react";
+} from "@/utils/iconImports";
 import {
   Sidebar,
   SidebarContent,

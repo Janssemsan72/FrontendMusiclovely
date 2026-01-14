@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Music, Calendar, Mail, AlertCircle, Trash2, RefreshCw, Send, Copy, Check, Loader2, Search, X } from "lucide-react";
+import { Music, Calendar, Mail, AlertCircle, Trash2, RefreshCw, Send, Copy, Check, Loader2, Search, X } from "@/utils/iconImports";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EmbeddedMusicPlayer } from "@/components/admin/EmbeddedMusicPlayer";

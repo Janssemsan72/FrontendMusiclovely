@@ -20,7 +20,7 @@ export default function HeroSection() {
   const { navigateWithUtms } = useUtmParams();
 
   const [videoReady, setVideoReady] = React.useState(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = React.useState(true); // ✅ CORREÇÃO: Carregar vídeo imediatamente
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const mountedRef = React.useRef(true);
   const videoLoadStartedRef = React.useRef(false); // ✅ OTIMIZAÇÃO: Ref para rastrear se vídeo já começou a carregar
@@ -37,7 +37,7 @@ export default function HeroSection() {
     navigateWithUtms(quizPath);
   };
 
-  // ✅ OTIMIZAÇÃO: Verificar disponibilidade do vídeo antes de carregar
+  // ✅ CORREÇÃO: Verificar disponibilidade do vídeo antes de carregar (usar a função)
   const checkVideoAvailability = async (url: string): Promise<boolean> => {
     try {
       const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
@@ -47,85 +47,42 @@ export default function HeroSection() {
     }
   };
 
-  // ✅ OTIMIZAÇÃO: O navegador automaticamente tenta os sources na ordem
-  // Se versões comprimidas não existirem, ele automaticamente usa o original via fallback
-
-  // ✅ OTIMIZAÇÃO: Carregar vídeo IMEDIATAMENTE após FCP (First Contentful Paint) para carregamento ultra rápido
+  // ✅ CORREÇÃO: Simplificar - vídeo já está setado para carregar (shouldLoadVideo = true)
+  // Forçar carregamento e play do vídeo quando o elemento estiver montado
   React.useEffect(() => {
     mountedRef.current = true;
     
-    const loadVideo = () => {
-      if (!mountedRef.current || videoLoadStartedRef.current) return;
-      videoLoadStartedRef.current = true; // Marcar como iniciado
-      // Ativar carregamento do vídeo IMEDIATAMENTE - versão 240p (163KB) para carregamento instantâneo
-      setShouldLoadVideo(true);
-    };
-
-    // ✅ OTIMIZAÇÃO: Detectar FCP (mais rápido que LCP) para carregar vídeo o mais cedo possível
-    if ('PerformanceObserver' in window) {
-      try {
-        // Observar FCP primeiro (mais rápido)
-        const fcpObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            if (entry.entryType === 'paint' && entry.name === 'first-contentful-paint') {
-              // ✅ OTIMIZAÇÃO: Carregar vídeo IMEDIATAMENTE após FCP (sem delay)
-              if (mountedRef.current) loadVideo();
-              fcpObserver.disconnect();
-              return;
-            }
-          }
+    // ✅ CORREÇÃO: Forçar carregamento do vídeo imediatamente após montagem
+    const timer = setTimeout(() => {
+      if (mountedRef.current && videoRef.current) {
+        const video = videoRef.current;
+        console.log('[HeroSection] Forçando carregamento do vídeo', {
+          readyState: video.readyState,
+          networkState: video.networkState,
+          currentSrc: video.currentSrc
         });
         
-        try {
-          fcpObserver.observe({ entryTypes: ['paint'] });
-        } catch {
-          // Se paint não for suportado, usar LCP
+        if (video.readyState === 0) {
+          video.load();
         }
         
-        // Fallback: Observar LCP também
-        const lcpObserver = new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            if (entry.entryType === 'largest-contentful-paint') {
-              // ✅ OTIMIZAÇÃO: Se FCP não disparou, carregar após LCP (sem delay adicional)
-              if (mountedRef.current && !videoLoadStartedRef.current) {
-                loadVideo();
-              }
-              lcpObserver.disconnect();
-              return;
-            }
-          }
+        // ✅ CORREÇÃO: Tentar play para garantir que o vídeo inicie
+        video.play().catch((err) => {
+          // Ignorar erros de autoplay (normal em alguns navegadores)
+          console.log('[HeroSection] Autoplay bloqueado (normal):', err);
         });
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         
-        // ✅ OTIMIZAÇÃO: Fallback ULTRA RÁPIDO - 500ms se nenhum observer disparar
-        const fallbackTimer = setTimeout(() => {
-          fcpObserver.disconnect();
-          lcpObserver.disconnect();
-          if (mountedRef.current && !videoLoadStartedRef.current) {
-            loadVideo();
-          }
-        }, 500);
-        
-        return () => {
-          mountedRef.current = false;
-          fcpObserver.disconnect();
-          lcpObserver.disconnect();
-          clearTimeout(fallbackTimer);
-        };
-      } catch {
-        // Fallback se PerformanceObserver falhar - carregar IMEDIATAMENTE
-        loadVideo();
-        return () => { 
-          mountedRef.current = false;
-        };
+        // ✅ CORREÇÃO: Se vídeo já tem dados, mostrar imediatamente
+        if (video.readyState >= 2) {
+          setVideoReady(true);
+        }
       }
-    } else {
-      // Fallback para navegadores sem PerformanceObserver - carregar IMEDIATAMENTE
-      loadVideo();
-      return () => { 
-        mountedRef.current = false;
-      };
-    }
+    }, 100);
+
+    return () => {
+      mountedRef.current = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   // ✅ OTIMIZAÇÃO: Listener para evento online (recarregar vídeo quando conexão voltar)
@@ -148,11 +105,22 @@ export default function HeroSection() {
   return (
     <section className="relative overflow-hidden">
       <div className="w-full px-3 pb-2 sm:px-4 sm:pt-0 sm:pb-12 md:px-10 md:pt-0 md:pb-16 text-center">
-        <div className="max-w-sm sm:max-w-md md:max-w-xl mx-auto">
+        <div className="max-w-sm sm:max-w-md md:max-w-2xl mx-auto">
           <div
-            className="relative w-full rounded-2xl overflow-hidden shadow-2xl"
-            style={{ aspectRatio: '640/269' }}
+            className="relative w-full rounded-2xl overflow-hidden shadow-2xl hero-image-container"
+            style={{ 
+              aspectRatio: '640/269',
+              backgroundColor: '#E7D5C4'
+            }}
           >
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50"
+              style={{ 
+                zIndex: 0,
+                willChange: 'auto'
+              }}
+              aria-hidden="true"
+            />
             <picture>
               <source 
                 srcSet={`${heroPoster} 1x, ${heroPoster} 2x`}
@@ -160,7 +128,7 @@ export default function HeroSection() {
                 sizes="(max-width: 640px) 384px, 640px"
               />
               <img
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover z-10"
                 src={heroPoster}
                 alt="Memórias especiais"
                 fetchPriority="high"
@@ -169,7 +137,7 @@ export default function HeroSection() {
                 sizes="(max-width: 640px) 384px, (max-width: 1024px) 640px, 1024px"
                 loading="eager"
                 decoding="async"
-                importance="high"
+                style={{ willChange: 'auto' }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   const posterFallback = '/images/collage-memories-DEqE2yio.webp';
@@ -182,31 +150,95 @@ export default function HeroSection() {
             {shouldLoadVideo ? (
               <video
                 ref={videoRef}
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoReady ? "opacity-100" : "opacity-0"}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoReady ? "opacity-100" : "opacity-30"}`}
+                style={{ zIndex: 20 }} // ✅ CORREÇÃO: z-index maior que a imagem (z-10) para ficar por cima
                 poster={heroPoster}
                 autoPlay
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="auto"
                 onLoadedData={() => {
-                  setVideoReady(true);
+                  if (mountedRef.current) {
+                    console.log('[HeroSection] Vídeo loadedData - definindo como ready');
+                    setVideoReady(true);
+                  }
                 }}
                 onCanPlay={() => {
-                  setVideoReady(true);
+                  if (mountedRef.current) {
+                    console.log('[HeroSection] Vídeo canPlay - definindo como ready');
+                    setVideoReady(true);
+                  }
+                }}
+                onCanPlayThrough={() => {
+                  if (mountedRef.current) {
+                    console.log('[HeroSection] Vídeo canPlayThrough - definindo como ready');
+                    setVideoReady(true);
+                  }
+                }}
+                onPlaying={() => {
+                  if (mountedRef.current) {
+                    console.log('[HeroSection] Vídeo está reproduzindo');
+                    setVideoReady(true);
+                  }
                 }}
                 onError={(e) => {
                   const target = e.target as HTMLVideoElement;
-                  // Se houver erro na versão 240p, tentar vídeo original como fallback
+                  const error = target.error;
+                  
+                  // ✅ CORREÇÃO: Log de erro para debug (apenas em dev)
+                  if (process.env.NODE_ENV === 'development') {
+                    console.warn('[HeroSection] Erro ao carregar vídeo:', {
+                      errorCode: error?.code,
+                      errorMessage: error?.message,
+                      currentSrc: target.currentSrc,
+                      networkState: target.networkState,
+                      readyState: target.readyState
+                    });
+                  }
+                  
+                  // ✅ CORREÇÃO: Se houver erro, tentar recarregar após um delay
                   if (mountedRef.current) {
                     setVideoReady(false);
-                    // Recarregar vídeo com source original
+                    // Tentar recarregar vídeo
                     if (videoRef.current) {
                       setTimeout(() => {
-                        if (videoRef.current) {
+                        if (videoRef.current && mountedRef.current) {
                           videoRef.current.load();
                         }
-                      }, 500);
+                      }, 1000);
+                    }
+                  }
+                }}
+                onLoadStart={() => {
+                  // ✅ CORREÇÃO: Log de debug quando vídeo começa a carregar
+                  if (process.env.NODE_ENV === 'development' && mountedRef.current) {
+                    console.log('[HeroSection] Vídeo começou a carregar:', {
+                      currentSrc: videoRef.current?.currentSrc,
+                      networkState: videoRef.current?.networkState,
+                      readyState: videoRef.current?.readyState
+                    });
+                  }
+                }}
+                onProgress={() => {
+                  // ✅ CORREÇÃO: Mostrar vídeo quando tiver dados suficientes
+                  if (mountedRef.current && videoRef.current) {
+                    const video = videoRef.current;
+                    if (video.buffered.length > 0) {
+                      const bufferedEnd = video.buffered.end(video.buffered.length - 1);
+                      const duration = video.duration;
+                      if (duration > 0) {
+                        const percentLoaded = (bufferedEnd / duration) * 100;
+                        if (percentLoaded > 20 && !videoReady) {
+                          // ✅ CORREÇÃO: Se mais de 20% carregado, mostrar vídeo imediatamente
+                          console.log(`[HeroSection] Vídeo ${percentLoaded.toFixed(0)}% carregado - mostrando`);
+                          setVideoReady(true);
+                        }
+                      } else if (video.readyState >= 2 && !videoReady) {
+                        // ✅ CORREÇÃO: Se readyState >= 2 (HAVE_CURRENT_DATA), mostrar vídeo
+                        console.log('[HeroSection] Vídeo tem dados suficientes - mostrando');
+                        setVideoReady(true);
+                      }
                     }
                   }
                 }}
@@ -241,7 +273,13 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-3 sm:mb-4 px-2 sm:px-4 leading-relaxed">
+        <p 
+          className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-3 sm:mb-4 px-2 sm:px-4 leading-relaxed"
+          style={{
+            minHeight: '3.5rem',
+            contentVisibility: 'auto'
+          }}
+        >
           Propostas, casamentos, tributos — feitos com amor. Crie música personalizada que conta sua história única.
         </p>
 

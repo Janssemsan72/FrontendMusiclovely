@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Music, Calendar, Mail, Clock, Send } from "lucide-react";
+import { Music, Calendar, Mail, Clock, Send } from "@/utils/iconImports";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { EmbeddedMusicPlayer } from "@/components/admin/EmbeddedMusicPlayer";

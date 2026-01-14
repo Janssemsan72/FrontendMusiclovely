@@ -29,6 +29,8 @@ export {
   AlertCircle,
   AlertTriangle,
   Loader2,
+  Home,
+  Share2,
   
   // Mídia
   Music,
@@ -57,6 +59,7 @@ export {
   MessageSquare,
   Phone,
   Quote,
+  // Nota: MessageSquare já está acima
   
   // Negócio e dados
   CreditCard,
@@ -68,6 +71,25 @@ export {
   Users,
   Globe,
   MapPin,
+  DollarSign,
+  TestTube,
+  Save,
+  Settings,
+  Plus,
+  Music2,
+  WifiOff,
+  RotateCcw,
+  User,
+  LogOut,
+  Inbox,
+  Archive,
+  Reply,
+  Upload,
+  FileCheck,
+  Cookie,
+  UserCheck,
+  Database,
+  MousePointerClick,
   
   // Segurança e confiança
   Shield,
@@ -85,6 +107,54 @@ export {
   // Adicionais para otimização (sem duplicatas)
   Award,
   HelpCircle,
+  
+  // Documentos e arquivos
+  FileText,
+  Image,
+  
+  // UI e layout
+  PanelLeft,
+  LayoutDashboard,
+  CheckSquare,
+  
+  // Adicionais identificados
+  TrendingDown,
+  FileQuestion,
+  UserPlus,
+  Flag,
+  
+  // Componentes UI
+  GripVertical,
+  Circle,
+  MoreHorizontal,
+  Dot,
+  
+  // Player de música
+  SkipBack,
+  SkipForward,
+  Volume2,
+  
+  // Clima
+  Cloud,
+  CloudRain,
+  Sun,
+  CloudSun,
+  Droplets,
+  Wind,
+  Wifi,
+  
+  // Edição
+  Pencil,
+  Mic,
+  AlarmClock,
+  
+  // Dispositivos
+  Smartphone,
+  Monitor,
+  
+  // Analytics
+  Scroll,
+  Bug,
 } from 'lucide-react';
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { WifiOff, RefreshCw, Home, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { WifiOff, RefreshCw, Home, CheckCircle2, Clock, AlertCircle } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOfflineSync } from "@/hooks/useOfflineSync";

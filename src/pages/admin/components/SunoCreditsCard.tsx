@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CreditCard, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { CreditCard, CheckCircle2, XCircle, AlertCircle } from "@/utils/iconImports";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

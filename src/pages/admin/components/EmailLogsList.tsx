@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmailLogDetailModal } from "./EmailLogDetailModal";
-import { Search, Filter, Mail, CheckCircle, Clock, Eye, MousePointerClick, XCircle, AlertTriangle } from "lucide-react";
+import { Search, Filter, Mail, CheckCircle, Clock, Eye, MousePointerClick, XCircle, AlertTriangle } from "@/utils/iconImports";
 import { format } from "date-fns";
 
 interface EmailLog {

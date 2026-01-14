@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Search, Music, Eye, Clock, XCircle, CheckCircle, Play, Pause } from "lucide-react";
+import { RefreshCw, Search, Music, Eye, Clock, XCircle, CheckCircle, Play, Pause } from "@/utils/iconImports";
 import { AdminPageLoading } from "@/components/admin/AdminPageLoading";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSongs } from "@/hooks/useAdminData";

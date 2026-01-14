@@ -58,9 +58,13 @@ export default function Header() {
     };
   }, []);
 
-  // ✅ OTIMIZAÇÃO FASE 2.2: Deferir scroll listener com delay inicial
+  // ✅ OTIMIZAÇÃO PERFORMANCE: Deferir scroll listener até após paint completo
   useEffect(() => {
     let cancelled = false;
+    let cleanup: (() => void) | null = null;
+    let idleId: any = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    
     const initScrollListener = () => {
       if (cancelled) return;
       
@@ -84,28 +88,38 @@ export default function Header() {
       
       target.addEventListener('scroll', handleScroll, { passive: true });
       
-      return () => {
-        cancelled = true;
+      cleanup = () => {
         target.removeEventListener('scroll', handleScroll);
       };
     };
 
-    // Deferir scroll listener usando requestIdleCallback
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const w = window as any;
-      const id = w.requestIdleCallback(initScrollListener, { timeout: 1000 });
-      return () => {
-        cancelled = true;
-        if (typeof w.cancelIdleCallback === 'function') {
-          w.cancelIdleCallback(id);
-        }
-      };
+    // ✅ OTIMIZAÇÃO: Aguardar paint completo antes de adicionar scroll listener
+    if (typeof window !== 'undefined') {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (cancelled) return;
+          if ('requestIdleCallback' in window) {
+            const w = window as any;
+            idleId = w.requestIdleCallback(initScrollListener, { timeout: 2000 });
+          } else {
+            timer = setTimeout(initScrollListener, 2000);
+          }
+        });
+      });
     }
 
-    const timer = setTimeout(initScrollListener, 1000);
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      if (cleanup) cleanup();
+      if (idleId != null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        const w = window as any;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(idleId);
+        }
+      }
+      if (timer != null) {
+        clearTimeout(timer);
+      }
     };
   }, []);
 

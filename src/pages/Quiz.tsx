@@ -66,6 +66,7 @@ const Quiz = memo(() => {
   const hasShownDataLoadedRef = useRef(false);
   const isSubmittingRef = useRef(false); // ✅ Proteção contra cliques duplicados
   const isMountedRef = useRef(true); // ✅ Verificação de montagem para prevenir erros de DOM
+  const dataLoadedRef = useRef(false); // ✅ Flag para indicar que dados foram carregados
   const [formData, setFormData] = useState({
     relationship: '',
     customRelationship: '',
@@ -167,6 +168,11 @@ const Quiz = memo(() => {
     let cancelled = false;
     const loadQuizData = () => {
       if (cancelled) return;
+      
+      // ✅ CORREÇÃO: Evitar recarregar se dados já foram carregados
+      if (dataLoadedRef.current) {
+        return;
+      }
       
       // PRIORIDADE 1: Verificar se há parâmetros de edição na URL
       const orderId = searchParams.get('order_id');
@@ -359,17 +365,24 @@ const Quiz = memo(() => {
           // ✅ Verificar montagem antes de atualizar estado
           if (!isMountedRef.current) return;
           
-          // Populate form with existing data
-          setFormData({
-            relationship,
-            customRelationship,
-            aboutWho: quizData.about_who || '',
-            style: quizData.style || '',
-            vocalGender: quizData.vocal_gender || '',
-            qualities: quizData.qualities || '',
-            memories: quizData.memories || '',
-            message: quizData.message || ''
-          });
+          // ✅ CORREÇÃO: Resetar loading ANTES de carregar dados para garantir que campos estejam editáveis
+          setLoading(false);
+          
+          // Populate form with existing data usando função funcional para garantir atualização
+          if (!dataLoadedRef.current) {
+            setFormData(prev => ({
+              ...prev,
+              relationship,
+              customRelationship,
+              aboutWho: quizData.about_who || '',
+              style: quizData.style || '',
+              vocalGender: quizData.vocal_gender || '',
+              qualities: quizData.qualities || '',
+              memories: quizData.memories || '',
+              message: quizData.message || ''
+            }));
+            dataLoadedRef.current = true; // ✅ Marcar que dados foram carregados
+          }
           
           // Salvar order_id e quiz_id para atualização posterior
           localStorage.setItem('editing_order_id', orderId);
@@ -404,10 +417,20 @@ const Quiz = memo(() => {
       }
 
       // PRIORIDADE 2: Carregar do localStorage usando utilitário
+      // ✅ CORREÇÃO: Evitar recarregar se dados já foram carregados
+      if (dataLoadedRef.current) {
+        return;
+      }
+      
       const loadedQuiz = loadQuizFromStorage();
     
     if (loadedQuiz) {
       try {
+        // ✅ CORREÇÃO: Resetar loading ANTES de carregar dados para garantir que campos estejam editáveis
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
+        
         // Parse relationship (handle "Outro: xxx" format)
         let relationship = loadedQuiz.relationship || '';
         let customRelationship = '';
@@ -440,25 +463,33 @@ const Quiz = memo(() => {
           relationship = relationshipMapping[relationship];
         }
         
-        // Populate form with existing data
-        setFormData({
-          relationship,
-          customRelationship,
-          aboutWho: loadedQuiz.about_who || '',
-          style: loadedQuiz.style || '',
-          vocalGender: loadedQuiz.vocal_gender || '',
-          qualities: loadedQuiz.qualities || '',
-          memories: loadedQuiz.memories || '',
-          message: loadedQuiz.message || ''
-        });
+        // Populate form with existing data usando função funcional para garantir atualização
+        if (isMountedRef.current && !dataLoadedRef.current) {
+          setFormData(prev => ({
+            ...prev,
+            relationship,
+            customRelationship,
+            aboutWho: loadedQuiz.about_who || '',
+            style: loadedQuiz.style || '',
+            vocalGender: loadedQuiz.vocal_gender || '',
+            qualities: loadedQuiz.qualities || '',
+            memories: loadedQuiz.memories || '',
+            message: loadedQuiz.message || ''
+          }));
+          dataLoadedRef.current = true; // ✅ Marcar que dados foram carregados
+        }
         
         // Mostrar notificação apenas uma vez
-        if (!hasShownDataLoadedRef.current) {
+        if (!hasShownDataLoadedRef.current && isMountedRef.current) {
           toast.info(t('quiz.messages.dataLoaded'));
           hasShownDataLoadedRef.current = true;
         }
       } catch (error) {
         devError('Error loading existing quiz data:', error);
+        // ✅ CORREÇÃO: Resetar loading mesmo em caso de erro
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     }
     };
@@ -536,7 +567,12 @@ const Quiz = memo(() => {
   }, []);
 
   const updateField = useCallback((field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // ✅ CORREÇÃO: Garantir que o estado seja atualizado mesmo quando dados foram carregados
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      devLog(`🔄 [Quiz] updateField: ${field} = ${value}`, { prev, updated });
+      return updated;
+    });
   }, []);
 
   // Preparar dados do quiz para validação

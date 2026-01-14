@@ -16,7 +16,7 @@ import {
   MessageCircle,
   Star,
   Quote
-} from 'lucide-react';
+} from '@/utils/iconImports';
 
 export default function CompanyStandalone() {
   useEffect(() => {

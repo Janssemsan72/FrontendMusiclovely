@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Cloud, CloudRain, Sun, CloudSun, Droplets, Wind } from "lucide-react";
+import { Cloud, CloudRain, Sun, CloudSun, Droplets, Wind } from "@/utils/iconImports";
 
 interface WeatherData {
   temp: number;

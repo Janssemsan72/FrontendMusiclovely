@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2 } from '@/utils/iconImports';
 
 /**
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado

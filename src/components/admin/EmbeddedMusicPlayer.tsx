@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback, memo } from "react";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Play, Pause, Volume2 } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 
 interface EmbeddedMusicPlayerProps {

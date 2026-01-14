@@ -16,7 +16,7 @@ import {
   MessageCircle,
   Star,
   Quote
-} from 'lucide-react';
+} from '@/utils/iconImports';
 import { useScrollAnimations } from '@/hooks/use-scroll-animations';
 // ✅ CORREÇÃO: Usar avatares de public/testimonials para garantir consistência entre dev e produção
 const testimonial1 = "/testimonials/avatar-1.webp";

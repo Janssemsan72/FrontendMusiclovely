@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, RefreshCw, CheckCircle, XCircle, Clock, DollarSign, Music, Trash2, Edit, Save, Copy, Check, Phone, Sparkles, Mail } from "lucide-react";
+import { ArrowLeft, RefreshCw, CheckCircle, XCircle, Clock, DollarSign, Music, Trash2, Edit, Save, Copy, Check, Phone, Sparkles, Mail } from "@/utils/iconImports";
 import { OrderStatusBadge } from "@/components/admin/OrderStatusBadge";
 import { JobStatusBadge } from "@/components/admin/JobStatusBadge";
 import { SongStatusBadge } from "@/components/admin/SongStatusBadge";

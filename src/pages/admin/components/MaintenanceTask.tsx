@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/utils/iconImports";
 import { useState } from "react";
 
 interface MaintenanceTaskProps {

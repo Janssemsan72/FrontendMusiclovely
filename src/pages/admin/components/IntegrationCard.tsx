@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, RefreshCw, ExternalLink, Settings } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, ExternalLink, Settings } from "@/utils/iconImports";
 import { useState } from "react";
 
 interface IntegrationCardProps {

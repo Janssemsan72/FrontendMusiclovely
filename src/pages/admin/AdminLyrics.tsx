@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { EnhancedTabs, EnhancedTabsContent, EnhancedTabsList, EnhancedTabsTrigger } from "@/components/ui/enhanced-tabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Clock, RefreshCw, Search, Loader2, RotateCcw, Play } from "lucide-react";
+import { CheckCircle, XCircle, Clock, RefreshCw, Search, Loader2, RotateCcw, Play } from "@/utils/iconImports";
 import { useLyricsApprovals } from "@/hooks/useLyricsApprovals";
 import { LyricsCard } from "@/components/admin/LyricsCard";
 import { RegenerateAllProgressDialog } from "@/components/admin/RegenerateAllProgressDialog";

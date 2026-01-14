@@ -14,7 +14,7 @@ import {
   Calendar,
   Filter,
   Download
-} from "lucide-react";
+} from "@/utils/iconImports";
 import { OrderStatusBadge } from "@/components/admin/OrderStatusBadge";
 import { usePayments } from "@/hooks/useAdminData";
 

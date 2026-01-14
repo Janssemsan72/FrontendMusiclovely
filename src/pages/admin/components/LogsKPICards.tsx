@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Activity, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, Clock } from "@/utils/iconImports";
 
 interface LogsKPICardsProps {
   totalEvents: number;

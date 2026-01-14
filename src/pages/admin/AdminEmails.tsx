@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Mail, Send, Edit, Save, X, Eye, TestTube, Globe, Inbox, Archive, CheckCircle2, Reply, FileText, Loader2 } from "lucide-react";
+import { Mail, Send, Edit, Save, X, Eye, TestTube, Globe, Inbox, Archive, CheckCircle2, Reply, FileText, Loader2 } from "@/utils/iconImports";
 
 interface EmailTemplate {
   id: string;

@@ -18,7 +18,7 @@ import {
   Mail,
   Calendar,
   Shield
-} from "lucide-react";
+} from "@/utils/iconImports";
 import AdminUserCard from "./components/AdminUserCard";
 import { useDebounce } from "@/hooks/use-debounce";
 

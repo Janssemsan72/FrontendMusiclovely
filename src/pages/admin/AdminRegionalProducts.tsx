@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, DollarSign, Settings, Plus, Edit, Trash2, Save } from 'lucide-react';
+import { Globe, DollarSign, Settings, Plus, Edit, Trash2, Save } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface RegionalProduct {

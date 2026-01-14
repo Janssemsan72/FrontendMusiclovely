@@ -38,11 +38,17 @@ export default function QuizStep1({
               key={rel}
               type="button"
               onClick={() => updateField('relationship', rel)}
-              className={`px-4 py-2.5 md:px-4 md:py-2.5 rounded-full border-2 transition-all font-medium text-lg md:text-base ${
+              className={`px-4 py-2.5 md:px-4 md:py-2.5 rounded-full !border-2 transition-all font-medium text-lg md:text-base ${
                 formData.relationship === rel
-                  ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                  : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
+                  ? '!border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
+                  : '!border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:!border-[hsl(var(--quiz-primary))]'
               }`}
+              style={{
+                borderWidth: '2px',
+                borderRadius: '9999px',
+                borderStyle: 'solid',
+                borderColor: formData.relationship === rel ? '#C85A3E' : '#E5E5E5'
+              }}
             >
               {rel}
             </button>
@@ -87,9 +93,23 @@ export default function QuizStep1({
             markFieldTouched('about_who');
           }}
           onBlur={() => markFieldTouched('about_who')}
-          className={`border-[hsl(var(--quiz-border))] text-lg md:text-base py-2.5 md:py-3 ${
-            hasFieldError('about_who') ? 'border-red-500' : ''
+          className={`px-4 py-2.5 md:px-4 md:py-2.5 !rounded-full !border-2 transition-all text-lg md:text-base ${
+            hasFieldError('about_who') 
+              ? '!border-red-500 bg-white text-gray-700' 
+              : formData.aboutWho.trim() 
+                ? '!border-[hsl(var(--quiz-primary))] bg-white text-gray-700 shadow-md' 
+                : '!border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:!border-[hsl(var(--quiz-primary))]'
           }`}
+          style={{
+            borderWidth: '2px',
+            borderRadius: '9999px',
+            borderStyle: 'solid',
+            borderColor: hasFieldError('about_who') 
+              ? '#ef4444' 
+              : formData.aboutWho.trim() 
+                ? '#C85A3E' 
+                : '#E5E5E5'
+          }}
         />
         {hasFieldError('about_who') && (
           <p className="text-base md:text-sm text-red-500 mt-1">

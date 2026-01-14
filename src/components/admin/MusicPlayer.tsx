@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, X } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, X } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 

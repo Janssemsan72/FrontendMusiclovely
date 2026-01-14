@@ -1,6 +1,6 @@
 // ✅ CORREÇÃO LOADING INFINITO: Error Boundary para capturar erros de lazy loading nas rotas públicas
 import React, { Component, ReactNode, ErrorInfo } from 'react';
-import { AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { AlertCircle, RefreshCw, Home } from '@/utils/iconImports';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';

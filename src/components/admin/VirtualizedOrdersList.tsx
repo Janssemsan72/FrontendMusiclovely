@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, DollarSign } from "lucide-react";
+import { Eye, Calendar, DollarSign } from "@/utils/iconImports";
 import { useNavigate } from "react-router-dom";
 
 interface VirtualizedOrdersListProps {

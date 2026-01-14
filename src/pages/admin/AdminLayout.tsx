@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Loader2, Download, Shield, User } from "lucide-react";
+import { LogOut, Loader2, Download, Shield, User } from "@/utils/iconImports";
 import { toast } from "sonner";
 import { usePWA } from "@/hooks/usePWA";
 import { useAdminAuthGate } from "@/hooks/useAdminAuthGate";

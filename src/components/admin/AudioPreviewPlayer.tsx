@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 
 interface AudioPreviewPlayerProps {

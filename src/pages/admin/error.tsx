@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw, Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { AlertTriangle, RefreshCw, Copy, Check, ChevronDown, ChevronUp } from "@/utils/iconImports";
 
 interface ErrorProps {
   error: Error & { digest?: string; cause?: Error; stack?: string };

@@ -1,5 +1,5 @@
 import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { WifiOff, Wifi, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { WifiOff, Wifi, RefreshCw, CheckCircle2, AlertCircle } from "@/utils/iconImports";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,

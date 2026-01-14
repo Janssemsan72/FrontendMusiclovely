@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, LogOut } from 'lucide-react';
+import { Loader2, LogOut } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import StatsCards from '@/components/affiliate/StatsCards';
 import AffiliateLink from '@/components/affiliate/AffiliateLink';

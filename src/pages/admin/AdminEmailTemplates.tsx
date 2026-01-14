@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mail, Globe, Edit, Save, Eye, Plus } from 'lucide-react';
+import { Mail, Globe, Edit, Save, Eye, Plus } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface EmailTemplate {

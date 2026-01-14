@@ -14,7 +14,7 @@ import {
   RefreshCw, Search, MessageSquare, Phone, Mail, Clock, CheckCircle, 
   XCircle, AlertCircle, AlertTriangle, Filter, Eye, BarChart3, Download, 
   Send, Calendar, TrendingUp, Users, Activity, Play, Trash2, Pause, Rocket, ExternalLink, Globe
-} from "lucide-react";
+} from "@/utils/iconImports";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ensureCheckoutLinks, generateCaktoUrl } from "@/utils/checkoutLinks";

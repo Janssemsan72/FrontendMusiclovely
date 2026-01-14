@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Clock, RotateCcw, AlertCircle, Pause, Play, Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, RotateCcw, AlertCircle, Pause, Play, Trash2 } from "@/utils/iconImports";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { RegenerateItem, RegenerateProgress } from "@/hooks/useRegenerateAllLyrics";

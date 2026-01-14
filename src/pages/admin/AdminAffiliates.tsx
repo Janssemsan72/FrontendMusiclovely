@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Plus, Edit, DollarSign, Users, TrendingUp, Wallet } from 'lucide-react';
+import { Loader2, Plus, Edit, DollarSign, Users, TrendingUp, Wallet } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { useCollaboratorPermissions } from '@/hooks/useCollaboratorPermissions';
 

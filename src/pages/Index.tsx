@@ -1,5 +1,6 @@
 import React, { memo, Suspense, useEffect, useRef, useState } from "react";
-import Header from "@/components/Header";
+// ✅ OTIMIZAÇÃO PERFORMANCE: Lazy load do Header para reduzir bundle inicial
+const Header = React.lazy(() => import("@/components/Header"));
 import HeroSection from "@/components/HeroSection";
 
 import { useUtmParams } from "@/hooks/useUtmParams";
@@ -52,7 +53,7 @@ function LazySection({
 }
 
 const Index = memo(() => {
-  // Capturar e salvar UTMs na página inicial
+  // ✅ OTIMIZAÇÃO PERFORMANCE: Usar hooks diretamente (já otimizados internamente)
   const { hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
   
@@ -111,7 +112,7 @@ const Index = memo(() => {
     };
   }, []);
 
-  // ✅ OTIMIZAÇÃO FASE 1.1: Deferir tracking de homepage_viewed para não bloquear renderização inicial
+  // ✅ OTIMIZAÇÃO PERFORMANCE: Deferir tracking de homepage_viewed para não bloquear renderização inicial
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
@@ -276,7 +277,10 @@ const Index = memo(() => {
 
   return (
     <div className="h-[100dvh] flex flex-col overflow-hidden">
-      <Header />
+      {/* ✅ OTIMIZAÇÃO PERFORMANCE: Header lazy loaded com fallback mínimo */}
+      <Suspense fallback={<div className="fixed top-0 left-0 right-0 z-50 h-[80px] bg-background border-b border-border/20" />}>
+        <Header />
+      </Suspense>
       <div 
         id="main-scroll-container"
         className="flex-1 overflow-y-auto overflow-x-hidden main-scroll-container mt-[80px] sm:mt-[88px]"

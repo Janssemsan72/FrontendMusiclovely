@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { CheckCircle, XCircle, RefreshCw, Clock, FileText, Music, Eye, User, AlarmClock, Trash2, Pencil, Save, Mic, X, ExternalLink, Copy, Check } from "lucide-react";
+import { CheckCircle, XCircle, RefreshCw, Clock, FileText, Music, Eye, User, AlarmClock, Trash2, Pencil, Save, Mic, X, ExternalLink, Copy, Check } from "@/utils/iconImports";
 import { format } from "date-fns";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";

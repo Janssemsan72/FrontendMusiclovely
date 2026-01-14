@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Shield, Eye, Lock, Database, Cookie, UserCheck, Clock, Edit, Mail, AlertTriangle } from 'lucide-react';
+import { Shield, Eye, Lock, Database, Cookie, UserCheck, Clock, Edit, Mail, AlertTriangle } from '@/utils/iconImports';
 
 export default function Privacy() {
   const { t } = useTranslation();

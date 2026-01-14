@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis
 } from "@/components/ui/pagination";
-import { Copy, RefreshCw, Check } from "lucide-react";
+import { Copy, RefreshCw, Check } from "@/utils/iconImports";
 import { getAdminDashboardStatusBadge } from "./statusBadge";
 
 interface Job {

@@ -56,7 +56,18 @@ export default defineConfig({
       treeshake: {
         preset: 'recommended',
         moduleSideEffects: (id) => {
-          // ✅ OTIMIZAÇÃO: Tree-shaking mais agressivo para reduzir bundle
+          // ✅ FASE 3: Tree-shaking mais agressivo para reduzir bundle
+          // Pacotes que podem ser tree-shaken completamente
+          if (id.includes('lucide-react')) {
+            return false; // Lucide-react pode ser tree-shaken completamente
+          }
+          if (id.includes('date-fns')) {
+            return false; // date-fns tem tree-shaking perfeito
+          }
+          if (id.includes('zod') && !id.includes('zod/lib')) {
+            return false; // Zod pode ser tree-shaken
+          }
+          
           if (id.includes('src/') || id.includes('.css')) {
             // Apenas código crítico precisa de side effects
             if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx')) {
@@ -66,22 +77,33 @@ export default defineConfig({
             if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
               return false; // Admin pode ser tree-shaken
             }
+            if (id.includes('src/pages/Quiz') || id.includes('src/pages/Checkout')) {
+              return false; // Quiz e Checkout podem ser tree-shaken
+            }
             return true; // Outro código fonte precisa de side effects
           }
-          // Permitir side effects para alguns módulos específicos
-          return id.includes('@radix-ui/react-toast');
+          
+          // Permitir side effects apenas para módulos que realmente precisam
+          if (id.includes('@radix-ui/react-toast')) {
+            return true; // Toast precisa de side effects
+          }
+          
+          // Por padrão, assumir que não há side effects (tree-shaking mais agressivo)
+          return false;
         },
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
+        // ✅ FASE 3: Otimizações adicionais de tree-shaking
+        unknownGlobalSideEffects: false,
       },
       output: {
         // ✅ OTIMIZAÇÃO PRODUÇÃO: Compact output para reduzir tamanho
         compact: true,
         // ✅ CORREÇÃO: Remover experimentalMinChunkSize que pode estar impedindo geração de chunks
         // experimentalMinChunkSize: 20000, // Comentado - estava impedindo geração de arquivos JS
-        // ✅ OTIMIZAÇÃO PERFORMANCE: Melhorar code splitting para reduzir bundle inicial
+        // ✅ FASE 4: Melhorar code splitting para reduzir bundle inicial
         manualChunks: (id) => {
-          // ✅ CRÍTICO: Separar código admin e quiz (não crítico para primeira renderização)
+          // ✅ CRÍTICO: Separar código admin PRIMEIRO para evitar dependências circulares
           if (id.includes('src/') && !id.includes('node_modules')) {
             if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
               return "admin"; // Admin carrega sob demanda
@@ -103,19 +125,43 @@ export default defineConfig({
               return undefined; // React no chunk principal
             }
             if (id.includes("@radix-ui")) {
-              // ✅ CORREÇÃO: Radix UI precisa do React, então não separar (ou garantir que React carregue primeiro)
-              // Separar apenas se React já estiver carregado
               return undefined; // Deixar Radix UI no chunk principal com React
             }
+            // ✅ CORREÇÃO CIRCULAR: Incluir dependências do admin dentro do chunk admin
+            // Isso evita dependências circulares (admin -> vendor -> admin)
             if (id.includes("recharts")) {
-              // ✅ CORREÇÃO: Recharts usado principalmente no admin, mas também em chart.tsx
-              // Para evitar dependência circular (vendor-recharts -> admin -> vendor-recharts),
-              // deixar recharts no chunk principal ou incluir no admin
-              // Verificando se é usado apenas no admin
-              return undefined; // Deixar recharts no chunk principal para evitar circular
+              return "admin"; // Recharts usado principalmente no admin
+            }
+            if (id.includes("react-day-picker")) {
+              return "admin"; // Date picker usado principalmente no admin
+            }
+            // Supabase é usado em vários lugares, então vamos mantê-lo separado
+            // mas garantir que não cause circular incluindo no admin se necessário
+            if (id.includes("@supabase")) {
+              // Manter separado, mas se causar circular, o Vite vai avisar
+              return "vendor-supabase";
             }
             if (id.includes("lucide-react")) {
-              return "vendor-icons"; // Ícones podem ser carregados sob demanda
+              return "vendor-icons"; // ✅ OTIMIZAÇÃO: Separar lucide-react para code splitting
+            }
+            // Separar outras bibliotecas que não são do admin
+            if (id.includes('date-fns') && !id.includes('react-day-picker')) {
+              return 'vendor-date-fns';
+            }
+            if (id.includes('i18next') || id.includes('react-i18next')) {
+              return 'vendor-i18n';
+            }
+            if (id.includes('canvas-confetti')) {
+              return 'vendor-confetti';
+            }
+            if (id.includes("@tanstack/react-query")) {
+              return "vendor-query"; // ✅ OTIMIZAÇÃO: Separar React Query para code splitting
+            }
+            if (id.includes("zod")) {
+              return "vendor-zod"; // ✅ OTIMIZAÇÃO: Separar Zod para code splitting
+            }
+            if (id.includes("react-router") || id.includes("@remix-run/router")) {
+              return "vendor-router"; // ✅ OTIMIZAÇÃO: Separar React Router para code splitting
             }
             // Deixar React e resto no chunk principal
           }
@@ -141,12 +187,13 @@ export default defineConfig({
         },
       },
     },
-    // ✅ OTIMIZAÇÃO PRODUÇÃO: Limite de aviso otimizado (500KB é razoável para chunks grandes)
-    chunkSizeWarningLimit: 500,
+    // ✅ OTIMIZAÇÃO PERFORMANCE: Limite de aviso reduzido para chunks menores (300KB)
+    chunkSizeWarningLimit: 300,
     // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizar carregamento de fontes
     assetsInlineLimit: 4096, // Inline assets menores que 4KB
-    // Source maps apenas em dev (economia de ~30% no bundle)
-    sourcemap: process.env.NODE_ENV === "development",
+    // ✅ OTIMIZAÇÃO PERFORMANCE: Source maps apenas em dev (economia de ~30% no bundle)
+    // Garantir que NODE_ENV está definido corretamente
+    sourcemap: process.env.NODE_ENV !== "production",
     // ✅ OTIMIZAÇÃO PERFORMANCE: CSS code splitting para reduzir bundle inicial
     cssCodeSplit: true,
     // ✅ OTIMIZAÇÃO PERFORMANCE: Minificar CSS agressivamente
@@ -159,6 +206,10 @@ export default defineConfig({
     target: "es2020", // Reduzir transpilação desnecessária
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Habilitar report de tamanhos comprimidos apenas em produção para análise
     reportCompressedSize: process.env.NODE_ENV === "production",
+    // ✅ OTIMIZAÇÃO PERFORMANCE: Forçar modo produção no build
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    },
     // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizações adicionais
     commonjsOptions: {
       include: [/node_modules/],
