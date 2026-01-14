@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { Suspense } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
+import { Gift } from "@/utils/iconImports";
 
 // ✅ OTIMIZAÇÃO: Index é a página inicial, mas ainda pode ser lazy loaded se necessário
 // Por enquanto mantemos import direto para FCP mais rápido, mas podemos mudar se necessário
@@ -15,7 +16,29 @@ const Pricing = lazyWithRetry(() => import("../pages/Pricing"));
 const Terms = lazyWithRetry(() => import("../pages/Terms"));
 const Privacy = lazyWithRetry(() => import("../pages/Privacy"));
 const Quiz = lazyWithRetry(() => import("../pages/Quiz"));
-const Checkout = lazyWithRetry(() => import("../pages/Checkout"));
+const Checkout = lazyWithRetry(() => import("../pages/Checkout/index"));
+
+// ✅ OTIMIZAÇÃO: Preload agressivo do Checkout imediatamente (não esperar)
+if (typeof window !== 'undefined') {
+  // Preload Checkout imediatamente quando a aplicação carrega
+  const preloadCheckout = () => {
+    import("../pages/Checkout/index").catch(() => {});
+    // Preload de componentes UI críticos
+    Promise.all([
+      import("../components/ui/button").catch(() => {}),
+      import("../components/ui/card").catch(() => {}),
+      import("../components/ui/input").catch(() => {}),
+      import("../components/ui/badge").catch(() => {}),
+    ]).catch(() => {});
+  };
+  
+  // ✅ OTIMIZAÇÃO: Preload imediato (sem delay) para garantir que está pronto quando usuário clicar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', preloadCheckout);
+  } else {
+    preloadCheckout();
+  }
+}
 const CheckoutProcessing = lazyWithRetry(() => import("../pages/CheckoutProcessing"));
 const PaymentSuccess = lazyWithRetry(() => import("../pages/PaymentSuccess"));
 const SongDownload = lazyWithRetry(() => import("../pages/SongDownload"));
@@ -33,6 +56,57 @@ const RouteFallback = () => {
           <div className="h-4 w-4/6 rounded bg-muted animate-pulse" />
         </div>
         <div className="mt-8 h-12 w-full rounded bg-muted animate-pulse" />
+      </div>
+    </div>
+  );
+};
+
+// ✅ OTIMIZAÇÃO: Fallback com layout idêntico ao Checkout real para evitar layout shift
+const CheckoutFallback = () => {
+  return (
+    <div className="min-h-[100dvh] bg-background checkout-mobile-compact">
+      <div className="container mx-auto px-4 py-4 md:px-6 md:py-10 max-w-[1400px] pb-28 md:pb-8" style={{ paddingTop: '0px', marginTop: 0 }}>
+        {/* Header skeleton */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="h-8 md:h-10 w-3/4 mx-auto rounded bg-muted animate-pulse mb-2" />
+          <div className="h-6 md:h-8 w-1/2 mx-auto rounded bg-muted animate-pulse mb-4" />
+        </div>
+
+        {/* Grid com mesma estrutura do Checkout */}
+        <div className="grid lg:grid-cols-[1fr,500px] gap-4 md:gap-8">
+          {/* Card de pagamento - mesma estrutura do Checkout real */}
+          <div className="order-1 lg:order-2 space-y-2 md:space-y-4" style={{ minHeight: '400px' }}>
+            <div className="rounded-lg border bg-card shadow-sm">
+              <div className="p-4 md:p-6">
+                <div className="h-7 w-2/3 rounded bg-muted animate-pulse mb-2" />
+                <div className="h-4 w-3/4 rounded bg-muted animate-pulse mb-4 hidden md:block" />
+                
+                {/* Inputs skeleton */}
+                <div className="space-y-4">
+                  <div className="h-12 w-full rounded-md bg-muted animate-pulse" />
+                  <div className="h-12 w-full rounded-md bg-muted animate-pulse" />
+                </div>
+
+                {/* Botão na posição correta (dentro do Card, não centralizado) */}
+                <div className="mt-4 md:hidden">
+                  <div className="h-16 w-full rounded-lg bg-gradient-to-r from-emerald-700 via-green-700 to-emerald-800" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Coluna de resumo - skeleton */}
+          <div className="order-2 lg:order-1">
+            <div className="rounded-lg border bg-card shadow-sm p-4 md:p-6 space-y-4">
+              <div className="h-6 w-1/2 rounded bg-muted animate-pulse" />
+              <div className="space-y-3">
+                <div className="h-4 w-full rounded bg-muted animate-pulse" />
+                <div className="h-4 w-5/6 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-4/6 rounded bg-muted animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -82,7 +156,11 @@ export default function PublicRoutes() {
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
           <Route path="quiz" element={<Quiz />} />
-          <Route path="checkout" element={<Checkout />} />
+          <Route path="checkout" element={
+            <Suspense fallback={<CheckoutFallback />}>
+              <Checkout />
+            </Suspense>
+          } />
           <Route path="checkout-processing" element={<CheckoutProcessing />} />
           {/* Rotas de sucesso - cobrindo todas as variações possíveis */}
           <Route path="payment/success" element={<PaymentSuccess />} />

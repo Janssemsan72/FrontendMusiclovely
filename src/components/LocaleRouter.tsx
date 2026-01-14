@@ -38,28 +38,51 @@ function LocaleRouterWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // ✅ CORREÇÃO: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
-  useEffect(() => {
-    const currentPath = location.pathname;
+  // ✅ CORREÇÃO CRÍTICA: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
+  // Fazer verificação síncrona ANTES de qualquer renderização para evitar 404 em produção
+  const currentPath = location.pathname;
+  const shouldRedirect = currentPath.startsWith('/pt/') || currentPath === '/pt' ||
+                         currentPath.startsWith('/en/') || currentPath === '/en' ||
+                         currentPath.startsWith('/es/') || currentPath === '/es';
+  
+  // ✅ CORREÇÃO: Redirecionar imediatamente se necessário, sem esperar useEffect
+  if (shouldRedirect) {
+    const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
+    const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
     
-    // Se a rota começa com /pt/, /en/ ou /es/, redirecionar para a mesma rota sem o prefixo
-    if (currentPath.startsWith('/pt/') || currentPath === '/pt' ||
-        currentPath.startsWith('/en/') || currentPath === '/en' ||
-        currentPath.startsWith('/es/') || currentPath === '/es') {
-      const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
+    // ✅ CORREÇÃO CRÍTICA: Usar window.location.replace para redirecionamento imediato e síncrono
+    // Isso garante que o redirecionamento acontece ANTES do React Router tentar renderizar
+    if (typeof window !== 'undefined' && window.location.pathname !== newPath) {
+      window.location.replace(newPath);
+      // Retornar componente vazio enquanto redireciona
+      return <div style={{ display: 'none' }} />;
+    }
+    
+    // Fallback: usar navigate se window.location não estiver disponível
+    navigate(newPath, { replace: true });
+    
+    // Retornar componente vazio enquanto redireciona para evitar renderização com rota inválida
+    return <div style={{ display: 'none' }} />;
+  }
+  
+  // ✅ CORREÇÃO: Também usar useEffect como fallback para casos edge
+  useEffect(() => {
+    const path = location.pathname;
+    
+    // Verificação dupla para garantir que não perdemos nenhum caso
+    if (path.startsWith('/pt/') || path === '/pt' ||
+        path.startsWith('/en/') || path === '/en' ||
+        path.startsWith('/es/') || path === '/es') {
+      const pathWithoutLocale = path.replace(/^\/(pt|en|es)/, '') || '/';
       const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
       
-      console.log('🔄 [LocaleRouter] Redirecionando rota com prefixo de idioma:', {
-        from: currentPath,
-        to: newPath
-      });
-      
-      navigate(newPath, { replace: true });
+      if (path !== newPath) {
+        navigate(newPath, { replace: true });
+      }
     }
   }, [location.pathname, location.search, location.hash, navigate]);
   
   // Verificar se já tem locale válido ANTES de qualquer hook
-  const currentPath = location.pathname;
   const localeFromPath = getCurrentLocale(currentPath);
   const hasValidLocale = !!(
     localeFromPath && 
@@ -67,7 +90,7 @@ function LocaleRouterWrapper() {
   );
   
   // ✅ CORREÇÃO: Se tem locale válido (pt, en, es), NÃO renderizar PublicRoutes diretamente
-  // O useEffect acima vai redirecionar primeiro
+  // O redirecionamento acima já foi feito
   // Se não tem locale válido, renderizar LocaleRouter para processar
   return <LocaleRouterInternal />;
 }
@@ -101,8 +124,14 @@ function LocaleRouterInternal() {
   );
   
   // ✅ FASE 2: Cache Mais Robusto - Limpar apenas rotas antigas (> 5 minutos)
+  // ✅ OTIMIZAÇÃO: Usar requestIdleCallback para não bloquear thread principal
   useEffect(() => {
-    const cleanupInterval = setInterval(() => {
+    let cleanupTimer: NodeJS.Timeout | number | null = null;
+    let cancelled = false;
+
+    const performCleanup = () => {
+      if (cancelled) return;
+      
       const now = Date.now();
       let cleaned = 0;
       
@@ -126,12 +155,46 @@ function LocaleRouterInternal() {
         });
       }
       
-      if (cleaned > 0) {
+      if (cleaned > 0 && import.meta.env.DEV) {
         i18nLog('Limpando cache de rotas processadas: ' + cleaned + ' rotas removidas');
       }
-    }, 60000); // Verificar a cada 1 minuto
+
+      // Agendar próximo cleanup (a cada 2 minutos em vez de 1 minuto)
+      if (!cancelled) {
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          const w = window as any;
+          const id = w.requestIdleCallback(performCleanup, { timeout: 5000 });
+          cleanupTimer = id;
+        } else {
+          cleanupTimer = setTimeout(performCleanup, 120000); // 2 minutos
+        }
+      }
+    };
+
+    // Iniciar primeiro cleanup após 2 minutos
+    cleanupTimer = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const w = window as any;
+        const id = w.requestIdleCallback(performCleanup, { timeout: 5000 });
+        cleanupTimer = id;
+      } else {
+        performCleanup();
+      }
+    }, 120000); // 2 minutos
     
-    return () => clearInterval(cleanupInterval);
+    return () => {
+      cancelled = true;
+      if (typeof cleanupTimer === 'number') {
+        if (typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+          const w = window as any;
+          if (typeof w.cancelIdleCallback === 'function') {
+            w.cancelIdleCallback(cleanupTimer);
+          }
+        }
+      } else if (cleanupTimer) {
+        clearTimeout(cleanupTimer);
+      }
+    };
   }, []);
   
   // ✅ CORREÇÃO CRÍTICA: Ref para rastrear último routeKey processado (deve estar antes de processRoute)
