@@ -32,7 +32,7 @@ export function injectScriptPlugin(): Plugin {
         try {
           const files = readdirSync(jsDir);
           const jsFiles = files
-            .filter((f: string) => f.endsWith('.js') && !f.includes('.br') && !f.includes('.gz'))
+            .filter((f: string) => f.endsWith('.js') && !f.includes('.br') && !f.includes('.gz') && !f.includes('vendor-'))
             .map((f: string) => {
               const filePath = join(jsDir, f);
               const stats = statSync(filePath);
@@ -40,12 +40,12 @@ export function injectScriptPlugin(): Plugin {
             })
             .sort((a, b) => b.size - a.size);
           
-          // Priorizar arquivos não-vendor, mas se não houver, usar o maior
-          const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || jsFiles[0];
+          // Priorizar arquivo index (entry point principal)
+          const mainFile = jsFiles.find(f => f.name.startsWith('index-')) || jsFiles[0];
           
           if (mainFile && !html.includes(mainFile.name)) {
-            // ✅ CORREÇÃO: Adicionar defer para não bloquear parsing
-            const scriptTag = `    <script type="module" src="/assets/js/${mainFile.name}" defer></script>\n`;
+            // ✅ CORREÇÃO: Adicionar script module correto
+            const scriptTag = `    <script type="module" crossorigin src="/assets/js/${mainFile.name}"></script>\n`;
             const bodyEndIndex = html.lastIndexOf('</body>');
             
             if (bodyEndIndex !== -1) {
@@ -56,6 +56,14 @@ export function injectScriptPlugin(): Plugin {
         } catch (e) {
           // Se não conseguir ler o diretório, não é crítico - Vite provavelmente já injetou
           // Não fazer nada para evitar travamentos
+        }
+        
+        // ✅ CORREÇÃO: Remover referências a arquivos .tsx do HTML
+        // O Vite não deve gerar arquivos .tsx em produção
+        const tsxReference = html.match(/<link[^>]*href="\/assets\/tsx\/[^"]*\.tsx"[^>]*>/);
+        if (tsxReference) {
+          html = html.replace(tsxReference[0], '');
+          writeFileSync(distIndexPath, html, 'utf-8');
         }
       } catch (error) {
         // Ignorar erros silenciosamente para não travar o build
