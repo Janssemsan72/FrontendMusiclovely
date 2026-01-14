@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "tsx watch src/index.ts",
-    "build": "cross-env NODE_ENV=production vite build",
+    "build": "node scripts/set-build-id.js && cross-env NODE_ENV=production vite build",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:analyze": "vite build && npm run analyze-bundle",
     "preview": "vite preview",

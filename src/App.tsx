@@ -5,8 +5,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ScrollToTop from "@/components/ScrollToTop";
 import ScrollRestoration from "@/components/ScrollRestoration";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient, initCacheSystem } from "@/lib/queryClient";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 // LanguageProvider e LocaleProvider removidos - usando apenas português
 import { PublicErrorBoundary } from "@/components/PublicErrorBoundary";
@@ -16,7 +14,6 @@ import PublicRoutes from "@/components/PublicRoutes";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { devLog, isDevVerbose } from "@/utils/debug/devLogger";
 import { ensureE2EAdminStorageAuthorized, isE2EAdminFlagEnabled } from "@/utils/adminE2EBypass";
-import { Loader2 } from "@/utils/iconImports";
 
 // ✅ CORREÇÃO: Lazy load com retry para resolver "Failed to fetch dynamically imported module"
 // const Index = lazyWithRetry(() => import("./pages/Index"));
@@ -58,7 +55,7 @@ const AdminDashboardRedirect = lazyWithRetry(() => import("./components/admin/Ad
 const PageLoader = () => null;
 const AdminRouteFallback = () => (
   <div className="flex items-center justify-center min-h-[400px]">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
   </div>
 );
 
@@ -67,33 +64,59 @@ const AdminRouteFallback = () => (
 
 // ✅ OTIMIZAÇÃO PERFORMANCE: Deferir React Query até após paint
 const App = () => {
-  const [queryClientReady, setQueryClientReady] = useState(false);
+  const [queryRuntime, setQueryRuntime] = useState<null | {
+    QueryClientProvider: React.ComponentType<{ client: any; children: React.ReactNode }>;
+    queryClient: any;
+  }>(null);
 
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
+    let cancelled = false;
+
+    const loadQueryRuntime = async () => {
+      try {
+        const [rq, qc] = await Promise.all([
+          import("@tanstack/react-query"),
+          import("@/lib/queryClient"),
+        ]);
+        if (cancelled) return;
+        setQueryRuntime({
+          QueryClientProvider: rq.QueryClientProvider as any,
+          queryClient: (qc as any).queryClient,
+        });
+      } catch {
+        if (cancelled) return;
+        setQueryRuntime(null);
+      }
+    };
+
     if (!win) {
-      setQueryClientReady(true);
-      return;
+      void loadQueryRuntime();
+      return () => {
+        cancelled = true;
+      };
     }
 
     // Deferir inicialização do QueryClient até após paint
     if ('requestIdleCallback' in win) {
       const w = win as any;
-      const id = w.requestIdleCallback(() => {
-        setQueryClientReady(true);
-      }, { timeout: 500 });
+      const id = w.requestIdleCallback(loadQueryRuntime, { timeout: 500 });
       return () => {
+        cancelled = true;
         if (typeof w.cancelIdleCallback === 'function') {
           w.cancelIdleCallback(id);
         }
       };
     }
 
-    const timer = setTimeout(() => setQueryClientReady(true), 100);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(loadQueryRuntime, 100);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
-  if (!queryClientReady) {
+  if (!queryRuntime) {
     // Renderizar estrutura básica sem QueryClient para FCP mais rápido
     return (
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -103,11 +126,11 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <queryRuntime.QueryClientProvider client={queryRuntime.queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AppContent />
       </BrowserRouter>
-    </QueryClientProvider>
+    </queryRuntime.QueryClientProvider>
   );
 };
 
@@ -141,9 +164,11 @@ const AppContent = () => {
     let cancelled = false;
     const start = () => {
       if (cancelled) return;
-      initCacheSystem().catch((error) => {
-        console.error('❌ [App] Erro ao inicializar sistema de cache:', error);
-      });
+      import("@/lib/queryClient")
+        .then((m) => m.initCacheSystem())
+        .catch((error) => {
+          console.error('❌ [App] Erro ao inicializar sistema de cache:', error);
+        });
     };
 
     const win = typeof window === 'undefined' ? undefined : (window as any);
@@ -474,7 +499,6 @@ const AppContent = () => {
             <Route path="/test/simple-translation" element={<SimpleTranslationTest />} />
             <Route path="/test/simple-page" element={<SimpleLocaleTestPage />} />
             <Route path="/test/routes" element={<RouteTester />} />
-            <Route path="/test/locale-force" element={<LocaleForceTest />} />
             <Route path="/test/redirect" element={<RedirectTest />} />
             <Route path="/test/music-translations" element={<MusicTranslationTest />} />
             <Route path="/test/music-direction" element={<MusicDirectionTest />} />

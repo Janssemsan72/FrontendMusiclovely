@@ -82,7 +82,7 @@ export function AdminDashboardJobsTab({
       } catch (copyErr) {
         console.error('Erro ao copiar:', copyErr);
       } finally {
-        document.body.removeChild(textArea);
+        textArea.remove();
       }
     }
   };

@@ -548,7 +548,6 @@ export default function Testimonials() {
                         sizes="48px"
                         loading="lazy"
                         decoding="async"
-                        fetchPriority="low"
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = 'none';
@@ -667,7 +666,6 @@ export default function Testimonials() {
                             sizes="40px"
                             loading="lazy"
                             decoding="async"
-                            fetchPriority="low"
                             onError={(e) => {
                               const target = e.currentTarget;
                               target.style.display = 'none';

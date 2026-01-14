@@ -3,6 +3,8 @@
  * Salva erros no banco de dados para análise
  */
 
+import { safeReload } from "@/utils/reload";
+
 interface ErrorLog {
   error_type: 'unhandled_rejection' | 'react_error' | 'javascript_error' | 'load_error';
   error_message: string;
@@ -34,6 +36,27 @@ export async function logErrorToDatabase(error: ErrorLog): Promise<void> {
  * Inicializa tratamento global de erros
  */
 export function setupGlobalErrorHandling(): () => void {
+  let domNotFoundErrorCount = 0;
+  let lastDomNotFoundErrorAt = 0;
+
+  const handleDomNotFoundErrorRecovery = (message: string) => {
+    if (import.meta.env.DEV) return;
+    if (!window.location.pathname.startsWith('/admin')) return;
+    if (!message.includes('insertBefore') && !message.includes('removeChild')) return;
+
+    const now = Date.now();
+    const delta = now - lastDomNotFoundErrorAt;
+    if (delta > 3000) {
+      domNotFoundErrorCount = 0;
+    }
+    lastDomNotFoundErrorAt = now;
+    domNotFoundErrorCount += 1;
+
+    if (domNotFoundErrorCount >= 2) {
+      safeReload({ reason: 'DOMNotFoundError', cooldownMs: 60000, maxPerWindow: 1 });
+    }
+  };
+
   // Handler para Promise Rejections não tratadas
   const handleUnhandledRejection = async (event: PromiseRejectionEvent) => {
     const reason = event.reason;
@@ -84,6 +107,9 @@ export function setupGlobalErrorHandling(): () => void {
         if (import.meta.env.DEV) {
           console.debug('⚠️ [ErrorHandler] Erro ignorado (script externo):', errorMessage.substring(0, 100));
         }
+      }
+      if (errorMessage.includes('NotFoundError') || errorMessage.includes('insertBefore') || errorMessage.includes('removeChild')) {
+        handleDomNotFoundErrorRecovery(errorMessage);
       }
       return;
     }
@@ -164,6 +190,7 @@ export function setupGlobalErrorHandling(): () => void {
           isChromeExtensionError) {
         event.preventDefault();
         event.stopPropagation();
+        handleDomNotFoundErrorRecovery(event.message || '');
       }
       return;
     }
@@ -207,6 +234,8 @@ export function setupGlobalErrorHandling(): () => void {
       if (import.meta.env.DEV) {
         console.debug('⚠️ [ErrorHandler] Erro de manipulação do DOM suprimido:', errorMessage);
       }
+
+      handleDomNotFoundErrorRecovery(errorMessage);
       
       return true;
     }

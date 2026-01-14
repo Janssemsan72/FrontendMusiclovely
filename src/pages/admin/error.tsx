@@ -58,7 +58,7 @@ export default function Error({ error, reset }: ErrorProps) {
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand('copy');
-        document.body.removeChild(textArea);
+        textArea.remove();
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

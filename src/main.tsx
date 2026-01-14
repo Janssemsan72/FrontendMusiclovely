@@ -15,6 +15,56 @@ import App from "./App.tsx";
 // import { setupErrorSuppression } from "./utils/errors/errorSuppression";
 // import "./i18n"; // Carregado de forma diferida
 
+import { setupGlobalErrorHandling } from "./utils/errors/errorHandler";
+import { setupErrorSuppression } from "./utils/errors/errorSuppression";
+
+const patchDomNotFoundErrors = () => {
+  const NodeProto = (globalThis as any)?.Node?.prototype;
+  if (!NodeProto) return;
+  if ((globalThis as any).__ML_DOM_PATCHED__) return;
+  (globalThis as any).__ML_DOM_PATCHED__ = true;
+
+  const originalInsertBefore = NodeProto.insertBefore;
+  const originalAppendChild = NodeProto.appendChild;
+  const originalRemoveChild = NodeProto.removeChild;
+
+  NodeProto.insertBefore = function (newChild: Node, refChild: Node | null) {
+    try {
+      if (refChild && refChild.parentNode !== this) {
+        return originalAppendChild.call(this, newChild);
+      }
+      return originalInsertBefore.call(this, newChild, refChild);
+    } catch (error: any) {
+      if (error?.name === 'NotFoundError') {
+        try {
+          return originalAppendChild.call(this, newChild);
+        } catch {
+          return newChild;
+        }
+      }
+      throw error;
+    }
+  };
+
+  NodeProto.removeChild = function (child: Node) {
+    try {
+      if (child && child.parentNode !== this) {
+        return child;
+      }
+      return originalRemoveChild.call(this, child);
+    } catch (error: any) {
+      if (error?.name === 'NotFoundError') {
+        return child;
+      }
+      throw error;
+    }
+  };
+};
+
+if (typeof window !== 'undefined') {
+  patchDomNotFoundErrors();
+}
+
 // ✅ CORREÇÃO: Declarar tipos para propriedades globais do window
 declare global {
   interface Window {
@@ -34,19 +84,13 @@ let cleanupErrorHandling: (() => void) | null = null;
 
 // i18n removido - sempre português do Brasil
 
-// Carregar error handlers de forma diferida (não crítico)
-const loadErrorHandlers = () => {
-  if (cleanupErrorSuppression || cleanupErrorHandling) return; // Já carregado
-  
-  Promise.all([
-    import("./utils/errors/errorSuppression").then(m => m.setupErrorSuppression()),
-    import("./utils/errors/errorHandler").then(m => m.setupGlobalErrorHandling())
-  ]).then(([suppressionCleanup, handlingCleanup]) => {
-    cleanupErrorSuppression = suppressionCleanup;
-    cleanupErrorHandling = handlingCleanup;
-  }).catch(() => {
-    // Ignorar erros silenciosamente
-  });
+const setupErrorHandlers = () => {
+  if (cleanupErrorSuppression || cleanupErrorHandling) return;
+  try {
+    cleanupErrorSuppression = setupErrorSuppression();
+    cleanupErrorHandling = setupGlobalErrorHandling();
+  } catch {
+  }
 };
 
 // i18n removido - sempre português do Brasil
@@ -54,7 +98,7 @@ const loadErrorHandlers = () => {
 if (typeof window !== 'undefined') {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      setTimeout(loadErrorHandlers, 200);
+      setTimeout(setupErrorHandlers, 200);
     });
   });
 }
@@ -129,6 +173,9 @@ if (typeof window !== 'undefined') {
   // Função helper para salvar quiz
   const savePendingQuiz = () => {
     try {
+      if (import.meta.env.DEV) return;
+      if (!navigator.sendBeacon) return;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
       const pendingQuiz = localStorage.getItem('pending_quiz');
       if (pendingQuiz && navigator.sendBeacon) {
         const quiz = JSON.parse(pendingQuiz);
@@ -155,6 +202,7 @@ if (typeof window !== 'undefined') {
           
           const blob = new Blob([JSON.stringify(quizData)], { type: 'application/json' });
           const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+          if (!supabaseUrl.startsWith('https://')) return;
           const beaconUrl = `${supabaseUrl}/functions/v1/quiz-beacon-save`;
           navigator.sendBeacon(beaconUrl, blob);
         }
@@ -207,30 +255,11 @@ if (typeof window !== 'undefined') {
 
 // ✅ CORREÇÃO: Tratamento de erro robusto na inicialização do React
 // Função para inicializar React com tratamento de erro
+let reactRoot: ReturnType<typeof createRoot> | null = null;
+let reactContainer: HTMLElement | null = null;
+
 function initializeReact() {
   try {
-    const getOrCreateRoot = () => {
-      const existingRoot = document.getElementById("root");
-      if (existingRoot) return existingRoot;
-
-      if (isDev) {
-        console.warn('⚠️ [Main] Elemento root não encontrado! Criando novo elemento...');
-      }
-      const newRoot = document.createElement('div');
-      newRoot.id = 'root';
-      document.body.appendChild(newRoot);
-      return newRoot;
-    };
-
-    const getOrCreateMount = (root: HTMLElement) => {
-      const existingMount = document.getElementById('app-root');
-      if (existingMount) return existingMount;
-      const mount = document.createElement('div');
-      mount.id = 'app-root';
-      root.prepend(mount);
-      return mount;
-    };
-
     const finalizeBoot = () => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -244,27 +273,48 @@ function initializeReact() {
       });
     };
 
-    const rootHost = getOrCreateRoot();
-    const mountElement = getOrCreateMount(rootHost);
-    
+    const rootHost = document.getElementById("root") || (() => {
+      if (isDev) {
+        console.warn('⚠️ [Main] Elemento root não encontrado! Criando novo elemento...');
+      }
+      const newRoot = document.createElement('div');
+      newRoot.id = 'root';
+      document.body.appendChild(newRoot);
+      return newRoot;
+    })();
+
+    if (reactRoot && reactContainer && reactContainer !== rootHost) {
+      try {
+        reactRoot.unmount();
+      } catch {
+      }
+      reactRoot = null;
+    }
+
+    reactContainer = rootHost;
+    reactRoot = reactRoot ?? createRoot(rootHost);
+
+    let didRender = false;
     try {
-      const root = createRoot(mountElement);
-      root.render(
+      reactRoot.render(
         <React.StrictMode>
           <App />
         </React.StrictMode>
       );
-      finalizeBoot();
+      didRender = true;
     } catch (renderError) {
       console.error('❌ [Main] Erro ao renderizar React:', renderError);
       try {
-        const root = createRoot(mountElement);
-        root.render(<App />);
-        finalizeBoot();
+        reactRoot.render(<App />);
+        didRender = true;
       } catch (fallbackError) {
         console.error('❌ [Main] Erro crítico ao inicializar React:', fallbackError);
         rootHost.innerHTML = '<div style="padding: 20px; text-align: center;"><h1>Erro ao carregar a aplicação</h1><p>Por favor, recarregue a página.</p></div>';
       }
+    }
+
+    if (didRender) {
+      finalizeBoot();
     }
   } catch (error) {
     console.error('❌ [Main] Erro crítico na inicialização do React:', error);
@@ -277,14 +327,18 @@ function initializeReact() {
           document.body.appendChild(newRoot);
           return newRoot;
         })();
-        const mountElement = document.getElementById('app-root') || (() => {
-          const mount = document.createElement('div');
-          mount.id = 'app-root';
-          rootHost.prepend(mount);
-          return mount;
-        })();
-        const root = createRoot(mountElement);
-        root.render(<App />);
+
+        if (reactRoot && reactContainer && reactContainer !== rootHost) {
+          try {
+            reactRoot.unmount();
+          } catch {
+          }
+          reactRoot = null;
+        }
+
+        reactContainer = rootHost;
+        reactRoot = reactRoot ?? createRoot(rootHost);
+        reactRoot.render(<App />);
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             window.__REACT_READY__ = true;
@@ -312,17 +366,10 @@ function initializeReact() {
 // });
 
 if (document.readyState === 'loading') {
-  // ✅ AUDITORIA: Log removido em produção
-  // console.log('🔍 [Main] DOM ainda carregando, aguardando DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', () => {
-    // ✅ AUDITORIA: Log removido em produção
-    // console.log('🔍 [Main] DOMContentLoaded disparado, inicializando React...');
     initializeReact();
   });
 } else {
-  // DOM já está pronto, inicializar imediatamente
-  // ✅ AUDITORIA: Log removido em produção
-  // console.log('🔍 [Main] DOM já está pronto, inicializando React imediatamente...');
   // ✅ CORREÇÃO: Inicializar imediatamente sem setTimeout - React deve renderizar o mais rápido possível
   // O setTimeout estava causando delay desnecessário que poderia fazer o loading ficar preso
   initializeReact();

@@ -7,13 +7,43 @@ import { useUtmParams } from "@/hooks/useUtmParams";
 import { useUtmifyTracking } from "@/hooks/useUtmifyTracking";
 import { Mail } from "@/utils/iconImports";
 
-// ✅ OTIMIZAÇÃO: Lazy load de todos os componentes não-críticos
-const VinylPlayer = React.lazy(() => import("@/components/VinylPlayer"));
-const HowItWorks = React.lazy(() => import("@/components/HowItWorks"));
-const Testimonials = React.lazy(() => import("@/components/Testimonials"));
-const PricingSection = React.lazy(() => import("@/components/PricingSection"));
-const FAQ = React.lazy(() => import("@/components/FAQ"));
-const Footer = React.lazy(() => import("@/components/Footer"));
+// ✅ OTIMIZAÇÃO: Lazy load de todos os componentes não-críticos com tratamento de erro
+const VinylPlayer = React.lazy(() => {
+  return import("@/components/VinylPlayer").catch((err) => {
+    console.error('Erro ao carregar VinylPlayer:', err);
+    throw err;
+  });
+});
+const HowItWorks = React.lazy(() => {
+  return import("@/components/HowItWorks").catch((err) => {
+    console.error('Erro ao carregar HowItWorks:', err);
+    throw err;
+  });
+});
+const Testimonials = React.lazy(() => {
+  return import("@/components/Testimonials").catch((err) => {
+    console.error('Erro ao carregar Testimonials:', err);
+    throw err;
+  });
+});
+const PricingSection = React.lazy(() => {
+  return import("@/components/PricingSection").catch((err) => {
+    console.error('Erro ao carregar PricingSection:', err);
+    throw err;
+  });
+});
+const FAQ = React.lazy(() => {
+  return import("@/components/FAQ").catch((err) => {
+    console.error('Erro ao carregar FAQ:', err);
+    throw err;
+  });
+});
+const Footer = React.lazy(() => {
+  return import("@/components/Footer").catch((err) => {
+    console.error('Erro ao carregar Footer:', err);
+    throw err;
+  });
+});
 
 function LazySection({
   children,

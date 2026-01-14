@@ -165,7 +165,7 @@ export default function Header() {
 
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 bg-background border-b border-border/20 transition-shadow duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-lg border-b border-border/20 transition-shadow duration-300 supports-[backdrop-filter]:bg-background/98 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
       <div className="w-full py-3 sm:py-4 flex items-center justify-between px-4 sm:px-6 relative">
         {/* Logo à esquerda */}
         <div 
@@ -220,31 +220,18 @@ export default function Header() {
           </Button>
         </div>
 
-        {/* Mobile: Botão Criar Música e Menu hamburguer */}
-        <div className="md:hidden flex items-center gap-2 z-20">
-          <Button
-            className="bg-primary hover:bg-primary-600 text-white rounded-xl shadow-soft text-sm font-semibold px-4 py-2"
-            asChild
-            onMouseEnter={() => {
-              // Preload agressivo do Quiz no hover
-              import('../pages/Quiz').catch(() => {});
-            }}
-          >
-            <LinkWithUtms to={getLocalizedLink('/quiz')}>Criar Música</LinkWithUtms>
-          </Button>
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 sm:p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
-            aria-label="Menu"
-          >
-            {mobileMenuOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
-          </button>
-        </div>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-1.5 sm:p-2 text-foreground hover:bg-muted rounded-lg transition-colors z-20"
+          aria-label="Menu"
+        >
+          {mobileMenuOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
+        </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {SECTIONS.map((section) => (
               <button

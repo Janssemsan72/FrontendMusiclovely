@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "node:path";
 import { imagetools } from "vite-imagetools";
@@ -49,6 +49,11 @@ export default defineConfig({
   },
   // ✅ CORREÇÃO: Configuração de assets para garantir processamento correto
   assetsInclude: ["**/*.webp", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.svg", "**/*.mp4", "**/*.webm"],
+  // ✅ CORREÇÃO: Definir BUILD_ID para garantir hashes únicos
+  define: {
+    __BUILD_ID__: JSON.stringify(process.env.BUILD_ID || Date.now().toString()),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+  },
   build: {
     // ✅ OTIMIZAÇÃO: Usar esbuild ao invés de terser - muito mais rápido e estável
     // esbuild é significativamente mais rápido que terser e evita travamentos
@@ -144,9 +149,6 @@ export default defineConfig({
               // Manter separado, mas se causar circular, o Vite vai avisar
               return "vendor-supabase";
             }
-            if (id.includes("lucide-react")) {
-              return "vendor-icons"; // ✅ OTIMIZAÇÃO: Separar lucide-react para code splitting
-            }
             // Separar outras bibliotecas que não são do admin
             if (id.includes('date-fns') && !id.includes('react-day-picker')) {
               return 'vendor-date-fns';
@@ -209,10 +211,6 @@ export default defineConfig({
     target: "es2020", // Reduzir transpilação desnecessária
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Habilitar report de tamanhos comprimidos apenas em produção para análise
     reportCompressedSize: process.env.NODE_ENV === "production",
-    // ✅ OTIMIZAÇÃO PERFORMANCE: Forçar modo produção no build
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-    },
     // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizações adicionais
     commonjsOptions: {
       include: [/node_modules/],

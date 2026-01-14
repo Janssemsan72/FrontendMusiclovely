@@ -133,7 +133,7 @@ const Quiz = memo(() => {
         import('@/components/ui/card').catch(() => {}),
         import('@/components/ui/input').catch(() => {}),
         import('@/components/ui/badge').catch(() => {}),
-        import('lucide-react').catch(() => {}),
+        // ✅ OTIMIZAÇÃO: Removido import dinâmico desnecessário de lucide-react
       ]).catch(() => {});
     }
     
@@ -372,14 +372,14 @@ const Quiz = memo(() => {
           if (!dataLoadedRef.current) {
             setFormData(prev => ({
               ...prev,
-              relationship,
-              customRelationship,
-              aboutWho: quizData.about_who || '',
-              style: quizData.style || '',
-              vocalGender: quizData.vocal_gender || '',
-              qualities: quizData.qualities || '',
-              memories: quizData.memories || '',
-              message: quizData.message || ''
+            relationship,
+            customRelationship,
+            aboutWho: quizData.about_who || '',
+            style: quizData.style || '',
+            vocalGender: quizData.vocal_gender || '',
+            qualities: quizData.qualities || '',
+            memories: quizData.memories || '',
+            message: quizData.message || ''
             }));
             dataLoadedRef.current = true; // ✅ Marcar que dados foram carregados
           }
@@ -467,14 +467,14 @@ const Quiz = memo(() => {
         if (isMountedRef.current && !dataLoadedRef.current) {
           setFormData(prev => ({
             ...prev,
-            relationship,
-            customRelationship,
-            aboutWho: loadedQuiz.about_who || '',
-            style: loadedQuiz.style || '',
-            vocalGender: loadedQuiz.vocal_gender || '',
-            qualities: loadedQuiz.qualities || '',
-            memories: loadedQuiz.memories || '',
-            message: loadedQuiz.message || ''
+          relationship,
+          customRelationship,
+          aboutWho: loadedQuiz.about_who || '',
+          style: loadedQuiz.style || '',
+          vocalGender: loadedQuiz.vocal_gender || '',
+          qualities: loadedQuiz.qualities || '',
+          memories: loadedQuiz.memories || '',
+          message: loadedQuiz.message || ''
           }));
           dataLoadedRef.current = true; // ✅ Marcar que dados foram carregados
         }

@@ -19,7 +19,7 @@
   },
   "include": ["src"],
   "exclude": [
-    "src/__tests__/**",
+    "src/__tests__/debug-components/**",
     "src/components/dev/**",
     "src/pages/dev/**",
     "src/routes/**",

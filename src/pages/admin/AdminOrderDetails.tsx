@@ -111,7 +111,7 @@ export default function AdminOrderDetails() {
       } catch (err) {
         toast.error('Erro ao copiar');
       } finally {
-        document.body.removeChild(textArea);
+        textArea.remove();
       }
     }
   };

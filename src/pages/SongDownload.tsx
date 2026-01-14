@@ -102,7 +102,7 @@ export default function SongDownload() {
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
       
       // Limpar blob URL após um delay
       setTimeout(() => {
@@ -276,7 +276,7 @@ export default function SongDownload() {
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
       
       // Limpar blob URL após um delay para garantir que o download iniciou
       setTimeout(() => {

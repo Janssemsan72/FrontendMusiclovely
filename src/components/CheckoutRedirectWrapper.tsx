@@ -1,7 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from '@/utils/iconImports';
 
 /**
  * Wrapper component que intercepta URLs do WhatsApp ANTES do Checkout ser renderizado
@@ -12,6 +10,8 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
   const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
   
   useEffect(() => {
+    const isDev = import.meta.env.DEV;
+
     // ✅ FASE 5: Verificar se search não mudou antes de processar
     if (lastSearchRef.current === location.search) {
       return;
@@ -29,12 +29,6 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
     const isQuizRoute = location.pathname.includes('/quiz');
     
     if (isQuizRoute) {
-      console.log('✅ [CheckoutRedirectWrapper] URL do quiz detectada, NÃO redirecionando para Cakto', {
-        pathname: location.pathname,
-        edit: edit,
-        orderId: orderId,
-        messageId: messageId
-      });
       return; // Não redirecionar, permitir que o quiz seja visualizado/editado
     }
     
@@ -56,16 +50,15 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
     ) && !window.location.href.includes('pay.cakto.com.br');
     
     if (shouldRedirect) {
-      console.log('🔄 [CheckoutRedirectWrapper] REDIRECIONAMENTO IMEDIATO: URL do WhatsApp detectada, redirecionando para Cakto...');
-      console.log('🔍 [CheckoutRedirectWrapper] Parâmetros detectados:', { messageId, orderId, hasCheckoutParams, restore: urlParams.get('restore'), quiz_id: urlParams.get('quiz_id'), token: !!urlParams.get('token') });
-      
       // Buscar pedido e redirecionar IMEDIATAMENTE
-      supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .single()
-        .then(({ data: orderData, error }) => {
+      (async () => {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data: orderData, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+
           if (!error && orderData && orderData.status === 'pending' && orderData.customer_email && orderData.customer_whatsapp) {
             const CAKTO_PAYMENT_URL = 'https://pay.cakto.com.br/d877u4t_665160';
             // ✅ CORREÇÃO: Remover sistema de locale - sempre usar português
@@ -92,43 +85,41 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
             // A URL da Cakto deve conter APENAS os parâmetros necessários para pagamento
             
             const caktoUrl = `${CAKTO_PAYMENT_URL}?${caktoParams.toString()}`;
-            console.log('✅ [CheckoutRedirectWrapper] Redirecionando IMEDIATAMENTE para Cakto:', caktoUrl);
-            console.log('✅ [CheckoutRedirectWrapper] URL da Cakto validada:', {
-              starts_with_cakto: caktoUrl.startsWith('https://pay.cakto.com.br'),
-              contains_restore: caktoUrl.includes('restore='),
-              contains_quiz_id: caktoUrl.includes('quiz_id='),
-              contains_token: caktoUrl.includes('token='),
-            });
             
             // ✅ Registrar clique no botão "Finalizar Agora" (tracking)
-            supabase.functions.invoke('track-payment-click', {
-              body: {
-                order_id: orderData.id,
-                source: 'whatsapp_redirect'
-              }
-            }).then(({ error: trackError }) => {
-              if (trackError) {
-                console.warn('⚠️ [CheckoutRedirectWrapper] Erro ao registrar tracking de clique (não bloqueante):', trackError);
-              } else {
-                console.log('✅ [CheckoutRedirectWrapper] Tracking de clique registrado com sucesso');
-              }
-            }).catch((trackError) => {
-              console.warn('⚠️ [CheckoutRedirectWrapper] Erro ao chamar track-payment-click (não bloqueante):', trackError);
-              // Não bloquear o redirecionamento se o tracking falhar
-            });
+            supabase.functions
+              .invoke('track-payment-click', {
+                body: {
+                  order_id: orderData.id,
+                  source: 'whatsapp_redirect'
+                }
+              })
+              .then(({ error: trackError }) => {
+                if (trackError) {
+                  if (isDev) console.warn('[CheckoutRedirectWrapper] Falha no tracking (não bloqueante)');
+                }
+              })
+              .catch((trackError) => {
+                if (isDev) console.warn('[CheckoutRedirectWrapper] Falha no tracking (não bloqueante)', trackError);
+              });
             
             // ⚠️ CRÍTICO: Usar window.location.replace para evitar que o React Router intercepte
             // Isso substitui a URL atual no histórico, impedindo que o usuário volte para o checkout interno
             window.location.replace(caktoUrl);
           } else {
-            console.error('❌ [CheckoutRedirectWrapper] Pedido não encontrado ou inválido:', { error, orderData });
+            if (isDev) {
+              console.error('[CheckoutRedirectWrapper] Pedido não encontrado ou inválido', {
+                hasError: !!error,
+                hasOrderData: !!orderData,
+                status: orderData?.status,
+              });
+            }
           }
-        })
-        .catch((err) => {
-          console.error('❌ [CheckoutRedirectWrapper] Erro ao buscar pedido para redirecionamento:', err);
-        });
+      })().catch((err) => {
+          if (isDev) console.error('[CheckoutRedirectWrapper] Erro ao buscar pedido para redirecionamento', err);
+      });
     }
-  }, [location.search]);
+  }, [location.pathname, location.search]);
   
   // ✅ OTIMIZAÇÃO MOBILE: Não bloquear renderização - redirecionar em background
   // O redirecionamento já está sendo feito no useEffect acima

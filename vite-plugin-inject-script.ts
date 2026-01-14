@@ -21,7 +21,23 @@ export function injectScriptPlugin(): Plugin {
         const viteInjectedScript = html.match(/<script[^>]*type="module"[^>]*src="\/assets\/js\/[^"]*\.js"[^>]*>/);
         
         if (viteInjectedScript) {
-          // Vite já fez o trabalho, não precisa fazer nada
+          // ✅ CORREÇÃO: Verificar se o script injetado pelo Vite tem versionamento
+          const buildId = process.env.BUILD_ID || Date.now().toString();
+          const scriptMatch = viteInjectedScript[0];
+          
+          // Se o script não tem query parameter, adicionar BUILD_ID
+          if (!scriptMatch.includes('?v=') && !scriptMatch.includes('?t=')) {
+            const scriptPath = scriptMatch.match(/src="([^"]+)"/)?.[1];
+            if (scriptPath) {
+              const fileHash = scriptPath.match(/-([a-zA-Z0-9]+)\.js/)?.[1] || '';
+              const versionedScript = scriptMatch.replace(
+                /src="([^"]+)"/,
+                `src="$1?v=${buildId}-${fileHash}"`
+              );
+              html = html.replace(scriptMatch, versionedScript);
+              writeFileSync(distIndexPath, html, 'utf-8');
+            }
+          }
           return;
         }
         
@@ -44,10 +60,11 @@ export function injectScriptPlugin(): Plugin {
           const mainFile = jsFiles.find(f => f.name.startsWith('index-')) || jsFiles[0];
           
           if (mainFile && !html.includes(mainFile.name)) {
-            // ✅ CORREÇÃO: Adicionar script module correto com cache busting
-            // Adicionar hash do arquivo como query parameter para forçar reload
+            // ✅ CORREÇÃO: Adicionar script module correto com cache busting usando BUILD_ID
+            const buildId = process.env.BUILD_ID || Date.now().toString();
             const fileHash = mainFile.name.match(/-([a-zA-Z0-9]+)\.js$/)?.[1] || '';
-            const cacheBuster = fileHash ? `?v=${fileHash}` : `?t=${Date.now()}`;
+            // Usar BUILD_ID + hash do arquivo para garantir unicidade
+            const cacheBuster = `?v=${buildId}-${fileHash}`;
             const scriptTag = `    <script type="module" crossorigin src="/assets/js/${mainFile.name}${cacheBuster}"></script>\n`;
             const bodyEndIndex = html.lastIndexOf('</body>');
             
@@ -55,6 +72,27 @@ export function injectScriptPlugin(): Plugin {
               html = html.slice(0, bodyEndIndex) + scriptTag + html.slice(bodyEndIndex);
               writeFileSync(distIndexPath, html, 'utf-8');
             }
+          }
+          
+          // ✅ CORREÇÃO: Atualizar scripts existentes com BUILD_ID se não tiverem
+          const existingScripts = html.match(/<script[^>]*src="\/assets\/js\/(index-[^"]+\.js)"[^>]*>/g);
+          if (existingScripts) {
+            const buildId = process.env.BUILD_ID || Date.now().toString();
+            existingScripts.forEach(scriptTag => {
+              // Se o script não tem query parameter, adicionar BUILD_ID
+              if (!scriptTag.includes('?v=') && !scriptTag.includes('?t=')) {
+                const scriptPath = scriptTag.match(/src="([^"]+)"/)?.[1];
+                if (scriptPath && scriptPath.includes('index-')) {
+                  const fileHash = scriptPath.match(/index-([a-zA-Z0-9]+)\.js/)?.[1] || '';
+                  const newScriptTag = scriptTag.replace(
+                    /src="([^"]+)"/,
+                    `src="$1?v=${buildId}-${fileHash}"`
+                  );
+                  html = html.replace(scriptTag, newScriptTag);
+                }
+              }
+            });
+            writeFileSync(distIndexPath, html, 'utf-8');
           }
         } catch (e) {
           // Se não conseguir ler o diretório, não é crítico - Vite provavelmente já injetou

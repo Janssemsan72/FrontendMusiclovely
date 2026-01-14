@@ -96,65 +96,6 @@
     <!-- ✅ OTIMIZAÇÃO: Preload removido temporariamente para evitar bloqueios -->
     <!-- A imagem será carregada normalmente quando o componente HeroSection renderizar -->
     
-    <!-- ✅ CORREÇÃO CRÍTICA: Script para verificar e corrigir cache ANTES de carregar qualquer JS -->
-    <script>
-      (function() {
-        // ✅ VERIFICAÇÃO CRÍTICA: Verificar se há arquivos JS antigos em cache ANTES de carregar o bundle principal
-        // Isso previne que o bundle principal antigo seja carregado
-        const oldFileHashes = ['6kmaUs1Q', 'BqFpQ0Rn'];
-        const currentUrl = window.location.href;
-        
-        // Verificar se a URL já tem ?nocache (indica que já tentamos corrigir)
-        const hasNoCache = currentUrl.includes('?nocache=');
-        
-        // Se não tem ?nocache, verificar se há referências a arquivos antigos no HTML
-        if (!hasNoCache) {
-          // Verificar se o HTML tem referências a arquivos antigos
-          const htmlContent = document.documentElement.outerHTML;
-          const hasOldFiles = oldFileHashes.some(hash => htmlContent.includes(hash));
-          
-          if (hasOldFiles) {
-            console.warn('⚠️ [Cache Fix] Detectado HTML com referências a arquivos antigos. Limpando cache...');
-            // Limpar cache e recarregar
-            if ('caches' in window) {
-              caches.keys().then(function(names) {
-                for (let name of names) {
-                  caches.delete(name);
-                }
-              });
-            }
-            // Forçar reload com bypass de cache
-            window.location.replace(window.location.href.split('?')[0].split('#')[0] + '?nocache=' + Date.now());
-            return; // Não continuar carregando scripts
-          }
-        }
-        
-        // ✅ VERIFICAÇÃO: Interceptar tentativas de carregar arquivos antigos
-        const originalCreateElement = document.createElement;
-        document.createElement = function(tagName) {
-          const element = originalCreateElement.call(this, tagName);
-          
-          if (tagName.toLowerCase() === 'script') {
-            const originalSetAttribute = element.setAttribute;
-            element.setAttribute = function(name, value) {
-              if (name === 'src' && typeof value === 'string') {
-                // Verificar se está tentando carregar arquivo antigo
-                const isOldFile = oldFileHashes.some(hash => value.includes(hash));
-                if (isOldFile) {
-                  console.error('⚠️ [Cache Fix] Tentativa de carregar arquivo antigo bloqueada:', value);
-                  // Não definir o src, prevenindo o carregamento
-                  return;
-                }
-              }
-              return originalSetAttribute.call(this, name, value);
-            };
-          }
-          
-          return element;
-        };
-      })();
-    </script>
-    
     <!-- ✅ CORREÇÃO CRÍTICA: Script principal deve estar no HTML para o Vite processar -->
     <script type="module" src="/src/main.tsx"></script>
     
@@ -246,274 +187,87 @@
     <div id="root"></div>
     <!-- ✅ OTIMIZAÇÃO: Script principal será injetado pelo Vite durante o build -->
     
-    <!-- ✅ CORREÇÃO CRÍTICA: Script para detectar e corrigir cache de arquivos JS antigos -->
+    <!-- ✅ CORREÇÃO: Script simplificado para apenas limpar ?nocache da URL -->
     <script>
       (function() {
-        // ✅ CORREÇÃO: Prevenir loop infinito de reloads
-        const MAX_RELOADS = 2;
-        const RELOAD_COOLDOWN = 5000; // 5 segundos entre reloads
-        const storageKey = 'cache_fix_reload_count';
-        const lastReloadKey = 'cache_fix_last_reload';
-        const oldFileHashes = ['6kmaUs1Q', 'BqFpQ0Rn', 'rI4MHp1K']; // Hashes de arquivos antigos
-        
-        // ✅ CORREÇÃO: Remover ?nocache da URL se não houver problemas
+        // ✅ CORREÇÃO: Apenas remover ?nocache da URL se existir, sem fazer mais nada
+        // Não detectar erros, não forçar reloads, apenas limpar a URL
         const currentUrl = window.location.href;
         if (currentUrl.includes('?nocache=')) {
-          // Aguardar um pouco para verificar se há erros
-          setTimeout(function() {
-            // Verificar se há referências a arquivos antigos no HTML
-            const htmlContent = document.documentElement.outerHTML;
-            const hasOldFiles = oldFileHashes.some(hash => htmlContent.includes(hash));
-            
-            // Verificar se há scripts com arquivos antigos
-            const scripts = Array.from(document.querySelectorAll('script[src]'));
-            const hasOldScripts = scripts.some(script => {
-              const src = script.src || '';
-              return oldFileHashes.some(hash => src.includes(hash));
-            });
-            
-            // Se não há arquivos antigos, remover ?nocache da URL
-            if (!hasOldFiles && !hasOldScripts) {
-              const cleanUrl = currentUrl.split('?')[0].split('#')[0];
-              if (window.location.href !== cleanUrl) {
-                console.log('✅ [Cache Fix] Problema resolvido. Removendo ?nocache da URL...');
-                window.history.replaceState({}, '', cleanUrl);
-                // Limpar contadores de reload
-                sessionStorage.removeItem(storageKey);
-                sessionStorage.removeItem(lastReloadKey);
-              }
-            }
-          }, 2000);
+          const cleanUrl = currentUrl.split('?')[0].split('#')[0];
+          window.history.replaceState({}, '', cleanUrl);
         }
         
-        // Verificar se já tentamos reload muitas vezes
-        const reloadCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
-        const lastReload = parseInt(sessionStorage.getItem(lastReloadKey) || '0', 10);
-        const timeSinceLastReload = Date.now() - lastReload;
-        
-        if (reloadCount >= MAX_RELOADS) {
-          console.warn('⚠️ [Cache Fix] Limite de reloads atingido. Por favor, limpe o cache manualmente (Ctrl+Shift+R)');
-          // Limpar contador após 30 segundos para permitir nova tentativa
-          setTimeout(function() {
-            sessionStorage.removeItem(storageKey);
-            sessionStorage.removeItem(lastReloadKey);
-          }, 30000);
-          return; // Não executar script se já tentamos muitas vezes
+        // Limpar contadores de reload antigos do sessionStorage
+        try {
+          sessionStorage.removeItem('cache_fix_reload_count');
+          sessionStorage.removeItem('cache_fix_last_reload');
+        } catch (e) {
+          // Ignorar se sessionStorage não estiver disponível
         }
-        
-        // Se tentou reload recentemente, aguardar antes de tentar novamente
-        if (timeSinceLastReload < RELOAD_COOLDOWN && reloadCount > 0) {
-          console.warn('⚠️ [Cache Fix] Aguardando cooldown antes de próximo reload...');
-          return;
-        }
-        
-        function forceReload() {
-          const currentCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
-          if (currentCount >= MAX_RELOADS) {
-            console.warn('⚠️ [Cache Fix] Limite de reloads atingido. Limpe o cache manualmente.');
-            return;
-          }
-          
-          // Incrementar contador
-          sessionStorage.setItem(storageKey, (currentCount + 1).toString());
-          sessionStorage.setItem(lastReloadKey, Date.now().toString());
-          
-          console.warn('⚠️ [Cache Fix] Detectado cache de arquivos JS antigos. Forçando reload completo...', {
-            attempt: currentCount + 1,
-            maxAttempts: MAX_RELOADS
-          });
-          
-          // Limpar todos os caches possíveis
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              for (let name of names) {
-                caches.delete(name);
-              }
-            });
-          }
-          
-          // Forçar reload com cache bypass - usar replace para não adicionar ao histórico
-          setTimeout(function() {
-            const baseUrl = window.location.href.split('?')[0].split('#')[0];
-            window.location.replace(baseUrl + '?nocache=' + Date.now());
-          }, 100);
-        }
-        
-        // Detectar se há erro ao carregar chunks antigos
-        window.addEventListener('error', function(e) {
-          const errorMsg = e.message || '';
-          const errorSrc = (e.target && (e.target.src || e.target.href)) || '';
-          
-          // Verificar se é um erro relacionado a arquivos JS antigos
-          const oldFiles = ['admin-6kmaUs1Q.js', 'VinylPlayer-BqFpQ0Rn.js'];
-          const isOldFile = oldFiles.some(oldFile => errorSrc.includes(oldFile) || errorMsg.includes(oldFile));
-          
-          // Verificar se é erro de "Unexpected token" ou "appendChild" (indicam HTML sendo executado como JS)
-          const isHtmlAsJsError = errorMsg.includes('Unexpected token') || 
-                                  errorMsg.includes('appendChild') ||
-                                  errorMsg.includes('Failed to execute');
-          
-          if (isOldFile || (isHtmlAsJsError && errorSrc.includes('/assets/js/'))) {
-            console.warn('⚠️ [Cache Fix] Erro detectado:', { errorMsg, errorSrc, isOldFile, isHtmlAsJsError });
-            forceReload();
-          }
-        }, true);
-        
-        // Detectar erros de Promise rejection (lazy loading)
-        window.addEventListener('unhandledrejection', function(e) {
-          const reason = e.reason || {};
-          const errorMsg = (reason.message || reason.toString() || '');
-          
-          if (errorMsg.includes('Unexpected token') || 
-              errorMsg.includes('appendChild') ||
-              errorMsg.includes('Failed to execute') ||
-              errorMsg.includes('admin-6kmaUs1Q') ||
-              errorMsg.includes('VinylPlayer-BqFpQ0Rn')) {
-            console.warn('⚠️ [Cache Fix] Erro de Promise rejection detectado:', errorMsg);
-            forceReload();
-          }
-        });
-        
-        // Detectar erros de console (backup) - DEVE SER EXECUTADO ANTES DE QUALQUER OUTRO SCRIPT
-        const originalError = console.error;
-        console.error = function(...args) {
-          const errorStr = args.join(' ');
-          const errorObj = args[0];
-          
-          // Verificar se é erro relacionado a arquivos antigos
-          const hasOldFile = errorStr.includes('admin-6kmaUs1Q') || 
-                            errorStr.includes('VinylPlayer-BqFpQ0Rn') ||
-                            errorStr.includes('BqFpQ0Rn');
-          
-          // Verificar se é erro de "Unexpected token" (HTML sendo executado como JS)
-          const hasUnexpectedToken = errorStr.includes('Unexpected token') || 
-                                     (errorObj && errorObj.message && errorObj.message.includes('Unexpected token'));
-          
-          // Verificar se é erro de "appendChild" ou "Failed to execute"
-          const hasAppendChildError = errorStr.includes('appendChild') || 
-                                      errorStr.includes('Failed to execute');
-          
-          if (hasOldFile || hasUnexpectedToken || hasAppendChildError) {
-            console.warn('⚠️ [Cache Fix] Erro no console detectado - forçando reload:', {
-              errorStr: errorStr.substring(0, 200),
-              hasOldFile,
-              hasUnexpectedToken,
-              hasAppendChildError
-            });
-            forceReload();
-          }
-          
-          originalError.apply(console, args);
-        };
-        
-        // ✅ CORREÇÃO CRÍTICA: Interceptar erros ANTES do React Error Boundary
-        // Isso garante que o reload aconteça antes que o erro seja capturado pelo ErrorBoundary
-        const originalAddEventListener = window.addEventListener;
-        window.addEventListener = function(type, listener, options) {
-          if (type === 'error') {
-            const wrappedListener = function(e) {
-              const errorMsg = (e.message || e.toString() || '');
-              const errorSrc = (e.target && (e.target.src || e.target.href)) || '';
-              
-              if (errorMsg.includes('admin-6kmaUs1Q') || 
-                  errorMsg.includes('VinylPlayer-BqFpQ0Rn') ||
-                  errorMsg.includes('Unexpected token') ||
-                  errorSrc.includes('admin-6kmaUs1Q') ||
-                  errorSrc.includes('VinylPlayer-BqFpQ0Rn')) {
-                console.warn('⚠️ [Cache Fix] Erro detectado via addEventListener:', { errorMsg, errorSrc });
-                forceReload();
-                return;
-              }
-              
-              if (listener) listener.call(this, e);
-            };
-            return originalAddEventListener.call(this, type, wrappedListener, options);
-          }
-          return originalAddEventListener.call(this, type, listener, options);
-        };
       })();
     </script>
     
-    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Scripts de terceiros carregados apenas após paint completo e idle -->
     <script>
-      // ✅ OTIMIZAÇÃO: Deferir scripts de terceiros até após paint e idle time
-      const loadThirdPartyScripts = function() {
-        // Aguardar paint completo
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function() {
-            // Aguardar múltiplos frames para garantir paint completo
-            requestAnimationFrame(function() {
-              requestAnimationFrame(function() {
-                // Aguardar idle time antes de carregar scripts não críticos
-                if ('requestIdleCallback' in window) {
-                  window.requestIdleCallback(function() {
-                    // UTMify
-                    var utmify = document.createElement('script');
-                    utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-                    utmify.setAttribute('data-utmify-prevent-subids', '');
-                    utmify.async = true;
-                    document.body.appendChild(utmify);
-                    
-                    // UTMify Loader
-                    var utmifyLoader = document.createElement('script');
-                    utmifyLoader.src = '/utmify-loader.js';
-                    utmifyLoader.async = true;
-                    document.body.appendChild(utmifyLoader);
-                  }, { timeout: 2000 });
-                } else {
-                  setTimeout(function() {
-                    var utmify = document.createElement('script');
-                    utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-                    utmify.setAttribute('data-utmify-prevent-subids', '');
-                    utmify.async = true;
-                    document.body.appendChild(utmify);
-                    
-                    var utmifyLoader = document.createElement('script');
-                    utmifyLoader.src = '/utmify-loader.js';
-                    utmifyLoader.async = true;
-                    document.body.appendChild(utmifyLoader);
-                  }, 2000);
-                }
-              });
-            });
-          });
-        } else {
-          // DOM já está pronto
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(function() {
-                  var utmify = document.createElement('script');
-                  utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-                  utmify.setAttribute('data-utmify-prevent-subids', '');
-                  utmify.async = true;
-                  document.body.appendChild(utmify);
-                  
-                  var utmifyLoader = document.createElement('script');
-                  utmifyLoader.src = '/utmify-loader.js';
-                  utmifyLoader.async = true;
-                  document.body.appendChild(utmifyLoader);
-                }, { timeout: 2000 });
-              } else {
-                setTimeout(function() {
-                  var utmify = document.createElement('script');
-                  utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
-                  utmify.setAttribute('data-utmify-prevent-subids', '');
-                  utmify.async = true;
-                  document.body.appendChild(utmify);
-                  
-                  var utmifyLoader = document.createElement('script');
-                  utmifyLoader.src = '/utmify-loader.js';
-                  utmifyLoader.async = true;
-                  document.body.appendChild(utmifyLoader);
-                }, 2000);
+      (function () {
+        var loaded = false;
+        var longTimeoutMs = 20000;
+
+        function canLoad() {
+          var connection = navigator && navigator.connection;
+          if (connection && connection.saveData) return false;
+          var effectiveType = connection && connection.effectiveType;
+          if (effectiveType && effectiveType !== "4g") return false;
+          return true;
+        }
+
+        function injectScripts() {
+          if (loaded) return;
+          if (!canLoad()) return;
+          loaded = true;
+
+          var utmify = document.createElement("script");
+          utmify.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+          utmify.setAttribute("data-utmify-prevent-subids", "");
+          utmify.async = true;
+          document.body.appendChild(utmify);
+
+          var utmifyLoader = document.createElement("script");
+          utmifyLoader.src = "/utmify-loader.js";
+          utmifyLoader.async = true;
+          document.body.appendChild(utmifyLoader);
+        }
+
+        function scheduleInject() {
+          if (loaded) return;
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              if ("requestIdleCallback" in window) {
+                window.requestIdleCallback(injectScripts, { timeout: longTimeoutMs });
+                return;
               }
+              setTimeout(injectScripts, longTimeoutMs);
             });
           });
         }
-      };
-      loadThirdPartyScripts();
+
+        function onFirstInteraction() {
+          scheduleInject();
+        }
+
+        window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+        window.addEventListener("touchstart", onFirstInteraction, { once: true, passive: true });
+        window.addEventListener("keydown", onFirstInteraction, { once: true, passive: true });
+        window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+
+        window.addEventListener(
+          "load",
+          function () {
+            setTimeout(scheduleInject, longTimeoutMs);
+          },
+          { once: true }
+        );
+      })();
     </script>
   </body>
 </html>
-

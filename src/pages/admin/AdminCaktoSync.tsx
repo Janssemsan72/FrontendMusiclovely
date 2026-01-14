@@ -446,7 +446,7 @@ export default function AdminCaktoSync() {
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
 
     toast.success("Relatório exportado com sucesso!");
   }, [matches]);

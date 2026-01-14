@@ -480,7 +480,7 @@ export default function AdminReleases() {
       } catch (err) {
         toast.error('Erro ao copiar email');
       } finally {
-        document.body.removeChild(textArea);
+        textArea.remove();
       }
     }
   };

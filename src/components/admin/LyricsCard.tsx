@@ -656,7 +656,7 @@ export const LyricsCard = memo(function LyricsCard({
       } catch (err) {
         toast.error('Erro ao copiar email');
       } finally {
-        document.body.removeChild(textArea);
+        textArea.remove();
       }
     }
   };

@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, MessageCircle, ChevronDown } from '@/utils/iconImports';
-import { useTranslation } from '@/hooks/useTranslation';
 import { useUtmParams } from '@/hooks/useUtmParams';
 import { useUtmifyTracking } from '@/hooks/useUtmifyTracking';
 import { clearQuizSessionId } from '@/utils/quizSync';
@@ -17,19 +16,25 @@ interface OrderData {
 }
 
 export default function PaymentSuccess() {
-  const { t } = useTranslation();
+  // ✅ OTIMIZAÇÃO: Removido useTranslation não utilizado
   const { utms, hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(20);
+  const [redirectCancelled, setRedirectCancelled] = useState(false);
 
-  // Número de WhatsApp (mesmo usado em outras páginas)
-  const whatsappNumber = '8591516996';
+  // Refs para armazenar os timers e poder cancelá-los
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // URL do WhatsApp fixa conforme solicitado
+  const whatsappUrl = 'https://api.whatsapp.com/send/?phone=558594377151&text=Ol%C3%A1%21+Meu+pagamento+foi+processado.+Gostaria+de+acompanhar+o+status+do+meu+pedido.&type=phone_number&app_absent=0&utm_source=organic&utm_campaign=&utm_medium=&utm_content=&utm_term=&xcod=&sck=';
 
   // Preservar UTMs na página de sucesso
   useEffect(() => {
-    if (hasUtms) {
+    // ✅ OTIMIZAÇÃO: Remover console.log em produção para melhor performance
+    if (hasUtms && process.env.NODE_ENV === 'development') {
       console.log('✅ UTMs preservados na página de sucesso:', utms);
     }
   }, [utms, hasUtms]);
@@ -53,7 +58,10 @@ export default function PaymentSuccess() {
           if (!error && data) {
             setOrderData(data);
           } else {
-            console.warn('⚠️ [PaymentSuccess] Pedido não encontrado:', error);
+            // ✅ OTIMIZAÇÃO: Remover console.warn em produção
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('⚠️ [PaymentSuccess] Pedido não encontrado:', error);
+            }
           }
 
           // Rastrear sucesso do pagamento
@@ -69,7 +77,10 @@ export default function PaymentSuccess() {
           });
         }
       } catch (error) {
-        console.error('❌ [PaymentSuccess] Erro ao buscar dados do pedido:', error);
+        // ✅ OTIMIZAÇÃO: Remover console.error em produção (manter apenas em dev)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ [PaymentSuccess] Erro ao buscar dados do pedido:', error);
+        }
       } finally {
         setLoading(false);
       }
@@ -81,36 +92,43 @@ export default function PaymentSuccess() {
     fetchOrderData();
   }, [trackEvent]);
 
-  // Criar mensagem personalizada para WhatsApp
-  const getWhatsAppMessage = (): string => {
-    if (orderData?.id) {
-      return `Olá! Meu pedido foi confirmado (ID: ${orderData.id}). Gostaria de acompanhar o status do meu pedido.`;
-    }
-    return 'Olá! Meu pagamento foi processado. Gostaria de acompanhar o status do meu pedido.';
-  };
-
-  // Gerar URL do WhatsApp
-  const whatsappMessage = encodeURIComponent(getWhatsAppMessage());
-  const whatsappUrl = `https://wa.me/55${whatsappNumber}?text=${whatsappMessage}`;
-
-  // Função para abrir WhatsApp
+  // Função para redirecionar para WhatsApp e cancelar redirecionamento automático
   const handleWhatsAppClick = () => {
-    window.open(whatsappUrl, '_blank');
+    // Cancelar redirecionamento automático imediatamente
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+      redirectTimerRef.current = null;
+    }
+    // Parar contador regressivo
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    // Marcar como cancelado para evitar qualquer redirecionamento duplicado
+    setRedirectCancelled(true);
+    setCountdown(0);
+    
     // Rastrear clique no botão WhatsApp
     trackEvent('whatsapp_button_clicked', {
       order_id: orderData?.id || 'unknown',
       source: 'payment_success',
     });
+    
+    // Redirecionar diretamente (não em nova aba) para evitar duplicação
+    window.location.href = whatsappUrl;
   };
 
   // Contador regressivo e redirecionamento automático após 20 segundos
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !redirectCancelled) {
       // Contador regressivo
-      const countdownInterval = setInterval(() => {
+      countdownIntervalRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
-            clearInterval(countdownInterval);
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
             return 0;
           }
           return prev - 1;
@@ -118,14 +136,7 @@ export default function PaymentSuccess() {
       }, 1000);
 
       // Redirecionamento automático após 20 segundos
-      const redirectTimer = setTimeout(() => {
-        // Criar URL do WhatsApp no momento do redirecionamento
-        const message = orderData?.id 
-          ? `Olá! Meu pedido foi confirmado (ID: ${orderData.id}). Gostaria de acompanhar o status do meu pedido.`
-          : 'Olá! Meu pagamento foi processado. Gostaria de acompanhar o status do meu pedido.';
-        const encodedMessage = encodeURIComponent(message);
-        const finalWhatsappUrl = `https://wa.me/55${whatsappNumber}?text=${encodedMessage}`;
-        
+      redirectTimerRef.current = setTimeout(() => {
         // Rastrear redirecionamento automático
         trackEvent('whatsapp_auto_redirect', {
           order_id: orderData?.id || 'unknown',
@@ -134,15 +145,21 @@ export default function PaymentSuccess() {
         });
         
         // Redirecionar para WhatsApp
-        window.location.href = finalWhatsappUrl;
+        window.location.href = whatsappUrl;
       }, 20000); // 20 segundos
 
       return () => {
-        clearTimeout(redirectTimer);
-        clearInterval(countdownInterval);
+        if (redirectTimerRef.current) {
+          clearTimeout(redirectTimerRef.current);
+          redirectTimerRef.current = null;
+        }
+        if (countdownIntervalRef.current) {
+          clearInterval(countdownIntervalRef.current);
+          countdownIntervalRef.current = null;
+        }
       };
     }
-  }, [loading, orderData?.id, whatsappNumber, trackEvent]);
+  }, [loading, redirectCancelled, orderData?.id, whatsappUrl, trackEvent]);
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center p-2 sm:p-4" style={{ background: '#F5F0EB' }}>
@@ -170,6 +187,7 @@ export default function PaymentSuccess() {
           background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
           position: relative;
           overflow: hidden;
+          will-change: transform, box-shadow;
         }
         .success-circle::before {
           content: '';
@@ -186,6 +204,7 @@ export default function PaymentSuccess() {
           );
           background-size: 200% 100%;
           animation: shine 3s ease-in-out infinite;
+          will-change: background-position;
         }
       `}</style>
       <Card className="w-full max-w-xl bg-white shadow-xl rounded-2xl">
@@ -260,7 +279,7 @@ export default function PaymentSuccess() {
           </div>
 
           {/* Aviso de redirecionamento automático */}
-          {!loading && (
+          {!loading && !redirectCancelled && (
             <div className="animate-in fade-in duration-700" style={{ animationDelay: '1s' }}>
               <p className="text-xs sm:text-sm leading-relaxed text-center font-medium" style={{ color: '#15803d' }}>
                 Você será redirecionado automaticamente em {countdown} segundo{countdown !== 1 ? 's' : ''}...

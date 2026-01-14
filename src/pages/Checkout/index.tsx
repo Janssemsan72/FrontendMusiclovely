@@ -128,7 +128,7 @@ if (typeof window !== 'undefined') {
     import('@/components/ui/card').catch(() => {}),
     import('@/components/ui/input').catch(() => {}),
     import('@/components/ui/badge').catch(() => {}),
-    import('lucide-react').catch(() => {}),
+    // ✅ OTIMIZAÇÃO: Removido import dinâmico desnecessário de lucide-react
   ]).catch(() => {});
 }
 
@@ -2069,19 +2069,19 @@ export default function Checkout() {
         provider: 'hotmart'
       });
       
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
       
-      const checkoutData = {
-        session_id: quizSessionIdForRedirect,
-        quiz: quizForCheckoutPrep,
-        customer_email: normalizedEmail,
-        customer_whatsapp: normalizedWhatsApp,
-        plan: selectedPlan,
-        amount_cents: amountCentsForRedirect,
+          const checkoutData = {
+            session_id: quizSessionIdForRedirect,
+            quiz: quizForCheckoutPrep,
+            customer_email: normalizedEmail,
+            customer_whatsapp: normalizedWhatsApp,
+            plan: selectedPlan,
+            amount_cents: amountCentsForRedirect,
         provider: 'hotmart',
-        transaction_id: transactionId
-      };
-      
+            transaction_id: transactionId
+          };
+          
       // ✅ RESTAURAR FLUXO ANTIGO: Criar quiz e pedido diretamente (como era antes)
       // Usar insertQuizWithRetry para criar quiz (com retry e validação)
       // Depois criar pedido diretamente com insert simples
@@ -2252,7 +2252,7 @@ export default function Checkout() {
               logger.error('❌ [Checkout] Erro ao fazer rollback do quiz', deleteError, { step: 'rollback_quiz' });
             } else {
               logger.info('✅ [Checkout] Quiz órfão removido após falha na criação do pedido');
-            }
+        }
           } catch (rollbackError) {
             logger.error('❌ [Checkout] Erro ao executar rollback', rollbackError);
           }

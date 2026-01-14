@@ -503,7 +503,7 @@ export default function AdminCollaborators() {
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
     toast.success("Dados exportados com sucesso!");
   };
 
