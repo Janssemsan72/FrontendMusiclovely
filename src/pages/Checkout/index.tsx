@@ -2059,48 +2059,127 @@ export default function Checkout() {
         answers: quiz.answers || {}
       };
       
-      // ✅ Salvar no banco em background (não bloqueante) usando sendBeacon
-      const saveToDatabaseInBackground = () => {
-        try {
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-          const checkoutData = {
-            session_id: quizSessionIdForRedirect,
-            quiz: quizForCheckoutPrep,
-            customer_email: normalizedEmail,
-            customer_whatsapp: normalizedWhatsApp,
-            plan: selectedPlan,
-            amount_cents: amountCentsForRedirect,
-            provider: 'hotmart', // Sempre usar Hotmart como método de pagamento
-            transaction_id: transactionId
-          };
-          
-          const data = JSON.stringify(checkoutData);
-          
-          // Usar sendBeacon (funciona mesmo após navegação)
-          if (navigator.sendBeacon) {
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = `${supabaseUrl}/functions/v1/create-checkout`;
-            const sent = navigator.sendBeacon(url, blob);
-            if (sent) {
-              logger.debug('✅ [Checkout] Dados enviados via sendBeacon para salvar em background');
-            }
-          }
-        } catch (e) {
-          // Ignorar erros - dados já estão no localStorage
-        }
+      // ✅ CORREÇÃO CRÍTICA: Criar pedido SINCRONAMENTE antes de redirecionar
+      // Isso garante que o pedido existe no banco antes do webhook da Hotmart chegar
+      logger.info('🔄 [Checkout] Criando pedido no banco antes de redirecionar...', {
+        email: normalizedEmail,
+        whatsapp: normalizedWhatsApp,
+        plan: selectedPlan,
+        provider: 'hotmart'
+      });
+      
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+      
+      const checkoutData = {
+        session_id: quizSessionIdForRedirect,
+        quiz: quizForCheckoutPrep,
+        customer_email: normalizedEmail,
+        customer_whatsapp: normalizedWhatsApp,
+        plan: selectedPlan,
+        amount_cents: amountCentsForRedirect,
+        provider: 'hotmart',
+        transaction_id: transactionId
       };
       
-      // ✅ Iniciar salvamento em background (não bloqueia)
-      saveToDatabaseInBackground();
+      // ✅ CORREÇÃO: Criar pedido SINCRONAMENTE via backend API
+      // O endpoint /api/checkout/create aceita 'hotmart' como provider
+      let orderCreated = false;
+      let orderId = null;
       
-      // ✅ REDIRECIONAR IMEDIATAMENTE (não esperar banco)
-      logger.info('🚀 [Checkout] Redirecionando IMEDIATAMENTE (dados salvos no localStorage)', {
+      try {
+        // Tentar usar backend URL se configurado (VITE_API_URL ou VITE_BACKEND_URL)
+        // Senão usar edge function como fallback
+        const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || '';
+        const createOrderUrl = apiUrl 
+          ? `${apiUrl}/api/checkout/create`
+          : `${supabaseUrl}/functions/v1/create-checkout`;
+        
+        logger.debug('📤 [Checkout] Chamando endpoint para criar pedido...', {
+          url: createOrderUrl,
+          provider: 'hotmart',
+          email: normalizedEmail,
+          usingBackend: !!apiUrl,
+          hasViteApiUrl: !!import.meta.env.VITE_API_URL,
+          hasViteBackendUrl: !!import.meta.env.VITE_BACKEND_URL
+        });
+        
+        const response = await fetch(createOrderUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(checkoutData)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          logger.error('❌ [Checkout] Erro ao criar pedido', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+            url: createOrderUrl
+          });
+          throw new Error(`Erro ao criar pedido: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success && result.order_id) {
+          orderId = result.order_id;
+          orderCreated = true;
+          logger.info('✅ [Checkout] Pedido criado com sucesso!', {
+            order_id: orderId,
+            quiz_id: result.quiz_id,
+            provider: 'hotmart'
+          });
+          
+          // Atualizar URL de redirecionamento com order_id real
+          redirectUrl = generateHotmartUrl(
+            orderId,
+            normalizedEmail,
+            normalizedWhatsApp,
+            currentLanguage,
+            utms || {}
+          );
+          
+          // Salvar URL da Hotmart no pedido
+          try {
+            const { error: updateError } = await supabase
+              .from('orders')
+              .update({ hotmart_payment_url: redirectUrl })
+              .eq('id', orderId);
+            
+            if (updateError) {
+              logger.warn('⚠️ [Checkout] Erro ao salvar URL da Hotmart no pedido', updateError);
+            } else {
+              logger.debug('✅ [Checkout] URL da Hotmart salva no pedido');
+            }
+          } catch (updateErr) {
+            logger.warn('⚠️ [Checkout] Erro ao atualizar pedido com URL', updateErr);
+          }
+        } else {
+          throw new Error(result.error || 'Falha ao criar pedido');
+        }
+      } catch (createError: any) {
+        logger.error('❌ [Checkout] Erro ao criar pedido', {
+          error: createError.message,
+          stack: createError.stack
+        });
+        
+        // Não continuar se não conseguiu criar o pedido - mostrar erro ao usuário
+        throw new Error(`Não foi possível criar o pedido: ${createError.message || 'Erro desconhecido'}`);
+      }
+      
+      // ✅ REDIRECIONAR APÓS criar pedido (ou tentar criar)
+      logger.info('🚀 [Checkout] Redirecionando para Hotmart...', {
         url: redirectUrl.substring(0, 100),
+        order_created: orderCreated,
+        order_id: orderId,
         hasQuizInStorage: true,
         gateway: paymentGatewayForRedirect
       });
       
-      // ✅ REDIRECIONAR AGORA - dados já estão salvos no localStorage
+      // ✅ REDIRECIONAR AGORA
       window.location.href = redirectUrl;
       return; // Sair da função - redirecionamento já iniciado
       
