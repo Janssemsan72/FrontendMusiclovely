@@ -254,6 +254,37 @@
         const RELOAD_COOLDOWN = 5000; // 5 segundos entre reloads
         const storageKey = 'cache_fix_reload_count';
         const lastReloadKey = 'cache_fix_last_reload';
+        const oldFileHashes = ['6kmaUs1Q', 'BqFpQ0Rn', 'rI4MHp1K']; // Hashes de arquivos antigos
+        
+        // ✅ CORREÇÃO: Remover ?nocache da URL se não houver problemas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes('?nocache=')) {
+          // Aguardar um pouco para verificar se há erros
+          setTimeout(function() {
+            // Verificar se há referências a arquivos antigos no HTML
+            const htmlContent = document.documentElement.outerHTML;
+            const hasOldFiles = oldFileHashes.some(hash => htmlContent.includes(hash));
+            
+            // Verificar se há scripts com arquivos antigos
+            const scripts = Array.from(document.querySelectorAll('script[src]'));
+            const hasOldScripts = scripts.some(script => {
+              const src = script.src || '';
+              return oldFileHashes.some(hash => src.includes(hash));
+            });
+            
+            // Se não há arquivos antigos, remover ?nocache da URL
+            if (!hasOldFiles && !hasOldScripts) {
+              const cleanUrl = currentUrl.split('?')[0].split('#')[0];
+              if (window.location.href !== cleanUrl) {
+                console.log('✅ [Cache Fix] Problema resolvido. Removendo ?nocache da URL...');
+                window.history.replaceState({}, '', cleanUrl);
+                // Limpar contadores de reload
+                sessionStorage.removeItem(storageKey);
+                sessionStorage.removeItem(lastReloadKey);
+              }
+            }
+          }, 2000);
+        }
         
         // Verificar se já tentamos reload muitas vezes
         const reloadCount = parseInt(sessionStorage.getItem(storageKey) || '0', 10);
