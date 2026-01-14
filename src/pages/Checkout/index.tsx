@@ -2213,6 +2213,14 @@ export default function Checkout() {
           transaction_id: transactionId || null
         } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
         
+        logger.info('📤 [Checkout] Tentando criar pedido no banco...', {
+          quiz_id: quizData.id,
+          email: normalizedEmail.substring(0, 10) + '...',
+          plan: selectedPlan,
+          amount_cents: amountCentsForRedirect,
+          provider: 'hotmart'
+        });
+        
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .insert(orderPayload)
@@ -2220,7 +2228,19 @@ export default function Checkout() {
           .single();
         
         if (orderError) {
-          logger.error('❌ [Checkout] Erro ao criar pedido', orderError, { step: 'order_creation' });
+          logger.error('❌ [Checkout] Erro ao criar pedido no banco', {
+            error: orderError,
+            message: orderError.message,
+            details: orderError.details,
+            hint: orderError.hint,
+            code: orderError.code,
+            step: 'order_creation',
+            payload: orderPayload
+          });
+          
+          // Mostrar erro ao usuário
+          toast.error(`Erro ao criar pedido: ${orderError.message || 'Erro desconhecido'}`);
+          
           // Tentar limpar quiz órfão se order falhar
           try {
             const { error: deleteError } = await supabase
@@ -2230,24 +2250,38 @@ export default function Checkout() {
             
             if (deleteError) {
               logger.error('❌ [Checkout] Erro ao fazer rollback do quiz', deleteError, { step: 'rollback_quiz' });
+            } else {
+              logger.info('✅ [Checkout] Quiz órfão removido após falha na criação do pedido');
             }
           } catch (rollbackError) {
             logger.error('❌ [Checkout] Erro ao executar rollback', rollbackError);
           }
-          throw new Error(`Erro ao criar pedido: ${orderError.message}`);
+          
+          // ✅ BLOQUEAR redirecionamento se pedido não foi criado
+          setProcessing(false);
+          throw new Error(`Erro ao criar pedido: ${orderError.message || 'Erro desconhecido'}`);
         }
         
         if (!orderData || !orderData.id) {
-          logger.error('❌ [Checkout] Order data or ID missing', undefined, { step: 'order_creation' });
+          logger.error('❌ [Checkout] Order data or ID missing', {
+            orderData,
+            step: 'order_creation'
+          });
+          toast.error('Erro: Dados do pedido inválidos');
+          setProcessing(false);
           throw new Error('Dados do pedido inválidos');
         }
         
         orderId = orderData.id;
         orderCreated = true;
-        logger.info('✅ [Checkout] Pedido criado com sucesso!', {
+        
+        logger.info('✅ [Checkout] Pedido criado com sucesso no banco!', {
           order_id: orderId,
           quiz_id: quizData.id,
-          provider: 'hotmart'
+          provider: 'hotmart',
+          status: orderData.status,
+          customer_email: orderData.customer_email,
+          customer_whatsapp: orderData.customer_whatsapp
         });
         
         // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso (como na versão antiga)
@@ -2279,16 +2313,33 @@ export default function Checkout() {
           logger.warn('⚠️ [Checkout] Erro ao atualizar pedido com URL', updateErr);
         }
       } catch (createError: any) {
-        logger.error('❌ [Checkout] Erro ao criar pedido', {
+        logger.error('❌ [Checkout] Erro ao criar pedido (catch final)', {
           error: createError.message,
-          stack: createError.stack
+          stack: createError.stack,
+          errorName: createError.name
         });
         
-        // Não bloquear - dados estão no localStorage e webhook pode criar depois
-        logger.warn('⚠️ [Checkout] Continuando sem pedido criado - dados salvos no localStorage');
+        // ✅ BLOQUEAR redirecionamento se houve erro
+        setProcessing(false);
+        
+        // Mostrar erro ao usuário
+        toast.error(`Não foi possível criar o pedido: ${createError.message || 'Erro desconhecido'}`);
+        
+        // Não continuar - o pedido precisa ser criado antes de redirecionar
+        return;
       }
       
-      // ✅ REDIRECIONAR APÓS criar pedido (ou tentar criar)
+      // ✅ REDIRECIONAR APENAS SE pedido foi criado com sucesso
+      if (!orderCreated || !orderId) {
+        logger.error('❌ [Checkout] Não é possível redirecionar - pedido não foi criado', {
+          order_created: orderCreated,
+          order_id: orderId
+        });
+        toast.error('Não foi possível criar o pedido. Por favor, tente novamente.');
+        setProcessing(false);
+        return;
+      }
+      
       logger.info('🚀 [Checkout] Redirecionando para Hotmart...', {
         url: redirectUrl.substring(0, 100),
         order_created: orderCreated,
@@ -2297,7 +2348,7 @@ export default function Checkout() {
         gateway: paymentGatewayForRedirect
       });
       
-      // ✅ REDIRECIONAR AGORA
+      // ✅ REDIRECIONAR AGORA (apenas se pedido foi criado)
       window.location.href = redirectUrl;
       return; // Sair da função - redirecionamento já iniciado
       
