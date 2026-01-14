@@ -89,9 +89,11 @@
     <link rel="dns-prefetch" href="https://pay.cakto.com.br" />
     <link rel="dns-prefetch" href="https://randomuser.me" />
     
-    <!-- ✅ OTIMIZAÇÃO: Preload de imagem LCP crítica (poster do vídeo hero) -->
-    <!-- ✅ CORREÇÃO: Usar preload estático no HTML - mais confiável e evita avisos -->
-    <link rel="preload" href="/images/collage-memories-new.webp" as="image" type="image/webp" fetchpriority="high" />
+    <!-- ✅ OTIMIZAÇÃO: Preload removido temporariamente para evitar bloqueios -->
+    <!-- A imagem será carregada normalmente quando o componente HeroSection renderizar -->
+    
+    <!-- ✅ CORREÇÃO CRÍTICA: Script principal deve estar no HTML para o Vite processar -->
+    <script type="module" src="/src/main.tsx"></script>
     
     <!-- ✅ OTIMIZAÇÃO: CSS crítico mínimo inline para FCP rápido -->
     <style>
