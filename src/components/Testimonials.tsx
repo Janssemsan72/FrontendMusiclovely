@@ -140,7 +140,7 @@ const getTranslatedTestimonial = (testimonial: Testimonial, language: string) =>
 };
 
 export default function Testimonials() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -432,6 +432,9 @@ export default function Testimonials() {
     ? currentIndex 
     : 0;
   
+  // Sempre usar português
+  const currentLanguage = 'pt';
+  
   const currentTestimonial = testimonials[validIndex] 
     ? getTranslatedTestimonial(testimonials[validIndex], currentLanguage)
     : null;
@@ -545,9 +548,8 @@ export default function Testimonials() {
                         sizes="48px"
                         loading="lazy"
                         decoding="async"
-                        fetchpriority="low"
+                        fetchPriority="low"
                         onError={(e) => {
-                          console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.avatar_url);
                           const target = e.currentTarget;
                           target.style.display = 'none';
                           target.style.visibility = 'hidden';
@@ -665,9 +667,8 @@ export default function Testimonials() {
                             sizes="40px"
                             loading="lazy"
                             decoding="async"
-                            fetchpriority="low"
+                            fetchPriority="low"
                             onError={(e) => {
-                              console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url);
                               const target = e.currentTarget;
                               target.style.display = 'none';
                               target.style.visibility = 'hidden';

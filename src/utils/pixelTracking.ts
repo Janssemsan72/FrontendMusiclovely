@@ -23,9 +23,6 @@ export function isFbqAvailable(): boolean {
 export function safeTrackLead(eventData?: Record<string, unknown>): boolean {
   try {
     if (!isFbqAvailable()) {
-      if (import.meta.env.DEV) {
-        console.debug('[Pixel] fbq não disponível - Lead não rastreado');
-      }
       return false;
     }
 
@@ -37,9 +34,6 @@ export function safeTrackLead(eventData?: Record<string, unknown>): boolean {
     }
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[Pixel] Erro ao rastrear Lead:', error);
-    }
     return false;
   }
 }
@@ -52,9 +46,6 @@ export function safeTrackLead(eventData?: Record<string, unknown>): boolean {
 export function safeTrackAddToCart(eventData?: Record<string, unknown>): boolean {
   try {
     if (!isFbqAvailable()) {
-      if (import.meta.env.DEV) {
-        console.debug('[Pixel] fbq não disponível - AddToCart não rastreado');
-      }
       return false;
     }
 
@@ -65,9 +56,6 @@ export function safeTrackAddToCart(eventData?: Record<string, unknown>): boolean
     fbq('track', 'AddToCart', finalData);
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[Pixel] Erro ao rastrear AddToCart:', error);
-    }
     return false;
   }
 }
@@ -80,9 +68,6 @@ export function safeTrackAddToCart(eventData?: Record<string, unknown>): boolean
 export function safeTrackCheckout(eventData?: Record<string, unknown>): boolean {
   try {
     if (!isFbqAvailable()) {
-      if (import.meta.env.DEV) {
-        console.debug('[Pixel] fbq não disponível - InitiateCheckout não rastreado');
-      }
       return false;
     }
 
@@ -94,9 +79,6 @@ export function safeTrackCheckout(eventData?: Record<string, unknown>): boolean 
     }
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[Pixel] Erro ao rastrear InitiateCheckout:', error);
-    }
     return false;
   }
 }
@@ -109,9 +91,6 @@ export function safeTrackCheckout(eventData?: Record<string, unknown>): boolean 
 export function safeTrackPurchase(eventData: { value: number; currency: string; [key: string]: unknown }): boolean {
   try {
     if (!isFbqAvailable()) {
-      if (import.meta.env.DEV) {
-        console.debug('[Pixel] fbq não disponível - Purchase não rastreado');
-      }
       return false;
     }
 
@@ -119,9 +98,6 @@ export function safeTrackPurchase(eventData: { value: number; currency: string; 
     fbq('track', 'Purchase', eventData);
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[Pixel] Erro ao rastrear Purchase:', error);
-    }
     return false;
   }
 }
@@ -135,9 +111,6 @@ export function safeTrackPurchase(eventData: { value: number; currency: string; 
 export function safeTrackEvent(eventName: string, eventData?: Record<string, unknown>): boolean {
   try {
     if (!isFbqAvailable()) {
-      if (import.meta.env.DEV) {
-        console.debug(`[Pixel] fbq não disponível - ${eventName} não rastreado`);
-      }
       return false;
     }
 
@@ -149,9 +122,6 @@ export function safeTrackEvent(eventName: string, eventData?: Record<string, unk
     }
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn(`[Pixel] Erro ao rastrear ${eventName}:`, error);
-    }
     return false;
   }
 }
@@ -166,9 +136,6 @@ export function safeExecuteTracking(trackingFunction: () => void): boolean {
     trackingFunction();
     return true;
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.warn('[Pixel] Erro ao executar função de tracking:', error);
-    }
     return false;
   }
 }

@@ -34,8 +34,6 @@ app.listen({ port, host: '0.0.0.0' }, (err) => {
     app.log.error(err)
     process.exit(1)
   }
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`🚀 Backend rodando na porta ${port}`)
-  }
+  // Backend iniciado
 })
 

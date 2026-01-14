@@ -1,11 +1,10 @@
 import React, { Suspense } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 
-const Progress = React.lazy(() => 
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
+
+const Progress = lazyWithRetry(() => 
   import('@/components/ui/progress').then(module => ({ default: module.Progress }))
-    .catch(() => ({
-      default: () => <div className="h-1 w-full bg-muted rounded" />
-    }))
 );
 
 interface QuizProgressProps {

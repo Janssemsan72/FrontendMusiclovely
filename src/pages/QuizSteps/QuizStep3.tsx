@@ -2,11 +2,10 @@ import React, { Suspense } from 'react';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/useTranslation';
 
-const Textarea = React.lazy(() => 
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
+
+const Textarea = lazyWithRetry(() => 
   import('@/components/ui/textarea').then(module => ({ default: module.Textarea }))
-    .catch(() => ({
-      default: () => <textarea className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
-    }))
 );
 
 interface QuizStep3Props {

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { lazyWithRetry } from '@/utils/lazyWithRetry';
 // ✅ OTIMIZAÇÃO FASE 2.2: Lazy load de componentes UI pesados apenas quando necessário
 // ✅ CORREÇÃO BUG 4: Named exports precisam ser transformados corretamente
 // Helper para logs condicionais (apenas em desenvolvimento)
@@ -24,21 +25,11 @@ const devError = (...args: any[]) => {
   }
 };
 
-const Textarea = React.lazy(() => 
+const Textarea = lazyWithRetry(() => 
   import('@/components/ui/textarea').then(module => ({ default: module.Textarea }))
-    .catch(err => {
-      devError('Erro ao carregar Textarea:', err);
-      // Fallback: retornar componente vazio em caso de erro
-      return { default: () => <textarea className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" /> };
-    })
 );
-const Progress = React.lazy(() => 
+const Progress = lazyWithRetry(() => 
   import('@/components/ui/progress').then(module => ({ default: module.Progress }))
-    .catch(err => {
-      devError('Erro ao carregar Progress:', err);
-      // Fallback: retornar div vazia em caso de erro
-      return { default: () => <div className="h-1 w-full bg-muted rounded" /> };
-    })
 );
 import { ArrowLeft, ArrowRight, Loader2 } from '@/utils/iconImports';
 import { toast } from 'sonner';

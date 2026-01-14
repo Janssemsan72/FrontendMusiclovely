@@ -1,7 +1,6 @@
 import React, { memo, Suspense, useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import Footer from "@/components/Footer";
 
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { useUtmifyTracking } from "@/hooks/useUtmifyTracking";
@@ -191,10 +190,10 @@ const Index = memo(() => {
       });
     };
     
-    if ('requestIdleCallback' in win) {
+    if (win && 'requestIdleCallback' in win) {
       const w = win as any;
       w.requestIdleCallback(initialCheck, { timeout: 1000 });
-    } else {
+    } else if (win) {
       win.setTimeout(initialCheck, 1000);
     }
 

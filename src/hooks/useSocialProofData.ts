@@ -199,7 +199,7 @@ function generateSimulatedData(count: number = 10): SocialProofMessage[] {
     let name: string;
     let attempts = 0;
     do {
-      name = SIMULATED_NAMES[Math.floor(Math.random() * SIMULATED_NAMES.length)];
+      name = NAMES_LIST[Math.floor(Math.random() * NAMES_LIST.length)];
       attempts++;
     } while (usedNames.has(name) && attempts < 10);
     

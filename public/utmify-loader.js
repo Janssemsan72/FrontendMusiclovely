@@ -18,7 +18,7 @@
     a.defer = true;
     a.src = "https://cdn.utmify.com.br/scripts/pixel/pixel.js";
     a.onerror = function() {
-      console.warn('⚠️ Falha ao carregar pixel.js do Utmify - erro silencioso');
+      // Erro silencioso - não logar
     };
     document.head.appendChild(a);
   };

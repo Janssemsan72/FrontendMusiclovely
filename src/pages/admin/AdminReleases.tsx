@@ -82,7 +82,6 @@ export default function AdminReleases() {
 
     try {
       setDeletingSongId(songId);
-      console.log(`🗑️  Deletando música: ${songId}`);
 
       const { data, error } = await supabase.functions.invoke('admin-delete-song', {
         body: { song_id: songId }
@@ -93,7 +92,6 @@ export default function AdminReleases() {
       }
 
       toast.success(`✅ Música "${songTitle}" deletada com sucesso!`);
-      console.log('✅ Música deletada:', data);
 
       // ✅ OTIMIZAÇÃO: React Query cuida do refetch
       refetch();

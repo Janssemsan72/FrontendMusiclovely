@@ -199,7 +199,7 @@ export default function Checkout() {
   }, [messageId, orderId, isRedirecting]);
   
   const navigate = useNavigate();
-  const { t, currentLanguage: contextLanguage } = useTranslation();
+  const { t } = useTranslation();
   // Preservar UTMs através do funil
   const { navigateWithUtms, getUtmQueryString, utms } = useUtmParams();
   // Hook para tracking de eventos
@@ -215,32 +215,10 @@ export default function Checkout() {
   const [quiz, setQuiz] = useState<QuizData | null>(null);
 
   // Sempre português - idiomas removidos
-  const getCurrentLanguage = () => {
-    return 'pt'; // Sempre português
-  };
+  const currentLanguage = 'pt';
   
-  // ✅ Função helper para obter caminho do quiz com prefixo de idioma
-  const getQuizPath = () => {
-    // ✅ CORREÇÃO: Remover prefixo de idioma
-    return `/quiz`;
-  };
-  
-  const currentLanguage = getCurrentLanguage();
-  
-  // ✅ CORREÇÃO: Garantir que o locale seja atualizado quando o contexto mudar
-  // Isso garante que as traduções sejam atualizadas quando a URL mudar
-  useEffect(() => {
-    const detected = getCurrentLanguage();
-    if (detected !== currentLanguage && contextLanguage) {
-      // O locale do contexto mudou, forçar re-render se necessário
-      logger.debug('Locale atualizado no Checkout', { 
-        detected, 
-        currentLanguage, 
-        contextLanguage,
-        pathname: window.location.pathname 
-      });
-    }
-  }, [contextLanguage, currentLanguage]);
+  // ✅ Função helper para obter caminho do quiz (sempre sem prefixo)
+  const getQuizPath = () => '/quiz';
 
   // Sem persistência do idioma: seguimos apenas a URL
   
@@ -2008,7 +1986,7 @@ export default function Checkout() {
       checkoutLogger.log('quiz_creation_started', { email });
 
       // 🌍 Detectar idioma atual do usuário
-      const currentLanguage = getCurrentLanguage();
+      const currentLanguage = 'pt';
       
       // ✅ OTIMIZAÇÃO: Usar dados já normalizados (evita processamento no clique)
       const normalizedWhatsApp = normalizedWhatsAppRef.current || formatWhatsappForCakto(whatsapp);
