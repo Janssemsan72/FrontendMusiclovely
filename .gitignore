@@ -5,23 +5,13 @@ node_modules/
 dist/
 *.tsbuildinfo
 
-# Test results and reports
-playwright-report/
-test-results/
-*.test-results/
-
 # Vite cache
 .vite/
-.vite/
-
-# Scripts de desenvolvimento (não essenciais para o repositório)
-scripts/
 
 # Environment variables
 .env
 .env.local
 .env.*.local
-supabase/functions/.env
 **/.env
 
 # Logs
@@ -40,51 +30,60 @@ Thumbs.db
 *.swp
 *.swo
 
-# Secrets and API keys (não commitar)
-*API_KEY*.md
-*STRIPE*.md
-*ANTHROPIC*.md
+# ============================================
+# REGRAS RESTRITIVAS - APENAS FRONTEND ESSENCIAL
+# ============================================
+
+# Backend e Infraestrutura (NÃO COMMITAR)
+backend/
+supabase/
+Procfile
+railway.json
+tsconfig.backend.json
+bun.lockb
+
+# Scripts e Ferramentas (NÃO COMMITAR)
+scripts/
+scripts-admin/
+
+# Testes e Desenvolvimento (NÃO COMMITAR)
+src/__tests__/
+src/components/dev/
+src/pages/dev/
+playwright-report/
+test-results/
+*.test-results/
+
+# Documentação Desnecessária (NÃO COMMITAR)
+*.md
+!README.md
+# Exceções específicas já cobertas acima
+
+# Diretórios Duplicados e Backups (NÃO COMMITAR)
+frontend/
+frontend/frontend/
+*/frontend/frontend/
+**/frontend/frontend/
+backups/
+Musiclovelyoficial-main/
+frontendmusiclovely-clone/
+custom-sound-forge-main*/
+
+# Arquivos de Teste e Desenvolvimento (NÃO COMMITAR)
+test-avatar-*.svg
+test-avatar-*.jpg
+test-avatar-*.png
 teste-modelos-claude.ps1
 test-anthropic-claude-api.ps1
 test-api-key-direto.ps1
 teste-anthropic-curl.ps1
 verify-stripe-products.js
+
+# Secrets e API Keys (NÃO COMMITAR)
+*API_KEY*.md
+*STRIPE*.md
+*ANTHROPIC*.md
 SOLUCAO_FINAL.md
 SOLUCAO_SECRET*.md
 CORRIGIR_*.md
 .cursor/plans/*.plan.md
-custom-sound-forge-main*/
-
-# Arquivos de documentação/auditoria desnecessários
-*AUDITORIA*.md
-*CORRECAO*.md
-*MIGRATION*.md
-*TESTE*.md
-*VERIFICACAO*.md
-*RESUMO*.md
-*EXECUTAR*.md
-*GERAR*.md
-*SOLUCAO*.md
-*DEPLOY*.md
-*ATUALIZACOES*.md
-*ESTRUTURA*.md
-
-# Arquivos que não são do frontend
-backend/
-backups/
-supabase/functions/
-scripts-admin/
-test-avatar-*.svg
-test-avatar-*.jpg
-test-avatar-*.png
-Musiclovelyoficial-main/
-frontendmusiclovely-clone/
-playwright-report/
-test-results/
-.vite/
-
-# Prevenir duplicação de estruturas (frontend/frontend/)
-frontend/
-frontend/frontend/
-*/frontend/frontend/
-**/frontend/frontend/

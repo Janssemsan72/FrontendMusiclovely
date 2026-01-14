@@ -729,7 +729,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         }
       } catch (approvalError: any) {
         console.warn('⚠️ [Cakto Webhook] Exceção ao verificar approval, continuando...', {
-          order_id: updatedOrder.id,
+            order_id: updatedOrder.id,
           error: approvalError?.message
         });
       }
@@ -738,7 +738,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       if (shouldGenerateLyrics) {
         if (!updatedOrder.quiz_id) {
           console.warn('⚠️ [Cakto Webhook] Pedido não tem quiz_id - não é possível gerar letra', {
-            order_id: updatedOrder.id,
+          order_id: updatedOrder.id,
             timestamp: new Date().toISOString()
           });
           shouldGenerateLyrics = false;
@@ -1410,7 +1410,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         }
       } catch (approvalError: any) {
         console.warn('⚠️ [Hotmart Webhook] Exceção ao verificar approval, continuando...', {
-          order_id: updatedOrder.id,
+            order_id: updatedOrder.id,
           error: approvalError?.message
         });
       }
@@ -1419,7 +1419,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       if (shouldGenerateLyrics) {
         if (!updatedOrder.quiz_id) {
           console.warn('⚠️ [Hotmart Webhook] Pedido não tem quiz_id - não é possível gerar letra', {
-            order_id: updatedOrder.id,
+          order_id: updatedOrder.id,
             timestamp: new Date().toISOString()
           });
           shouldGenerateLyrics = false;
