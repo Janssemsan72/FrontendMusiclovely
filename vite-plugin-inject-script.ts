@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -27,7 +27,7 @@ export function injectScriptPlugin(): Plugin {
             .filter((f: string) => f.endsWith('.js'))
             .map((f: string) => {
               const filePath = join(jsDir, f);
-              const stats = require('fs').statSync(filePath);
+              const stats = statSync(filePath);
               return { name: f, size: stats.size };
             })
             .sort((a, b) => b.size - a.size);
