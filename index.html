@@ -107,11 +107,25 @@
       .object-cover{object-fit:cover;object-position:center}
       .rounded-2xl{border-radius:1rem}
       .overflow-hidden{overflow:hidden}
-      .shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
-      /* ✅ OTIMIZAÇÃO: Evitar layout shift */
+      .shadow-soft{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
       img,video{max-width:100%;height:auto;display:block}
-      /* ✅ OTIMIZAÇÃO: Melhorar renderização */
-      *{will-change:auto}
+      /* Header crítico */
+      header{position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;border-bottom:1px solid rgba(0,0,0,0.1)}
+      /* Hero section crítico */
+      .hero-container{min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;position:relative}
+      /* Botões críticos */
+      button{display:inline-flex;align-items:center;justify-content:center;border-radius:1rem;font-weight:500;transition:all 0.2s;cursor:pointer;border:none}
+      .btn-primary{background:#C7916B;color:#fff;padding:1rem 2rem}
+      .btn-primary:hover{background:#B8825A;transform:scale(1.05)}
+      /* Container crítico */
+      .container{width:100%;margin-left:auto;margin-right:auto;padding-left:0.75rem;padding-right:0.75rem}
+      @media(min-width:640px){.container{max-width:640px}}
+      @media(min-width:1024px){.container{max-width:1024px}}
+      /* Flexbox crítico */
+      .flex{display:flex}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      .flex-col{flex-direction:column}
     </style>
     
     <!-- ✅ OTIMIZAÇÃO: CSS carregado de forma não-bloqueante (defer total) -->
