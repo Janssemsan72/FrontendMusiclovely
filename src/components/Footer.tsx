@@ -1,14 +1,12 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import Logo from "@/components/Logo";
-import { useTranslation } from "@/hooks/useTranslation";
 // Locale removido - apenas português
 import { Mail, Heart, Music } from "@/utils/iconImports";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { LinkWithUtms } from "@/components/LinkWithUtms";
 
 export default function Footer() {
-  const { t } = useTranslation();
   const location = useLocation();
   const { navigateWithUtms } = useUtmParams();
 
@@ -98,24 +96,24 @@ export default function Footer() {
           <div>
             <Logo size={80} className="mb-4" />
             <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-              {t('footer.description')}
+              Criamos músicas personalizadas. Cada composição é única, criada especialmente para emocionar quem você ama.
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
-              <span>{t('footer.email')}</span>
+              <span>contato@musiclovely.com</span>
             </div>
           </div>
 
               {/* Coluna 2: Links Rápidos */}
               <div>
-                <h3 className="font-semibold text-foreground mb-4">{t('footer.quickLinks')}</h3>
+                <h3 className="font-semibold text-foreground mb-4">Links Rápidos</h3>
                 <ul className="space-y-2">
                   <li>
                     <LinkWithUtms
                       to="/"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.home')}
+                      Início
                     </LinkWithUtms>
                   </li>
                   <li>
@@ -123,7 +121,7 @@ export default function Footer() {
                       to="/quiz"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('navigation.createMusic')}
+                      Criar Música
                     </LinkWithUtms>
                   </li>
                   <li>
@@ -131,7 +129,7 @@ export default function Footer() {
                       to="/#radiola"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.listenExample')}
+                      Ouça Exemplo
                     </LinkWithUtms>
                   </li>
                 </ul>
@@ -139,14 +137,14 @@ export default function Footer() {
 
               {/* Coluna 3: Suporte & Legal */}
               <div>
-                <h3 className="font-semibold text-foreground mb-4">{t('footer.support')}</h3>
+                <h3 className="font-semibold text-foreground mb-4">Suporte</h3>
                 <ul className="space-y-2">
                   <li>
                     <LinkWithUtms
                       to="/#faq"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.faq')}
+                      FAQ
                     </LinkWithUtms>
                   </li>
                   <li>
@@ -154,7 +152,7 @@ export default function Footer() {
                       to="/#pricing"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.pricing')}
+                      Preços
                     </LinkWithUtms>
                   </li>
                   <li>
@@ -162,7 +160,7 @@ export default function Footer() {
                       to="/terms"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.terms')}
+                      Termos
                     </LinkWithUtms>
                   </li>
                   <li>
@@ -170,7 +168,7 @@ export default function Footer() {
                       to="/privacy"
                       className="text-muted-foreground hover:text-foreground transition-colors text-sm"
                     >
-                      {t('footer.privacy')}
+                      Privacidade
                     </LinkWithUtms>
                   </li>
                 </ul>
@@ -178,11 +176,11 @@ export default function Footer() {
 
               {/* Coluna 4: Contato */}
               <div>
-                <h3 className="font-semibold text-foreground mb-4">{t('footer.contact')}</h3>
+                <h3 className="font-semibold text-foreground mb-4">Contato</h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Mail className="h-4 w-4" />
-                    <span>{t('footer.email')}</span>
+                    <span>contato@musiclovely.com</span>
                   </div>
                 </div>
               </div>
@@ -191,10 +189,10 @@ export default function Footer() {
         {/* Copyright */}
         <div className="pt-6 border-t border-border/50">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} MusicLovely. {t('footer.copyright')}</p>
+            <p>© {new Date().getFullYear()} MusicLovely. Todos os direitos reservados.</p>
             <div className="flex items-center gap-1 text-xs">
               <Heart className="h-3 w-3 text-primary" />
-              <span>{t('contact.whyChoose.madeWithLove.title')}</span>
+              <span>Feito com ❤️ no Brasil</span>
             </div>
           </div>
         </div>

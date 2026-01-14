@@ -3,27 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, ChevronLeft, ChevronRight, Quote } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
-// ✅ OTIMIZAÇÃO: Usar versões menores (96x96) em vez de 512x512 para reduzir tamanho
-import avatar1 from '@/assets/testimonial-1-96.webp';
-import avatar2 from '@/assets/testimonial-2-96.webp';
-import avatar3 from '@/assets/testimonial-3-96.webp';
+// ✅ CORREÇÃO: Usar avatares de public/testimonials para garantir consistência entre dev e produção
+// Os mesmos avatares usados no HeroSection, garantindo que sejam idênticos em ambos os ambientes
+const testimonialAvatar1 = "/testimonials/avatar-1.webp";
+const testimonialAvatar2 = "/testimonials/avatar-2.webp";
+const testimonialAvatar3 = "/testimonials/avatar-3.webp";
 
-// ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
-const getImageUrl = (url: string | undefined): string | undefined => {
-  if (!url) return undefined;
-  // Se já é uma URL completa, retornar como está
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
-    return url;
-  }
-  // Se começa com /, retornar como está (caminho absoluto)
-  if (url.startsWith('/')) {
-    return url;
-  }
-  // Para imports do Vite, garantir que seja tratado como caminho absoluto
-  // O Vite já processa os imports e retorna URLs corretas
-  return url;
-};
-
+// Interface Testimonial (definida antes das funções que a usam)
 interface Testimonial {
   id: string;
   name: string;
@@ -38,6 +24,99 @@ interface Testimonial {
   avatar_url: string | null;
   rating: number | null;
 }
+
+// ✅ NOVO: Tipo para gênero
+type Gender = 'male' | 'female';
+
+// ✅ NOVO: Função para identificar gênero baseado em nome e role
+const getGenderFromTestimonial = (testimonial: Testimonial, index: number): Gender => {
+  // Identificar por role (papel)
+  const role = testimonial.role?.toLowerCase() || '';
+  const femaleRoles = ['noiva', 'filha', 'mãe', 'esposa', 'irmã', 'amiga', 'eu mesma'];
+  const maleRoles = ['empresário', 'pai', 'esposo', 'filho', 'irmão', 'amigo', 'eu mesmo'];
+  
+  if (femaleRoles.some(r => role.includes(r))) {
+    return 'female';
+  }
+  if (maleRoles.some(r => role.includes(r))) {
+    return 'male';
+  }
+  
+  // Identificar por nome (primeiro nome)
+  const firstName = testimonial.name.split(' ')[0].toLowerCase();
+  const femaleNames = ['ana', 'mariana', 'maria', 'julia', 'sofia', 'laura', 'beatriz', 'carolina', 'fernanda', 'patricia', 'camila', 'isabela'];
+  const maleNames = ['carlos', 'joão', 'pedro', 'lucas', 'rafael', 'bruno', 'felipe', 'gabriel', 'thiago', 'rodrigo', 'andre', 'daniel'];
+  
+  if (femaleNames.some(name => firstName.includes(name) || firstName.startsWith(name))) {
+    return 'female';
+  }
+  if (maleNames.some(name => firstName.includes(name) || firstName.startsWith(name))) {
+    return 'male';
+  }
+  
+  // Fallback: alternar por índice
+  return index % 2 === 0 ? 'female' : 'male';
+};
+
+// ✅ NOVO: Função para obter avatar real da internet baseado no gênero
+// Usa Random User API para obter fotos reais de pessoas
+const getAvatarUrlByGender = (testimonial: Testimonial, index: number): string => {
+  const gender = getGenderFromTestimonial(testimonial, index);
+  const nameLower = testimonial.name.toLowerCase();
+  
+  // ✅ ESPECIAL: Carlos Mendes sempre usa foto masculina específica e profissional
+  if (nameLower.includes('carlos') && nameLower.includes('mendes')) {
+    return 'https://randomuser.me/api/portraits/men/32.jpg';
+  }
+  
+  // Usar hash do nome para sempre retornar a mesma foto para a mesma pessoa
+  // Isso garante consistência: mesma pessoa = mesma foto
+  const nameHash = nameLower.split('').reduce((acc, char) => {
+    return ((acc << 5) - acc) + char.charCodeAt(0);
+  }, 0);
+  const photoIndex = Math.abs(nameHash % 50) + 1;
+  
+  // Random User API com filtro por gênero
+  // Garantir que sempre use o gênero correto (masculino para homens, feminino para mulheres)
+  const genderPath = gender === 'female' ? 'women' : 'men';
+  return `https://randomuser.me/api/portraits/${genderPath}/${photoIndex}.jpg`;
+};
+
+// ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
+const getImageUrl = (url: string | undefined | null): string | undefined => {
+  if (!url) return undefined;
+  
+  // Converter para string se necessário
+  const urlString = String(url).trim();
+  if (!urlString) return undefined;
+  
+  // Se já é uma URL completa (http/https/data), retornar como está
+  if (urlString.startsWith('http://') || urlString.startsWith('https://') || urlString.startsWith('data:')) {
+    return urlString;
+  }
+  
+  // ✅ CORREÇÃO: Caminhos absolutos (começando com /) funcionam igual em dev e produção
+  // Arquivos em public/ são servidos na raiz em ambos os ambientes
+  if (urlString.startsWith('/')) {
+    return urlString;
+  }
+  
+  // Se não começar com /, adicionar / no início para tornar absoluto
+  return '/' + urlString;
+};
+
+// ✅ CORREÇÃO: Array de avatares padrão para usar como fallback (mantido para compatibilidade)
+const DEFAULT_AVATARS = [testimonialAvatar1, testimonialAvatar2, testimonialAvatar3];
+
+// ✅ CORREÇÃO: Função para garantir que sempre há um avatar_url válido baseado no gênero
+const ensureAvatarUrl = (testimonial: Testimonial, index: number): string | null => {
+  // Se já tem avatar_url válido, usar
+  if (testimonial.avatar_url && testimonial.avatar_url.trim()) {
+    return testimonial.avatar_url;
+  }
+  // Caso contrário, usar avatar baseado no gênero
+  return getAvatarUrlByGender(testimonial, index);
+};
 
 // Função para traduzir testimonial baseado no idioma atual
 const getTranslatedTestimonial = (testimonial: Testimonial, language: string) => {
@@ -81,7 +160,8 @@ export default function Testimonials() {
       content: 'Encomendei uma música para meu casamento e foi simplesmente perfeita! Todos os convidados choraram. A qualidade de produção é incrível, parece música de rádio!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar1,
+      // ✅ NOVO: Usar avatar baseado no gênero (feminino - Noiva)
+      avatar_url: getAvatarUrlByGender({ name: 'Ana Silva', role: 'Noiva' } as Testimonial, 0),
       rating: 5
     },
     {
@@ -95,7 +175,8 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar2,
+      // ✅ NOVO: Usar avatar baseado no gênero (masculino - Empresário)
+      avatar_url: getAvatarUrlByGender({ name: 'Carlos Mendes', role: 'Empresário' } as Testimonial, 1),
       rating: 5
     },
     {
@@ -109,20 +190,24 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar3,
+      // ✅ NOVO: Usar avatar baseado no gênero (feminino - Filha)
+      avatar_url: getAvatarUrlByGender({ name: 'Mariana Costa', role: 'Filha' } as Testimonial, 2),
       rating: 5
     }
   ];
   
   useEffect(() => {
-    async function fetchTestimonials() {
+    // ✅ OTIMIZAÇÃO FASE 3.2: Verificar cache em sessionStorage primeiro
+    const CACHE_KEY = 'musiclovely_testimonials_cache';
+    const CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutos
+    
+    // ✅ OTIMIZAÇÃO: Definir função antes de usar
+    async function fetchTestimonialsFromDB(updateCache: boolean) {
       try {
         // Verificar se o Supabase está configurado (não é dummy client)
         const isDummyClient = !import.meta.env.VITE_SUPABASE_ANON_KEY && !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         
         if (isDummyClient) {
-          setTestimonials(MOCK_TESTIMONIALS);
-          setLoading(false);
           return;
         }
 
@@ -141,23 +226,106 @@ export default function Testimonials() {
           
           if (!allError && allData && allData.length > 0) {
             // Se houver depoimentos mas nenhum ativo, usar os primeiros 3
-            setTestimonials(allData.slice(0, 3));
-          } else {
-            setTestimonials(MOCK_TESTIMONIALS);
+            const processedData = allData.slice(0, 3).map((t, index) => ({
+              ...t,
+              avatar_url: ensureAvatarUrl(t as Testimonial, index)
+            }));
+            setTestimonials(processedData);
+            // ✅ OTIMIZAÇÃO FASE 3.2: Salvar no cache
+            if (updateCache) {
+              try {
+                sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                  data: processedData,
+                  timestamp: Date.now()
+                }));
+              } catch {
+                // Ignorar erros de cache
+              }
+            }
           }
         } else if (data && data.length > 0) {
-          setTestimonials(data);
-        } else {
-          setTestimonials(MOCK_TESTIMONIALS);
+          const processedData = data.map((t, index) => ({
+            ...t,
+            avatar_url: ensureAvatarUrl(t as Testimonial, index)
+          }));
+          setTestimonials(processedData);
+          // ✅ OTIMIZAÇÃO FASE 3.2: Salvar no cache
+          if (updateCache) {
+            try {
+              sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                data: processedData,
+                timestamp: Date.now()
+              }));
+            } catch {
+              // Ignorar erros de cache
+            }
+          }
         }
       } catch (err) {
-        setTestimonials(MOCK_TESTIMONIALS);
-      } finally {
-        setLoading(false);
+        // Ignorar erros silenciosamente
       }
     }
 
-    fetchTestimonials();
+    // Verificar cache primeiro
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        const now = Date.now();
+        if (now - timestamp < CACHE_EXPIRY) {
+          // Cache válido, usar dados do cache e garantir avatares
+          const cachedWithAvatars = data.map((t: Testimonial, index: number) => ({
+            ...t,
+            avatar_url: ensureAvatarUrl(t, index)
+          }));
+          setTestimonials(cachedWithAvatars);
+          setLoading(false);
+          
+          // ✅ OTIMIZAÇÃO FASE 3.1: Atualizar cache em background após delay
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            const w = window as any;
+            w.requestIdleCallback(() => {
+              fetchTestimonialsFromDB(true);
+            }, { timeout: 3000 });
+          } else {
+            setTimeout(() => {
+              fetchTestimonialsFromDB(true);
+            }, 3000);
+          }
+          return;
+        }
+      }
+    } catch {
+      // Ignorar erros de cache
+    }
+
+    // ✅ OTIMIZAÇÃO FASE 3.1: Mostrar dados mockados imediatamente
+    setTestimonials(MOCK_TESTIMONIALS);
+    setLoading(false);
+
+    // ✅ OTIMIZAÇÃO FASE 3.1: Deferir query com delay de 2-3s
+    let cancelled = false;
+    const fetchDelayed = () => {
+      if (cancelled) return;
+      fetchTestimonialsFromDB(false);
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const w = window as any;
+      const id = w.requestIdleCallback(fetchDelayed, { timeout: 2500 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(fetchDelayed, 2500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   // Auto-play functionality
@@ -269,9 +437,17 @@ export default function Testimonials() {
     : null;
 
   // Se não há depoimento válido, usar o primeiro disponível
-  const displayTestimonial = currentTestimonial || (testimonials.length > 0 
+  let displayTestimonial = currentTestimonial || (testimonials.length > 0 
     ? getTranslatedTestimonial(testimonials[0], currentLanguage)
     : null);
+
+  // ✅ CORREÇÃO: Garantir que displayTestimonial sempre tem avatar_url válido
+  if (displayTestimonial && (!displayTestimonial.avatar_url || !displayTestimonial.avatar_url.trim())) {
+    displayTestimonial = {
+      ...displayTestimonial,
+      avatar_url: ensureAvatarUrl(displayTestimonial, validIndex)
+    };
+  }
 
   if (!displayTestimonial) {
     // Fallback: mostrar apenas stats se não houver depoimentos válidos
@@ -353,37 +529,49 @@ export default function Testimonials() {
               </blockquote>
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                  {displayTestimonial.avatar_url && (
-                    <img 
-                      src={getImageUrl(displayTestimonial.avatar_url)} 
-                      alt={displayTestimonial.name}
-                      className="w-full h-full object-cover absolute inset-0"
-                      width={40}
-                      height={40}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        // Fallback para avatar padrão se a imagem não carregar
-                        const target = e.currentTarget;
-                        target.style.display = 'none';
-                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
-                        if (fallback) {
-                          fallback.style.display = 'flex';
-                        }
-                      }}
-                      onLoad={(e) => {
-                        // Garantir que a imagem seja exibida quando carregar
-                        const target = e.currentTarget;
-                        target.style.display = 'block';
-                        const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
-                        if (fallback) {
-                          fallback.style.display = 'none';
-                        }
-                      }}
-                    />
-                  )}
-                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative aspect-square">
+                  {displayTestimonial.avatar_url && displayTestimonial.avatar_url.trim() ? (
+                    <picture>
+                      <source 
+                        srcSet={`${getImageUrl(displayTestimonial.avatar_url)} 1x, ${getImageUrl(displayTestimonial.avatar_url)} 2x`}
+                        type="image/webp"
+                      />
+                      <img 
+                        src={getImageUrl(displayTestimonial.avatar_url) || undefined} 
+                        alt={displayTestimonial.name}
+                        className="w-full h-full object-cover absolute inset-0 z-10"
+                        width={48}
+                        height={48}
+                        sizes="48px"
+                        loading="lazy"
+                        decoding="async"
+                        fetchpriority="low"
+                        onError={(e) => {
+                          console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.avatar_url);
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          target.style.visibility = 'hidden';
+                          const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = 'flex';
+                            fallback.style.zIndex = '10';
+                          }
+                        }}
+                        onLoad={(e) => {
+                          // Garantir que a imagem seja exibida quando carregar
+                          const target = e.currentTarget;
+                          target.style.display = 'block';
+                          target.style.visibility = 'visible';
+                          target.style.opacity = '1';
+                          const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = 'none';
+                          }
+                        }}
+                      />
+                    </picture>
+                  ) : null}
+                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0 z-0" style={{ display: (displayTestimonial.avatar_url && displayTestimonial.avatar_url.trim()) ? 'none' : 'flex' }}>
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -435,7 +623,14 @@ export default function Testimonials() {
         {/* All Testimonials Grid */}
         <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {testimonials.slice(0, 3).map((testimonial, index) => {
-            const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            let translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            // ✅ CORREÇÃO: Garantir que sempre tem avatar_url válido
+            if (!translatedTestimonial.avatar_url || !translatedTestimonial.avatar_url.trim()) {
+              translatedTestimonial = {
+                ...translatedTestimonial,
+                avatar_url: ensureAvatarUrl(translatedTestimonial, index)
+              };
+            }
             return (
               <Card 
                 key={testimonial.id} 
@@ -454,36 +649,49 @@ export default function Testimonials() {
                     "{translatedTestimonial.content}"
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                      {translatedTestimonial.avatar_url && (
-                        <img 
-                          src={getImageUrl(translatedTestimonial.avatar_url)} 
-                          alt={translatedTestimonial.name}
-                          className="w-full h-full object-cover absolute inset-0"
-                          width={40}
-                          height={40}
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            target.style.display = 'none';
-                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
-                            if (fallback) {
-                              fallback.style.display = 'flex';
-                            }
-                          }}
-                          onLoad={(e) => {
-                            // Garantir que a imagem seja exibida quando carregar
-                            const target = e.currentTarget;
-                            target.style.display = 'block';
-                            const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
-                            if (fallback) {
-                              fallback.style.display = 'none';
-                            }
-                          }}
-                        />
-                      )}
-                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative aspect-square">
+                      {translatedTestimonial.avatar_url && translatedTestimonial.avatar_url.trim() ? (
+                        <picture>
+                          <source 
+                            srcSet={`${getImageUrl(translatedTestimonial.avatar_url)} 1x, ${getImageUrl(translatedTestimonial.avatar_url)} 2x`}
+                            type="image/webp"
+                          />
+                          <img 
+                            src={getImageUrl(translatedTestimonial.avatar_url) || undefined} 
+                            alt={translatedTestimonial.name}
+                            className="w-full h-full object-cover absolute inset-0 z-10"
+                            width={40}
+                            height={40}
+                            sizes="40px"
+                            loading="lazy"
+                            decoding="async"
+                            fetchpriority="low"
+                            onError={(e) => {
+                              console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url);
+                              const target = e.currentTarget;
+                              target.style.display = 'none';
+                              target.style.visibility = 'hidden';
+                              const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                              if (fallback) {
+                                fallback.style.display = 'flex';
+                                fallback.style.zIndex = '10';
+                              }
+                            }}
+                            onLoad={(e) => {
+                              // Garantir que a imagem seja exibida quando carregar
+                              const target = e.currentTarget;
+                              target.style.display = 'block';
+                              target.style.visibility = 'visible';
+                              target.style.opacity = '1';
+                              const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
+                              if (fallback) {
+                                fallback.style.display = 'none';
+                              }
+                            }}
+                          />
+                        </picture>
+                      ) : null}
+                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0 z-0" style={{ display: (translatedTestimonial.avatar_url && translatedTestimonial.avatar_url.trim()) ? 'none' : 'flex' }}>
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>

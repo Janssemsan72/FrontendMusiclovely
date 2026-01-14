@@ -169,10 +169,6 @@ export function setupErrorSuppression() {
   window.addEventListener('unhandledrejection', handleUnhandledRejection);
   window.addEventListener('error', handleError, true); // Usar capture phase
   
-  if (isDev) {
-    console.log('✅ [Error Suppression] Sistema de supressão de erros configurado');
-  }
-  
   // Retornar função de cleanup
   return () => {
     window.removeEventListener('unhandledrejection', handleUnhandledRejection);

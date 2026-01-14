@@ -7,13 +7,10 @@ import {
   Music,
   Clock,
   Mail,
-  Image,
   FileText,
-  Settings,
   CheckSquare,
   Users,
   BarChart3,
-  DollarSign,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,13 +37,10 @@ const adminMenuItems: MenuItem[] = [
   { title: "Músicas", url: "/admin/songs", icon: Music, permissionKey: "songs" },
   { title: "Gerenciar Letras", url: "/admin/lyrics", icon: CheckSquare, permissionKey: "lyrics" },
   { title: "Liberações", url: "/admin/releases", icon: Clock, permissionKey: "releases" },
-  { title: "Gestão Financeira", url: "/admin/financial", icon: DollarSign, permissionKey: "financial_management" },
   { title: "Colaboradores", url: "/admin/collaborators", icon: Users, permissionKey: "collaborators" },
   { title: "Emails", url: "/admin/emails", icon: Mail, permissionKey: "emails" },
   { title: "Logs de Emails", url: "/admin/email-logs", icon: Mail, permissionKey: "email_logs" },
-  { title: "Mídia Home", url: "/admin/media", icon: Image, permissionKey: "media" },
   { title: "Logs", url: "/admin/logs", icon: FileText, permissionKey: "logs" },
-  { title: "Configurações", url: "/admin/settings", icon: Settings, permissionKey: "settings" },
 ];
 
 const defaultCollaboratorPermissions: Record<string, boolean> = {
@@ -60,10 +54,8 @@ const defaultCollaboratorPermissions: Record<string, boolean> = {
   emails: false,
   email_logs: false,
   whatsapp_templates: false,
-  media: false,
   example_tracks: false,
   logs: false,
-  settings: false,
 };
 
 /**
@@ -335,10 +327,8 @@ export function AdminSidebar() {
       lyrics: "checksquare",
       releases: "clock",
       emails: "mail",
-      media: "image",
       "example-tracks": "disc3",
       logs: "filetext",
-      settings: "settings",
     };
     return map[itemTestId] ?? "";
   };

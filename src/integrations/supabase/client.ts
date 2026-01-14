@@ -20,9 +20,7 @@ const SUPABASE_ANON_KEY =
 // Fallback para desenvolvimento local
 const SUPABASE_URL_FALLBACK = 'https://zagkvtxarndluusiluhb.supabase.co';
 
-// ✅ CORREÇÃO LOADING INFINITO: Logs de diagnóstico apenas em desenvolvimento e apenas para erros
-// Verificar se variáveis de ambiente estão definidas
-// Logs removidos
+// ✅ CORREÇÃO LOADING INFINITO: Logs de diagnóstico removidos - apenas mostrar em caso de erro real
 
 // ✅ CORREÇÃO: Garantir que sempre usa URL remota (não localhost)
 let finalUrl = SUPABASE_URL || SUPABASE_URL_FALLBACK;
@@ -75,9 +73,32 @@ let supabase: any = null;
 // ✅ FASE 3: Função para criar cliente com fallback robusto
 function createSupabaseClient(): any {
   try {
-    if (!finalUrl || !finalKey) {
+    // ✅ CORREÇÃO: Verificar se as variáveis estão definidas, se não, usar fallback da URL mas ainda precisamos da key
+    if (!finalKey) {
+      if (isDev && typeof window !== 'undefined') {
+        console.error('');
+        console.error('❌❌❌ ERRO: VITE_SUPABASE_ANON_KEY não está definida! ❌❌❌');
+        console.error('');
+        console.error('📋 SOLUÇÃO:');
+        console.error('   1. Verifique se o arquivo .env existe na RAIZ do projeto (mesmo nível do package.json)');
+        console.error('   2. O arquivo .env deve conter:');
+        console.error('      VITE_SUPABASE_URL=https://zagkvtxarndluusiluhb.supabase.co');
+        console.error('      VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...');
+        console.error('');
+        console.error('   ⚠️ IMPORTANTE: Após criar/atualizar o .env, você DEVE:');
+        console.error('      - PARAR o servidor (Ctrl+C)');
+        console.error('      - INICIAR novamente (npm run dev ou bun dev)');
+        console.error('');
+        console.error('   O Vite só carrega variáveis de ambiente na inicialização!');
+        console.error('');
+      }
       // ✅ FASE 3: Retornar cliente dummy para evitar erros
       return createDummyClient();
+    }
+    
+    // Se não tem URL mas tem key, usar fallback
+    if (!finalUrl) {
+      finalUrl = SUPABASE_URL_FALLBACK;
     }
     
     const client = createClient<Database>(finalUrl, finalKey, {

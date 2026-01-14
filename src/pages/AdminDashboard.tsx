@@ -95,8 +95,14 @@ export default function AdminDashboard() {
   const [retryingJob, setRetryingJob] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"jobs" | "songs">("jobs");
   
+  // ✅ Paginação para jobs
+  const [jobsCurrentPage, setJobsCurrentPage] = useState(1);
+  const [jobsPageSize, setJobsPageSize] = useState(20);
+  const [jobsTotal, setJobsTotal] = useState(0);
+  
   // Ref para debounce das atualizações do realtime
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const channelRef = useRef<any>(null);
   const [showRevenue, setShowRevenue] = useState<boolean>(true);
   const hasLoadedSongsRef = useRef(false);
   
@@ -124,22 +130,36 @@ export default function AdminDashboard() {
     toast.success(`${label} copiado!`);
   };
   
-  const loadRecentJobs = useCallback(async () => {
+  const loadRecentJobs = useCallback(async (page: number = jobsCurrentPage, pageSize: number = jobsPageSize) => {
     try {
       setJobsLoading(true);
+      
+      // Calcular range para paginação
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      
+      // Buscar total de jobs primeiro (para contar)
+      const { count: totalCount } = await supabase
+        .from("jobs")
+        .select("*", { count: "exact", head: true });
+      
+      // Buscar jobs paginados
       const jobsResult = await supabase
         .from("jobs")
         .select("id, order_id, status, created_at, updated_at, error, suno_task_id, orders:order_id(customer_email, plan, status, paid_at, created_at)")
         .order("created_at", { ascending: false })
-        .limit(50);
+        .range(from, to);
 
-      if (jobsResult.data) setJobs(jobsResult.data);
+      if (jobsResult.data) {
+        setJobs(jobsResult.data);
+        setJobsTotal(totalCount || 0);
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
       setJobsLoading(false);
     }
-  }, []);
+  }, [jobsCurrentPage, jobsPageSize]);
 
   const loadRecentSongs = useCallback(async () => {
     try {
@@ -167,14 +187,14 @@ export default function AdminDashboard() {
       const tasks: PromiseSettledResult<unknown>[] = await Promise.allSettled([
         statsEnabled ? refetchStats() : Promise.resolve(),
         refetchCredits(),
-        loadRecentJobs(),
+        loadRecentJobs(jobsCurrentPage, jobsPageSize),
         hasLoadedSongsRef.current ? loadRecentSongs() : Promise.resolve(),
       ]);
       void tasks;
     } finally {
       setRefreshing(false);
     }
-  }, [loadRecentJobs, loadRecentSongs, refetchCredits, refetchStats, statsEnabled]);
+  }, [loadRecentJobs, loadRecentSongs, refetchCredits, refetchStats, statsEnabled, jobsCurrentPage, jobsPageSize]);
 
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : (window as any);
@@ -201,35 +221,44 @@ export default function AdminDashboard() {
     };
   }, []);
 
+  // ✅ OTIMIZAÇÃO: Função para atualizar com debounce usando hooks do React Query
+  const debouncedUpdate = useCallback(() => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    updateTimeoutRef.current = setTimeout(() => {
+      if (statsEnabled) {
+        refetchStats();
+      }
+      refetchCredits();
+    }, 2000); // Aguardar 2 segundos antes de atualizar (debounce)
+  }, [refetchStats, refetchCredits, statsEnabled]);
+
   useEffect(() => {
     // ✅ OTIMIZAÇÃO: Carregar dados leves em background (não bloquear render)
     // Stats e créditos já são carregados pelos hooks do React Query
     // Usar setTimeout para não bloquear render inicial dos cards
     setTimeout(() => {
-      loadRecentJobs();
+      loadRecentJobs(jobsCurrentPage, jobsPageSize);
     }, 300); // Aguardar 300ms para não bloquear render inicial
     
-    // ✅ OTIMIZAÇÃO: Função para atualizar com debounce usando hooks do React Query
-    const debouncedUpdate = () => {
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
-      }
-      updateTimeoutRef.current = setTimeout(() => {
-        if (statsEnabled) {
-          refetchStats();
-        }
-        refetchCredits();
-      }, 2000); // Aguardar 2 segundos antes de atualizar (debounce)
-    };
-    
     // ✅ CORREÇÃO ERRO 401: Verificar autenticação antes de criar subscription
-    let channel: any = null;
     const setupRealtime = async () => {
       try {
+        // ✅ CORREÇÃO: Remover channel anterior se existir antes de criar novo
+        if (channelRef.current) {
+          try {
+            await supabase.removeChannel(channelRef.current);
+          } catch (error) {
+            // Ignorar erros ao remover channel anterior
+          }
+          channelRef.current = null;
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return; // Não criar subscription se não autenticado
 
-        channel = supabase
+        const channel = supabase
           .channel('admin-dashboard-realtime', {
             config: {
               broadcast: { self: true },
@@ -271,15 +300,14 @@ export default function AdminDashboard() {
             // O hook tem refetchInterval configurado
           })
           .subscribe((status) => {
-            if (status === 'CHANNEL_ERROR') {
-              console.error('Erro na subscription realtime');
-            } else if (status === 'TIMED_OUT') {
-              console.error('Timeout na subscription realtime');
-            }
+            // Status da subscription realtime (logs removidos)
           });
+
+        channelRef.current = channel;
       } catch (error) {
         // Erro ao verificar autenticação ou criar subscription
         // Não fazer nada - a página continuará funcionando sem Realtime
+        channelRef.current = null;
       }
     };
 
@@ -289,13 +317,15 @@ export default function AdminDashboard() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Página não visível - remover subscription temporariamente
-        if (channel) {
-          supabase.removeChannel(channel);
-          channel = null;
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current).catch(() => {
+            // Ignorar erros ao remover channel
+          });
+          channelRef.current = null;
         }
       } else {
         // Página visível novamente - recriar subscription
-        if (!channel) {
+        if (!channelRef.current) {
           setupRealtime();
         }
       }
@@ -311,11 +341,20 @@ export default function AdminDashboard() {
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
-      if (channel) {
-        supabase.removeChannel(channel);
+      // ✅ CORREÇÃO: Verificar se channel existe antes de remover e tratar erros
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current).catch(() => {
+          // Ignorar erros ao remover channel no cleanup (pode já estar fechado)
+        });
+        channelRef.current = null;
       }
     };
-  }, [loadRecentJobs, refetchStats, refetchCredits, statsEnabled]);
+  }, [loadRecentJobs, debouncedUpdate]);
+  
+  // ✅ Recarregar jobs quando página ou tamanho da página mudarem
+  useEffect(() => {
+    loadRecentJobs(jobsCurrentPage, jobsPageSize);
+  }, [jobsCurrentPage, jobsPageSize, loadRecentJobs]);
 
   useEffect(() => {
     if (activeTab !== "songs") return;
@@ -326,7 +365,7 @@ export default function AdminDashboard() {
   const retryJob = async (jobId: string) => {
     try {
       setRetryingJob(jobId);
-      toast.info("Retentando job...");
+      // Processando em background silenciosamente
 
       // ✅ CORREÇÃO: Usar generate-lyrics-internal (Anthropic Claude) em vez de generate-lyrics (Lovable)
       const { error } = await supabase.functions.invoke("generate-lyrics-internal", {
@@ -337,7 +376,7 @@ export default function AdminDashboard() {
 
       toast.success("Job reenviado com sucesso!");
       refetchStats();
-      await loadRecentJobs();
+      await loadRecentJobs(jobsCurrentPage, jobsPageSize);
     } catch (error: any) {
       console.error("Erro ao retentar job:", error);
       toast.error("Erro ao retentar job");
@@ -662,6 +701,14 @@ export default function AdminDashboard() {
               retryingJob={retryingJob}
               onRetryJob={retryJob}
               onCopyToClipboard={copyToClipboard}
+              currentPage={jobsCurrentPage}
+              pageSize={jobsPageSize}
+              total={jobsTotal}
+              onPageChange={setJobsCurrentPage}
+              onPageSizeChange={(size) => {
+                setJobsPageSize(size);
+                setJobsCurrentPage(1); // Resetar para primeira página ao mudar tamanho
+              }}
             />
           </Suspense>
         </TabsContent>

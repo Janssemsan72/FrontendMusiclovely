@@ -48,24 +48,35 @@ export default function Logo({ className = "", size = 40, variant = 'default' }:
   
   const finalLogoSrc = useAssetImport ? logoAsset : logoSrc;
   
+  // Tentar usar WebP se disponível
+  const webpSrc = finalLogoSrc.replace('.png', '.webp');
+  
   return (
-    <img 
-      src={finalLogoSrc} 
-      alt="Music Lovely" 
-      className={`object-contain ${className}`}
-      width={355}
-      height={111}
-      style={{ 
-        width: size,
-        height: 'auto',
-        maxWidth: '100%',
-        display: 'block',
-        filter: brownFilter,
-      }}
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      onError={handleError}
-    />
+    <picture>
+      <source 
+        srcSet={`${webpSrc} 1x, ${finalLogoSrc} 2x`}
+        type="image/webp"
+        sizes={`${size}px`}
+      />
+      <img 
+        src={finalLogoSrc} 
+        alt="Music Lovely" 
+        className={`object-contain ${className}`}
+        width={355}
+        height={111}
+        sizes={`${size}px`}
+        style={{ 
+          width: size,
+          height: 'auto',
+          maxWidth: '100%',
+          display: 'block',
+          filter: brownFilter,
+        }}
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        onError={handleError}
+      />
+    </picture>
   );
 }

@@ -13,6 +13,7 @@
 // Ícones mais usados - importação direta para tree-shaking
 export {
   // Navegação e ações
+  ArrowLeft,
   ArrowRight,
   ChevronLeft,
   ChevronRight,
@@ -80,6 +81,10 @@ export {
   Send,
   Sparkles,
   Menu,
+  
+  // Adicionais para otimização (sem duplicatas)
+  Award,
+  HelpCircle,
 } from 'lucide-react';
 
 /**

@@ -83,7 +83,7 @@ export const apiHelpers = {
     customer_whatsapp: string;
     plan: 'standard' | 'express';
     amount_cents: number;
-    provider: 'cakto';
+    provider: 'cakto' | 'hotmart';
     transaction_id?: string;
   }) => api.post<
     | { success: true; quiz_id: string; order_id: string; log_id?: string }

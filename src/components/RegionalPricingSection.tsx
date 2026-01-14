@@ -5,10 +5,8 @@ import { i18nLog } from '@/utils/debug/devLogger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, Globe, Lock, Star, Zap, Clock, Shield, Music, ArrowRight, Download } from 'lucide-react';
-import { getLocalizedPath } from '@/lib/i18nRoutes';
+import { Check, Globe, Lock, Star, Zap, Clock, Shield, Music, ArrowRight, Download } from '@/utils/iconImports';
 import { useUtmParams } from '@/hooks/useUtmParams';
-import type { Locale } from '@/lib/detectLocale';
 // formatDateTime removido - não é mais usado
 
 // ✅ Configuração de preço fixo: R$ 47,90 (apenas Brasil, BRL)
@@ -39,16 +37,16 @@ interface RegionalPricing {
 }
 
 export default function RegionalPricingSection() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   const { navigateWithUtms } = useUtmParams();
   const [pricing, setPricing] = useState<RegionalPricing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Forçar reload quando a URL mudar
+    // Carregar pricing ao montar
     loadRegionalPricing();
-  }, [currentLanguage]);
+  }, []);
 
   const loadRegionalPricing = async () => {
     try {
@@ -57,49 +55,8 @@ export default function RegionalPricingSection() {
       
       // SEMPRE usar dados mock baseados na URL (ignorar API de IP)
       
-      // Detectar idioma atual pela URL (sempre priorizar URL)
-      const getCurrentLanguage = () => {
-        const pathname = window.location.pathname;
-        
-        // Prioridade 1: URL com prefixo de idioma
-        if (pathname.startsWith('/en')) return 'en';
-        if (pathname.startsWith('/es')) return 'es';
-        if (pathname.startsWith('/pt')) return 'pt';
-        
-        // Prioridade 2: Rota raiz - detecção automática
-        if (pathname === '/' || pathname === '') {
-          i18nLog('Rota raiz detectada', {
-            currentLanguage,
-            navigatorLanguage: navigator.language
-          });
-          
-          // Detectar pelo navegador
-          const navLang = navigator.language.toLowerCase();
-          i18nLog('navLang processado', navLang);
-          
-          if (navLang.startsWith('pt')) {
-            i18nLog('Detectado português pelo navegador');
-            return 'pt';
-          }
-          if (navLang.startsWith('en')) {
-            i18nLog('Detectado inglês pelo navegador');
-            return 'en';
-          }
-          if (navLang.startsWith('es')) {
-            i18nLog('Detectado espanhol pelo navegador');
-            return 'es';
-          }
-          
-          // Fallback para português
-          i18nLog('Fallback para português');
-          return 'pt';
-        }
-        
-        // Fallback para currentLanguage
-        return currentLanguage || 'pt';
-      };
-      
-      const currentLang = getCurrentLanguage();
+      // Sempre usar português do Brasil
+      const currentLang = 'pt';
       
       // Forçar detecção se não estiver funcionando
       const forcedLang = currentLang || 'pt';
@@ -327,15 +284,15 @@ export default function RegionalPricingSection() {
                 <Button 
                   className="w-full bg-primary hover:bg-primary-600 text-white font-bold text-base py-3 rounded-xl shadow-soft hover:shadow-medium transition-all hover:scale-105 group"
                   size="lg"
+                  onMouseEnter={() => {
+                    // Preload agressivo do Quiz no hover
+                    import('../pages/Quiz').catch(() => {});
+                  }}
                   onClick={() => {
                     // Salvar session token para checkout
                     localStorage.setItem('pricing_session_token', pricing.session_token);
-                    // Redirecionar para quiz com navegação localizada (preservando UTMs)
-                    const localeForPath: Locale = (currentLanguage === 'pt' || currentLanguage === 'en' || currentLanguage === 'es')
-                      ? currentLanguage
-                      : 'pt';
-                    const quizPath = getLocalizedPath('/quiz', localeForPath);
-                    navigateWithUtms(quizPath);
+                    // Redirecionar para quiz
+                    navigateWithUtms('/quiz');
                   }}
                 >
                   <Music className="h-5 w-5 mr-2" />

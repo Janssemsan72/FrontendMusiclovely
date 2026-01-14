@@ -10,6 +10,7 @@ export default function ScrollRestoration() {
   const lastPathnameRef = useRef<string>('');
 
   // Lista de rotas que devem iniciar no topo
+  // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma - apenas rotas sem prefixo
   const scrollToTopRoutes = [
     '/terms',
     '/privacy',
@@ -17,28 +18,7 @@ export default function ScrollRestoration() {
     '/about',
     '/company',
     '/how-it-works',
-    '/quiz',
-    '/pt/terms',
-    '/pt/privacy',
-    '/pt/pricing',
-    '/pt/about',
-    '/pt/company',
-    '/pt/how-it-works',
-    '/pt/quiz',
-    '/en/terms',
-    '/en/privacy',
-    '/en/pricing',
-    '/en/about',
-    '/en/company',
-    '/en/how-it-works',
-    '/en/quiz',
-    '/es/terms',
-    '/es/privacy',
-    '/es/pricing',
-    '/es/about',
-    '/es/company',
-    '/es/how-it-works',
-    '/es/quiz'
+    '/quiz'
   ];
 
   useEffect(() => {

@@ -56,15 +56,8 @@ export function useCollaboratorPermissions(requiredPermission?: string) {
 
         if (ensureE2EAdminAuthorized()) return;
         
-        if (isDev) {
-          console.log('🔍 [useCollaboratorPermissions] Cache encontrado:', cachedRole, 'RequiredPermission:', requiredPermission);
-        }
-        
         // Se temos cache válido e não precisa verificar permissões específicas, usar cache imediatamente
         if (cachedRole && !requiredPermission) {
-          if (isDev) {
-            console.log('✅ [useCollaboratorPermissions] Usando cache, permitindo acesso imediatamente');
-          }
           setUserRole(cachedRole);
           setHasPermission(true);
           setIsLoading(false);
@@ -74,9 +67,6 @@ export function useCollaboratorPermissions(requiredPermission?: string) {
           setTimeout(() => {
             supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
               if (sessionError || !session?.user) {
-                if (isDev) {
-                  console.warn('⚠️ [useCollaboratorPermissions] Sessão não encontrada em background check, mas cache existe. Aguardando...');
-                }
                 // Não redirecionar imediatamente - pode ser que a sessão ainda esteja sendo estabelecida
                 // O AdminLayout vai verificar novamente se necessário
               }
@@ -98,16 +88,10 @@ export function useCollaboratorPermissions(requiredPermission?: string) {
         if (firstAttempt.error || !session?.user) {
           // Se não houver sessão, verificar novamente após mais um delay
           // (pode ser que a sessão ainda esteja sendo estabelecida)
-          if (isDev) {
-            console.warn('⚠️ [useCollaboratorPermissions] Sessão não encontrada na primeira tentativa, tentando novamente...');
-          }
           await new Promise(resolve => setTimeout(resolve, 300));
           const retryAttempt = await supabase.auth.getSession();
           
           if (retryAttempt.error || !retryAttempt.data.session?.user) {
-            if (isDev) {
-              console.warn('⚠️ [useCollaboratorPermissions] Sessão não encontrada após retry');
-            }
             // Só limpar cache e redirecionar se realmente não houver sessão após retry
             if (ensureE2EAdminAuthorized()) return;
             localStorage.removeItem('user_role');
@@ -117,17 +101,11 @@ export function useCollaboratorPermissions(requiredPermission?: string) {
           // Se retry funcionou, usar a sessão retry
           session = retryAttempt.data.session;
           user = session.user;
-          if (isDev) {
-            console.log('✅ [useCollaboratorPermissions] Sessão encontrada após retry');
-          }
         } else {
           user = session.user;
         }
-        
+
         if (!user) {
-          if (isDev) {
-            console.error('❌ [useCollaboratorPermissions] Não foi possível obter usuário da sessão');
-          }
           if (ensureE2EAdminAuthorized()) return;
           localStorage.removeItem('user_role');
           navigateToAdminAuth();
@@ -135,19 +113,11 @@ export function useCollaboratorPermissions(requiredPermission?: string) {
         }
 
         // Buscar role do banco (apenas se não tiver cache ou precisar verificar permissão)
-        if (isDev) {
-          console.log('🔍 [useCollaboratorPermissions] Buscando role do banco para user_id:', user.id);
-        }
-        
         const { data: roleData, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .maybeSingle();
-
-        if (isDev) {
-          console.log('📊 [useCollaboratorPermissions] Role data:', roleData, 'Error:', roleError);
-        }
 
         // Verificar cache novamente (pode ter sido definido no início)
         const currentCache = localStorage.getItem('user_role') as 'admin' | 'collaborator' | null;

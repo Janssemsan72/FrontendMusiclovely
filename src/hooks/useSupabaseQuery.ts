@@ -187,14 +187,23 @@ export function useSupabaseQuery<T = any>(
 
   // Refetch interval
   useEffect(() => {
-    if (refetchInterval && refetchInterval > 0 && enabled) {
+    // Limpar intervalo anterior se existir
+    if (refetchIntervalRef.current) {
+      clearInterval(refetchIntervalRef.current);
+      refetchIntervalRef.current = null;
+    }
+
+    if (refetchInterval && refetchInterval > 0 && enabled && isMountedRef.current) {
       refetchIntervalRef.current = setInterval(() => {
-        executeQuery(false); // Don't use cache for interval refetches
+        if (isMountedRef.current) {
+          executeQuery(false); // Don't use cache for interval refetches
+        }
       }, refetchInterval);
 
       return () => {
         if (refetchIntervalRef.current) {
           clearInterval(refetchIntervalRef.current);
+          refetchIntervalRef.current = null;
         }
       };
     }

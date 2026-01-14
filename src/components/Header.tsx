@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "@/utils/iconImports";
 import Logo from "@/components/Logo";
 import { useScrollspy } from "@/hooks/use-scrollspy";
-import { useTranslation } from "@/hooks/useTranslation";
 // Locale removido - usando apenas português
 import { scrollToId } from "@/utils/scrollTo";
 import { LinkWithUtms } from "@/components/LinkWithUtms";
@@ -20,35 +19,94 @@ const SECTIONS = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { navigateWithUtms } = useUtmParams();
   const { scrollToTop, scrollToTopInstant } = useSmoothScroll();
   
   const sectionIds = SECTIONS.map(section => section.id);
-  const { activeId, scrollToSection } = useScrollspy(sectionIds, { offset: 80 });
+  
+  // ✅ OTIMIZAÇÃO FASE 2.2: Deferir useScrollspy para não bloquear renderização inicial
+  const [scrollspyReady, setScrollspyReady] = useState(false);
+  const scrollspyResult = useScrollspy(scrollspyReady ? sectionIds : [], { offset: 80 });
+  const activeId = scrollspyReady ? scrollspyResult.activeId : null;
+  const scrollToSection = scrollspyReady ? scrollspyResult.scrollToSection : () => {};
 
+  // ✅ OTIMIZAÇÃO FASE 2.2: Deferir inicialização de scrollspy
   useEffect(() => {
-    // ✅ OTIMIZAÇÃO: Throttle no scroll handler para melhor performance
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollContainer = document.getElementById('main-scroll-container');
-          const scrollY = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
-          setScrolled(scrollY > 20);
-          ticking = false;
-        });
-        ticking = true;
-      }
+    let cancelled = false;
+    const initScrollspy = () => {
+      if (cancelled) return;
+      setScrollspyReady(true);
     };
-    
-    const scrollContainer = document.getElementById('main-scroll-container');
-    const target = scrollContainer || window;
-    
-    target.addEventListener('scroll', handleScroll, { passive: true });
-    return () => target.removeEventListener('scroll', handleScroll);
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const w = window as any;
+      const id = w.requestIdleCallback(initScrollspy, { timeout: 1500 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(initScrollspy, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // ✅ OTIMIZAÇÃO FASE 2.2: Deferir scroll listener com delay inicial
+  useEffect(() => {
+    let cancelled = false;
+    const initScrollListener = () => {
+      if (cancelled) return;
+      
+      // Throttle no scroll handler para melhor performance
+      let ticking = false;
+      const handleScroll = () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            if (cancelled) return;
+            const scrollContainer = document.getElementById('main-scroll-container');
+            const scrollY = scrollContainer ? scrollContainer.scrollTop : window.scrollY;
+            setScrolled(scrollY > 20);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      };
+      
+      const scrollContainer = document.getElementById('main-scroll-container');
+      const target = scrollContainer || window;
+      
+      target.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        cancelled = true;
+        target.removeEventListener('scroll', handleScroll);
+      };
+    };
+
+    // Deferir scroll listener usando requestIdleCallback
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const w = window as any;
+      const id = w.requestIdleCallback(initScrollListener, { timeout: 1000 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(initScrollListener, 1000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   // Função para gerar links (apenas português)
@@ -134,24 +192,40 @@ export default function Header() {
           </nav>
         </div>
 
-        {/* Direita: Botão Criar Música */}
+        {/* Direita: Botão Criar Música - Desktop */}
         <div className="hidden md:flex items-center gap-3 z-10">
           <Button
             className="bg-primary hover:bg-primary-600 text-white rounded-2xl shadow-soft text-base font-semibold px-6 py-2.5"
             asChild
+            onMouseEnter={() => {
+              // Preload agressivo do Quiz no hover
+              import('../pages/Quiz').catch(() => {});
+            }}
           >
-            <LinkWithUtms to={getLocalizedLink('/quiz')}>{t('navigation.createMusic')}</LinkWithUtms>
+            <LinkWithUtms to={getLocalizedLink('/quiz')}>Criar Música</LinkWithUtms>
           </Button>
         </div>
 
-        {/* Mobile: Menu hamburguer no canto direito */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-1.5 sm:p-2 text-foreground hover:bg-muted rounded-lg transition-colors z-20"
-          aria-label="Menu"
-        >
-          {mobileMenuOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
-        </button>
+        {/* Mobile: Botão Criar Música e Menu hamburguer */}
+        <div className="md:hidden flex items-center gap-2 z-20">
+          <Button
+            className="bg-primary hover:bg-primary-600 text-white rounded-xl shadow-soft text-sm font-semibold px-4 py-2"
+            asChild
+            onMouseEnter={() => {
+              // Preload agressivo do Quiz no hover
+              import('../pages/Quiz').catch(() => {});
+            }}
+          >
+            <LinkWithUtms to={getLocalizedLink('/quiz')}>Criar Música</LinkWithUtms>
+          </Button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 sm:p-2 text-foreground hover:bg-muted rounded-lg transition-colors"
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -170,9 +244,13 @@ export default function Header() {
             <Button
               className="bg-primary hover:bg-primary-600 text-white rounded-2xl shadow-soft w-full mt-2 text-base font-semibold py-2.5"
               asChild
+              onMouseEnter={() => {
+                // Preload agressivo do Quiz no hover
+                import('../pages/Quiz').catch(() => {});
+              }}
             >
               <LinkWithUtms to={getLocalizedLink('/quiz')} onClick={() => setMobileMenuOpen(false)}>
-                {t('navigation.createMusic')}
+                Criar Música
               </LinkWithUtms>
             </Button>
           </nav>

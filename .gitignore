@@ -68,3 +68,8 @@ frontendmusiclovely-clone/
 playwright-report/
 test-results/
 .vite/
+
+# Prevenir duplicação de estruturas (frontend/frontend/)
+frontend/frontend/
+*/frontend/frontend/
+**/frontend/frontend/

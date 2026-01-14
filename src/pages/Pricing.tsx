@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import PricingSection from '@/components/PricingSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { HelpCircle, CreditCard, Clock, Download } from 'lucide-react';
+import { HelpCircle, CreditCard, Clock, Download } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinkWithUtms } from '@/components/LinkWithUtms';
 // Locale removido - apenas português
@@ -85,7 +85,15 @@ export default function Pricing() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button size="lg" variant="secondary" asChild>
+              <Button 
+                size="lg" 
+                variant="secondary" 
+                asChild
+                onMouseEnter={() => {
+                  // Preload agressivo do Quiz no hover
+                  import('../pages/Quiz').catch(() => {});
+                }}
+              >
                 <LinkWithUtms to={getLocalizedLink('/quiz')}>{t('pricing.createMyMusic')}</LinkWithUtms>
               </Button>
             </CardContent>

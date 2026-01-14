@@ -18,9 +18,10 @@ import {
   Quote
 } from 'lucide-react';
 import { useScrollAnimations } from '@/hooks/use-scroll-animations';
-import testimonial1 from '@/assets/testimonial-1.webp';
-import testimonial2 from '@/assets/testimonial-2.webp';
-import testimonial3 from '@/assets/testimonial-3.webp';
+// ✅ CORREÇÃO: Usar avatares de public/testimonials para garantir consistência entre dev e produção
+const testimonial1 = "/testimonials/avatar-1.webp";
+const testimonial2 = "/testimonials/avatar-2.webp";
+const testimonial3 = "/testimonials/avatar-3.webp";
 
 // NOTA: Esta página NÃO renderiza Header ou Footer - página standalone
 export default function Company() {

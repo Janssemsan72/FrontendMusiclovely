@@ -454,7 +454,10 @@ export function useLyricsApprovals(options: UseLyricsApprovalsOptions = {}) {
       // Se não há mais subscribers, limpar canal
       if (sharedChannelSubscribers <= 0 && sharedRealtimeChannel) {
         logger.debug('Removendo canal realtime compartilhado (sem subscribers)');
-        supabase.removeChannel(sharedRealtimeChannel);
+        
+        // ✅ CORREÇÃO: Usar apenas unsubscribe() que é mais seguro
+        // O Supabase gerencia a remoção do canal automaticamente após unsubscribe
+        const channelToCleanup = sharedRealtimeChannel;
         sharedRealtimeChannel = null;
         sharedChannelSubscribers = 0;
         
@@ -462,6 +465,19 @@ export function useLyricsApprovals(options: UseLyricsApprovalsOptions = {}) {
         if (globalInvalidationTimeout) {
           clearTimeout(globalInvalidationTimeout);
           globalInvalidationTimeout = null;
+        }
+        
+        // ✅ CORREÇÃO: Usar unsubscribe de forma assíncrona e segura
+        // Não chamar removeChannel diretamente para evitar erros de WebSocket
+        if (channelToCleanup && typeof channelToCleanup.unsubscribe === 'function') {
+          // Usar Promise.resolve para garantir que é tratado como assíncrono
+          Promise.resolve(channelToCleanup.unsubscribe()).catch((err: any) => {
+            // Ignorar erros silenciosamente - o canal pode já estar desconectado
+            // Isso é esperado quando o componente é desmontado rapidamente
+            if (isDev && err?.message && !err.message.includes('closed')) {
+              logger.debug('Erro ao desinscrever canal (não crítico)', err);
+            }
+          });
         }
       }
     };

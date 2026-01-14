@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { devLogOnce, serializeForDedupe } from '@/utils/debug/devLogDedupe';
 import { useUtmParams } from './useUtmParams';
 
 /**
@@ -40,23 +39,12 @@ export function useUtmifyTracking() {
       // 2. O tracking principal já funciona automaticamente via scripts UTMify
       // 3. Não é necessário fazer requisições manuais - os scripts já capturam tudo
       
-      // Apenas logar em desenvolvimento para debug.
-      // Em dev com StrictMode, alguns efeitos rodam 2x: fazemos dedupe para não poluir o console.
-      if (!isProduction()) {
-        const pathname = window.location?.pathname || '';
-        const signature = `${eventName}|${pathname}|${serializeForDedupe(eventData)}`;
-        devLogOnce(signature, () => {
-          console.log(
-            `[UTMify Tracking] Evento ${eventName} (tracking automático via scripts UTMify)`,
-            eventData
-          );
-        });
-      }
+      // Logs removidos - tracking funciona automaticamente via scripts UTMify
 
       // Não fazer requisições manuais - o UTMify já faz tracking automático
         return;
     },
-    [isProduction]
+    []
   );
 
   return {

@@ -1,13 +1,46 @@
-import React, { useState, useEffect, memo, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, memo, useCallback, useMemo, useRef, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+// ✅ OTIMIZAÇÃO FASE 2.2: Lazy load de componentes UI pesados apenas quando necessário
+// ✅ CORREÇÃO BUG 4: Named exports precisam ser transformados corretamente
+// Helper para logs condicionais (apenas em desenvolvimento)
+const devLog = (...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.log(...args);
+  }
+};
+const devWarn = (...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.warn(...args);
+  }
+};
+const devError = (...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.error(...args);
+  }
+};
+
+const Textarea = React.lazy(() => 
+  import('@/components/ui/textarea').then(module => ({ default: module.Textarea }))
+    .catch(err => {
+      devError('Erro ao carregar Textarea:', err);
+      // Fallback: retornar componente vazio em caso de erro
+      return { default: () => <textarea className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" /> };
+    })
+);
+const Progress = React.lazy(() => 
+  import('@/components/ui/progress').then(module => ({ default: module.Progress }))
+    .catch(err => {
+      devError('Erro ao carregar Progress:', err);
+      // Fallback: retornar div vazia em caso de erro
+      return { default: () => <div className="h-1 w-full bg-muted rounded" /> };
+    })
+);
+import { ArrowLeft, ArrowRight, Loader2 } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -19,10 +52,18 @@ import { saveQuizToStorage, loadQuizFromStorage, getOrCreateQuizSessionId } from
 import { insertQuizWithRetry, type QuizPayload } from '@/utils/quizInsert';
 import { enqueueQuizToServer } from '@/utils/quizInsert';
 import { useQuizValidation } from '@/hooks/useQuizValidation';
+import QuizProgress from './QuizSteps/QuizProgress';
+import QuizNavigation from './QuizSteps/QuizNavigation';
+import QuizStep1 from './QuizSteps/QuizStep1';
+import QuizStep2 from './QuizSteps/QuizStep2';
+import QuizStep3 from './QuizSteps/QuizStep3';
+import QuizStep4 from './QuizSteps/QuizStep4';
+import QuizStep5 from './QuizSteps/QuizStep5';
 
 // These will be replaced with translated versions in the component
 
 const Quiz = memo(() => {
+  
   const navigate = useNavigate();
   const { t } = useTranslation();
   // Preservar UTMs através do funil
@@ -30,6 +71,7 @@ const Quiz = memo(() => {
   const { trackEvent } = useUtmifyTracking();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  
   const hasShownDataLoadedRef = useRef(false);
   const isSubmittingRef = useRef(false); // ✅ Proteção contra cliques duplicados
   const isMountedRef = useRef(true); // ✅ Verificação de montagem para prevenir erros de DOM
@@ -44,15 +86,20 @@ const Quiz = memo(() => {
     message: ''
   });
 
-  // Translated constants
+  // Translated constants - Opções separadas por gênero
   const RELATIONSHIPS = [
-    t('quiz.relationships.spouse'),
-    t('quiz.relationships.child'),
+    t('quiz.relationships.spouse_male'),
+    t('quiz.relationships.spouse_female'),
+    t('quiz.relationships.child_male'),
+    t('quiz.relationships.child_female'),
     t('quiz.relationships.father'),
     t('quiz.relationships.mother'),
-    t('quiz.relationships.sibling'),
-    t('quiz.relationships.friend'),
-    t('quiz.relationships.myself'),
+    t('quiz.relationships.sibling_male'),
+    t('quiz.relationships.sibling_female'),
+    t('quiz.relationships.friend_male'),
+    t('quiz.relationships.friend_female'),
+    t('quiz.relationships.myself_male'),
+    t('quiz.relationships.myself_female'),
     t('quiz.relationships.other')
   ] as const;
 
@@ -80,6 +127,39 @@ const Quiz = memo(() => {
 
   const [searchParams] = useSearchParams();
 
+  // ✅ OTIMIZAÇÃO: Preload agressivo do Checkout quando usuário está no Quiz
+  // Preload quando chega no step 2 ou mais (mais cedo para garantir que está pronto)
+  useEffect(() => {
+    // Preload Checkout quando usuário está no step 2 ou mais
+    if (step >= 2) {
+      // Preload imediato e agressivo (sem esperar requestIdleCallback)
+      import('../pages/Checkout').catch(() => {});
+      
+      // Preload de recursos críticos do Checkout imediatamente
+      Promise.all([
+        import('@/components/ui/button').catch(() => {}),
+        import('@/components/ui/card').catch(() => {}),
+        import('@/components/ui/input').catch(() => {}),
+        import('@/components/ui/badge').catch(() => {}),
+        import('lucide-react').catch(() => {}),
+      ]).catch(() => {});
+    }
+    
+    // Preload ainda mais agressivo quando está no último step
+    if (step >= 4) {
+      // Preload de tudo novamente para garantir que está em cache
+      import('../pages/Checkout').catch(() => {});
+    }
+  }, [step]);
+  
+  // ✅ OTIMIZAÇÃO: Preload quando usuário começa a preencher o último step
+  useEffect(() => {
+    if (step >= 4 && formData.message) {
+      // Usuário está preenchendo a última pergunta - preload imediato
+      import('../pages/Checkout').catch(() => {});
+    }
+  }, [step, formData.message]);
+
   // ✅ Cleanup: Marcar componente como desmontado
   useEffect(() => {
     isMountedRef.current = true;
@@ -88,16 +168,23 @@ const Quiz = memo(() => {
     };
   }, []);
 
-  // Load existing quiz data from URL (edit mode) or localStorage on mount
+  // ✅ OTIMIZAÇÃO FASE 2.1: Deferir carregamento de dados do quiz para não bloquear renderização inicial
   useEffect(() => {
-    // PRIORIDADE 1: Verificar se há parâmetros de edição na URL
-    const orderId = searchParams.get('order_id');
-    const quizId = searchParams.get('quiz_id');
-    const token = searchParams.get('token');
-    const edit = searchParams.get('edit');
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) return;
 
-    if (edit === 'true' && orderId && quizId) {
-      console.log('📥 [Quiz] Carregando quiz para edição via URL:', { orderId, quizId, token, edit });
+    let cancelled = false;
+    const loadQuizData = () => {
+      if (cancelled) return;
+      
+      // PRIORIDADE 1: Verificar se há parâmetros de edição na URL
+      const orderId = searchParams.get('order_id');
+      const quizId = searchParams.get('quiz_id');
+      const token = searchParams.get('token');
+      const edit = searchParams.get('edit');
+
+      if (edit === 'true' && orderId && quizId) {
+      devLog('📥 [Quiz] Carregando quiz para edição via URL:', { orderId, quizId, token, edit });
       
       const loadQuizFromDatabase = async () => {
         try {
@@ -107,7 +194,7 @@ const Quiz = memo(() => {
           
           // Tentar validar token se fornecido (opcional - não bloquear se token falhar)
           if (token) {
-            console.log('🔍 [Quiz] Validando token...');
+            devLog('🔍 [Quiz] Validando token...');
             const { data: linkData, error: linkError } = await supabase
               .from('checkout_links')
               .select('*')
@@ -119,33 +206,33 @@ const Quiz = memo(() => {
               .single();
 
             if (linkError || !linkData) {
-              console.warn('⚠️ [Quiz] Token inválido ou expirado, mas continuando com carregamento:', {
+              devWarn('⚠️ [Quiz] Token inválido ou expirado, mas continuando com carregamento:', {
                 error: linkError?.message,
                 code: linkError?.code,
                 details: linkError?.details
               });
             } else {
-              console.log('✅ [Quiz] Token válido');
+              devLog('✅ [Quiz] Token válido');
             }
           } else {
-            console.warn('⚠️ [Quiz] Token não fornecido na URL, continuando mesmo assim');
+            devWarn('⚠️ [Quiz] Token não fornecido na URL, continuando mesmo assim');
           }
 
           // Buscar quiz do banco (mesmo se token falhar, pois temos order_id e quiz_id válidos)
-          console.log('🔍 [Quiz] Buscando quiz no banco:', { quizId });
+          devLog('🔍 [Quiz] Buscando quiz no banco:', { quizId });
           
           // Tentar primeiro via RPC (ignora RLS), depois via query normal
           let quizData = null;
           let quizError = null;
           
           try {
-            console.log('🔍 [Quiz] Tentando buscar quiz via RPC...');
+            devLog('🔍 [Quiz] Tentando buscar quiz via RPC...');
             const { data: rpcData, error: rpcError } = await supabase
               .rpc('get_quiz_by_id', { quiz_id_param: quizId });
             
             // Verificar se função RPC não existe (erro específico)
             if (rpcError) {
-              console.warn('⚠️ [Quiz] Erro ao chamar RPC:', {
+              devWarn('⚠️ [Quiz] Erro ao chamar RPC:', {
                 message: rpcError.message,
                 code: rpcError.code,
                 details: rpcError.details
@@ -153,7 +240,7 @@ const Quiz = memo(() => {
               
               // Se função não existe (42883 = function does not exist), tentar query normal imediatamente
               if (rpcError.code === '42883' || rpcError.message?.includes('does not exist')) {
-                console.log('⚠️ [Quiz] Função RPC não existe, tentando query normal imediatamente...');
+                devLog('⚠️ [Quiz] Função RPC não existe, tentando query normal imediatamente...');
                 const { data: queryData, error: queryError } = await supabase
                   .from('quizzes')
                   .select('*')
@@ -164,7 +251,7 @@ const Quiz = memo(() => {
                 quizError = queryError;
               } else {
                 // Outro erro, tentar query normal como fallback
-                console.log('⚠️ [Quiz] Erro na RPC, tentando query normal como fallback...');
+                devLog('⚠️ [Quiz] Erro na RPC, tentando query normal como fallback...');
                 const { data: queryData, error: queryError } = await supabase
                   .from('quizzes')
                   .select('*')
@@ -176,10 +263,10 @@ const Quiz = memo(() => {
               }
             } else if (rpcData && rpcData.length > 0) {
               quizData = rpcData[0];
-              console.log('✅ [Quiz] Quiz encontrado via RPC');
+              devLog('✅ [Quiz] Quiz encontrado via RPC');
             } else {
               // RPC retornou vazio, tentar query normal
-              console.log('⚠️ [Quiz] RPC retornou vazio, tentando query normal...');
+              devLog('⚠️ [Quiz] RPC retornou vazio, tentando query normal...');
               const { data: queryData, error: queryError } = await supabase
                 .from('quizzes')
                 .select('*')
@@ -190,12 +277,12 @@ const Quiz = memo(() => {
               quizError = queryError;
             }
           } catch (error) {
-            console.error('❌ [Quiz] Erro ao buscar quiz:', error);
+            devError('❌ [Quiz] Erro ao buscar quiz:', error);
             quizError = error;
           }
 
           if (quizError) {
-            console.error('❌ [Quiz] Erro ao buscar quiz:', {
+            devError('❌ [Quiz] Erro ao buscar quiz:', {
               error: quizError.message,
               code: quizError.code,
               details: quizError.details,
@@ -210,7 +297,7 @@ const Quiz = memo(() => {
           }
 
           if (!quizData) {
-            console.error('❌ [Quiz] Quiz não encontrado no banco:', { quizId });
+            devError('❌ [Quiz] Quiz não encontrado no banco:', { quizId });
             if (isMountedRef.current) {
               toast.error('Quiz não encontrado');
               setLoading(false);
@@ -218,14 +305,14 @@ const Quiz = memo(() => {
             return;
           }
 
-          console.log('✅ [Quiz] Quiz encontrado:', {
+          devLog('✅ [Quiz] Quiz encontrado:', {
             quizId: quizData.id,
             about_who: quizData.about_who,
             style: quizData.style
           });
           
           // Verificar se o quiz pertence ao pedido (segurança adicional)
-          console.log('🔍 [Quiz] Verificando se quiz pertence ao pedido:', { orderId });
+          devLog('🔍 [Quiz] Verificando se quiz pertence ao pedido:', { orderId });
           const { data: orderData, error: orderError } = await supabase
             .from('orders')
             .select('quiz_id, status, customer_email')
@@ -233,7 +320,7 @@ const Quiz = memo(() => {
             .single();
           
           if (orderError) {
-            console.error('❌ [Quiz] Erro ao buscar pedido:', {
+            devError('❌ [Quiz] Erro ao buscar pedido:', {
               error: orderError.message,
               code: orderError.code,
               details: orderError.details,
@@ -247,7 +334,7 @@ const Quiz = memo(() => {
           }
 
           if (!orderData) {
-            console.error('❌ [Quiz] Pedido não encontrado:', { orderId });
+            devError('❌ [Quiz] Pedido não encontrado:', { orderId });
             if (isMountedRef.current) {
               toast.error('Pedido não encontrado');
               setLoading(false);
@@ -256,7 +343,7 @@ const Quiz = memo(() => {
           }
 
           if (orderData.quiz_id !== quizId) {
-            console.error('❌ [Quiz] Quiz não pertence ao pedido:', {
+            devError('❌ [Quiz] Quiz não pertence ao pedido:', {
               order_quiz_id: orderData.quiz_id,
               provided_quiz_id: quizId
             });
@@ -267,7 +354,7 @@ const Quiz = memo(() => {
             return;
           }
 
-          console.log('✅ [Quiz] Quiz pertence ao pedido, continuando...');
+          devLog('✅ [Quiz] Quiz pertence ao pedido, continuando...');
 
           // Parse relationship (handle "Outro: xxx" format)
           let relationship = quizData.relationship || '';
@@ -298,14 +385,14 @@ const Quiz = memo(() => {
           localStorage.setItem('editing_quiz_id', quizId);
           localStorage.setItem('editing_token', token || '');
           
-          console.log('✅ [Quiz] Quiz carregado com sucesso, dados salvos no localStorage');
+          devLog('✅ [Quiz] Quiz carregado com sucesso, dados salvos no localStorage');
           if (isMountedRef.current) {
             toast.success('Quiz carregado para edição');
           }
         } catch (error) {
-          console.error('❌ [Quiz] Erro ao carregar quiz:', error);
+          devError('❌ [Quiz] Erro ao carregar quiz:', error);
           const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-          console.error('❌ [Quiz] Detalhes do erro:', {
+          devError('❌ [Quiz] Detalhes do erro:', {
             message: errorMessage,
             stack: error instanceof Error ? error.stack : undefined,
             error
@@ -321,12 +408,12 @@ const Quiz = memo(() => {
         }
       };
 
-      loadQuizFromDatabase();
-      return;
-    }
+        loadQuizFromDatabase();
+        return;
+      }
 
-    // PRIORIDADE 2: Carregar do localStorage usando utilitário
-    const loadedQuiz = loadQuizFromStorage();
+      // PRIORIDADE 2: Carregar do localStorage usando utilitário
+      const loadedQuiz = loadQuizFromStorage();
     
     if (loadedQuiz) {
       try {
@@ -337,6 +424,29 @@ const Quiz = memo(() => {
         if (relationship && relationship.startsWith('Outro: ')) {
           customRelationship = relationship.replace('Outro: ', '');
           relationship = t('quiz.relationships.other');
+        }
+        
+        // ✅ Mapear valores antigos para novos (compatibilidade retroativa)
+        const relationshipMapping: Record<string, string> = {
+          'Esposo(a)': t('quiz.relationships.spouse_male'),
+          'Esposa': t('quiz.relationships.spouse_female'),
+          'Filho(a)': t('quiz.relationships.child_male'),
+          'Filho': t('quiz.relationships.child_male'),
+          'Filha': t('quiz.relationships.child_female'),
+          'Irmão(ã)': t('quiz.relationships.sibling_male'),
+          'Irmão': t('quiz.relationships.sibling_male'),
+          'Irmã': t('quiz.relationships.sibling_female'),
+          'Amigo(a)': t('quiz.relationships.friend_male'),
+          'Amigo': t('quiz.relationships.friend_male'),
+          'Amiga': t('quiz.relationships.friend_female'),
+          'Eu mesmo(a)': t('quiz.relationships.myself_male'),
+          'Eu mesmo': t('quiz.relationships.myself_male'),
+          'Eu mesma': t('quiz.relationships.myself_female'),
+        };
+        
+        // Se o relacionamento está no mapeamento, usar o valor mapeado
+        if (relationship && relationshipMapping[relationship]) {
+          relationship = relationshipMapping[relationship];
         }
         
         // Populate form with existing data
@@ -357,9 +467,28 @@ const Quiz = memo(() => {
           hasShownDataLoadedRef.current = true;
         }
       } catch (error) {
-        console.error('Error loading existing quiz data:', error);
+        devError('Error loading existing quiz data:', error);
       }
     }
+    };
+
+    // Deferir usando requestIdleCallback ou setTimeout
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(loadQuizData, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = globalThis.setTimeout(loadQuizData, 2000);
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
   }, [searchParams, t]);
 
   // Rastrear início do quiz quando usuário começa (step 1)
@@ -385,7 +514,9 @@ const Quiz = memo(() => {
         } catch (error) {
           // Suprimir erros de scroll se o componente foi desmontado
           if (import.meta.env.DEV) {
-            console.debug('⚠️ [Quiz] Erro ao fazer scroll (componente desmontado):', error);
+            if (import.meta.env.DEV) {
+              console.debug('⚠️ [Quiz] Erro ao fazer scroll (componente desmontado):', error);
+            }
           }
         }
       }
@@ -435,8 +566,40 @@ const Quiz = memo(() => {
     };
   }, [formData, t]);
 
-  // Hook de validação em tempo real
+  // ✅ CORREÇÃO BUG 2 e 3: Sempre passar dados reais para validação, apenas deferir validateOnChange
   const quizForValidation = useMemo(() => getQuizDataForValidation(), [getQuizDataForValidation]);
+  const [validationReady, setValidationReady] = useState(false);
+  
+  // Inicializar validação apenas quando necessário (deferido)
+  useEffect(() => {
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) return;
+
+    let cancelled = false;
+    const initValidation = () => {
+      if (cancelled) return;
+      setValidationReady(true);
+    };
+
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(initValidation, { timeout: 1500 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = globalThis.setTimeout(initValidation, 1500);
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
+  }, []);
+
+  // ✅ CORREÇÃO BUG 2: Sempre passar dados reais, apenas deferir validateOnChange
   const {
     validate: validateQuizData,
     validateRequired,
@@ -445,7 +608,7 @@ const Quiz = memo(() => {
     hasFieldError,
     markFieldTouched,
   } = useQuizValidation(quizForValidation, {
-    validateOnChange: true,
+    validateOnChange: validationReady,
     strict: false,
   });
 
@@ -486,6 +649,7 @@ const Quiz = memo(() => {
   }, [getFieldErrorRaw, t]);
 
   const validateCurrentStep = useCallback(() => {
+    // #endregion
     // Validação completa usando o utilitário centralizado
     switch (step) {
       case 1:
@@ -584,9 +748,13 @@ const Quiz = memo(() => {
   }, [step]);
 
   const handleSubmit = useCallback(async () => {
+    // ✅ OTIMIZAÇÃO: Preload imediato do Checkout quando usuário clica em submit
+    // Isso garante que o Checkout esteja pronto quando a navegação acontecer
+    import('../pages/Checkout').catch(() => {});
+    
     // ✅ CORREÇÃO RACE CONDITION: Marcar como submetendo IMEDIATAMENTE
     if (isSubmittingRef.current || loading) {
-      console.log('⚠️ [Quiz] Submit já em andamento, ignorando clique duplicado');
+      devLog('⚠️ [Quiz] Submit já em andamento, ignorando clique duplicado');
       return;
     }
     
@@ -594,7 +762,7 @@ const Quiz = memo(() => {
     isSubmittingRef.current = true;
     
     if (!validateCurrentStep()) {
-      console.log('❌ [Quiz] Validação do step atual falhou');
+      devLog('❌ [Quiz] Validação do step atual falhou');
       // Resetar flag se validação falhar
       isSubmittingRef.current = false;
       return;
@@ -603,7 +771,7 @@ const Quiz = memo(() => {
     // Agora sim setar loading
     setLoading(true);
     
-    console.log('🚀 [Quiz] Iniciando submit do quiz...');
+    devLog('🚀 [Quiz] Iniciando submit do quiz...');
     
     try {
       const finalRelationship = formData.relationship === t('quiz.relationships.other') 
@@ -631,7 +799,7 @@ const Quiz = memo(() => {
         document.cookie = `lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
         document.documentElement.lang = lang;
         
-        console.log('🌍 [Quiz] Idioma detectado e persistido:', lang);
+        devLog('🌍 [Quiz] Idioma detectado e persistido:', lang);
         return lang;
       };
 
@@ -653,7 +821,7 @@ const Quiz = memo(() => {
       const isEditMode = editingOrderId && editingQuizId && editingToken && 
                          urlEdit === 'true' && urlOrderId === editingOrderId && urlQuizId === editingQuizId;
 
-      console.log('🔍 [Quiz] Verificando modo de edição:', {
+      devLog('🔍 [Quiz] Verificando modo de edição:', {
         hasEditingFlags: !!(editingOrderId && editingQuizId && editingToken),
         urlEdit,
         urlOrderId,
@@ -665,7 +833,7 @@ const Quiz = memo(() => {
 
       if (isEditMode) {
         // Modo de edição: atualizar quiz no banco
-        console.log('✏️ [Quiz] Atualizando quiz existente:', { editingOrderId, editingQuizId });
+        devLog('✏️ [Quiz] Atualizando quiz existente:', { editingOrderId, editingQuizId });
         
         const quizUpdateData = {
           relationship: finalRelationship,
@@ -685,7 +853,7 @@ const Quiz = memo(() => {
           .eq('id', editingQuizId);
 
         if (updateError) {
-          console.error('❌ [Quiz] Erro ao atualizar quiz:', updateError);
+          devError('❌ [Quiz] Erro ao atualizar quiz:', updateError);
           toast.error('Erro ao atualizar quiz');
           setLoading(false);
           isSubmittingRef.current = false; // ✅ Resetar flag
@@ -704,23 +872,15 @@ const Quiz = memo(() => {
         localStorage.removeItem('editing_quiz_id');
         localStorage.removeItem('editing_token');
 
-        console.log('✅ [Quiz] Quiz atualizado em modo de edição, navegando para checkout...');
+        devLog('✅ [Quiz] Quiz atualizado em modo de edição, navegando para checkout...');
         
         // ✅ CORREÇÃO: Após atualizar o quiz, navegar para checkout normalmente
         // O usuário clicou em "Continuar para o Pagamento", então deve ir para o checkout
         // Não mostrar mensagem "Quiz atualizado" - apenas navegar diretamente
-        const currentPath = window.location.pathname;
-        let checkoutPath = '/pt/checkout'; // fallback para português
+        // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+        const checkoutPath = '/checkout';
         
-        if (currentPath.startsWith('/en')) {
-          checkoutPath = '/en/checkout';
-        } else if (currentPath.startsWith('/es')) {
-          checkoutPath = '/es/checkout';
-        } else if (currentPath.startsWith('/pt')) {
-          checkoutPath = '/pt/checkout';
-        }
-        
-        console.log('🔄 [Quiz] Navegando para checkout após atualização:', checkoutPath);
+        devLog('🔄 [Quiz] Navegando para checkout após atualização:', checkoutPath);
         
         // Navegar preservando UTMs
         navigateWithUtms(checkoutPath);
@@ -746,7 +906,7 @@ const Quiz = memo(() => {
       // Validar quiz completo antes de salvar
       const validationResult = validateQuiz(quizDataForValidation, { strict: false });
       if (!validationResult.valid) {
-        console.error('❌ [Quiz] Validação falhou:', validationResult.errors);
+        devError('❌ [Quiz] Validação falhou:', validationResult.errors);
         const errorMessage = formatValidationErrors(validationResult.errors);
         toast.error(errorMessage || 'Por favor, corrija os erros no formulário');
         setLoading(false);
@@ -754,11 +914,11 @@ const Quiz = memo(() => {
         return;
       }
       
-      console.log('✅ [Quiz] Validação passou, salvando quiz...');
+      devLog('✅ [Quiz] Validação passou, salvando quiz...');
 
       // Gerar ou obter session_id único
       const quizSessionId = getOrCreateQuizSessionId();
-      console.log('🔑 [Quiz] Session ID gerado/obtido:', quizSessionId);
+      devLog('🔑 [Quiz] Session ID gerado/obtido:', quizSessionId);
 
       // Sanitizar dados antes de salvar
       const sanitizedQuiz = sanitizeQuiz(quizDataForValidation);
@@ -768,7 +928,7 @@ const Quiz = memo(() => {
         session_id: quizSessionId // Adicionar session_id ao quiz
       };
 
-      console.log('💾 [Quiz] Tentando salvar quiz no localStorage:', {
+      devLog('💾 [Quiz] Tentando salvar quiz no localStorage:', {
         hasAboutWho: !!quizData.about_who,
         hasStyle: !!quizData.style,
         hasLanguage: !!quizData.language,
@@ -781,7 +941,7 @@ const Quiz = memo(() => {
       const saveResult = await saveQuizToStorage(quizData, { retries: 3, delay: 100 });
       
       if (!saveResult.success) {
-        console.error('❌ [Quiz] Erro ao salvar quiz no localStorage:', {
+        devError('❌ [Quiz] Erro ao salvar quiz no localStorage:', {
           error: saveResult.error?.message,
           errorStack: saveResult.error?.stack,
           formData,
@@ -793,7 +953,7 @@ const Quiz = memo(() => {
         return;
       }
       
-      console.log('✅ [Quiz] Quiz salvo no localStorage, tentando salvar no banco...');
+      devLog('✅ [Quiz] Quiz salvo no localStorage, tentando salvar no banco...');
 
       // ✅ SALVAMENTO ANTECIPADO: Salvar no banco antes de navegar
       // Aguardar até 5-7 segundos pelo primeiro save (não bloquear indefinidamente)
@@ -850,7 +1010,7 @@ const Quiz = memo(() => {
 
       if (saveResult_db.success && saveResult_db.quizId) {
         // ✅ SUCESSO: Quiz salvo no banco
-        console.log('✅ [Quiz] Quiz salvo no banco com sucesso:', {
+        devLog('✅ [Quiz] Quiz salvo no banco com sucesso:', {
           quiz_id: saveResult_db.quizId,
           session_id: quizSessionId,
           elapsed_ms: elapsedTime
@@ -862,7 +1022,7 @@ const Quiz = memo(() => {
       } else {
         // ⚠️ FALHOU ou TIMEOUT - garantir que foi para fila ANTES de navegar
         const error = (saveResult_db as any).timeout ? new Error('Timeout ao salvar quiz') : (saveResult_db as any).error;
-        console.warn('⚠️ [Quiz] Salvamento no banco falhou ou timeout:', {
+        devWarn('⚠️ [Quiz] Salvamento no banco falhou ou timeout:', {
           error: error?.message || 'Timeout',
           timeout: (saveResult_db as any).timeout,
           elapsed_ms: elapsedTime,
@@ -875,10 +1035,10 @@ const Quiz = memo(() => {
           queueSuccess = await enqueueQuizToServer(quizPayload, error);
           
           if (queueSuccess) {
-            console.log('📋 [Quiz] Quiz adicionado à fila de retry do servidor');
+            devLog('📋 [Quiz] Quiz adicionado à fila de retry do servidor');
             quizSavedOrQueued = true;
           } else {
-            console.warn('⚠️ [Quiz] Falha ao adicionar quiz à fila do servidor, tentando fallback no localStorage');
+            devWarn('⚠️ [Quiz] Falha ao adicionar quiz à fila do servidor, tentando fallback no localStorage');
             
             // ✅ FALLBACK: Se falhar ao adicionar na fila, marcar no localStorage para retry no checkout
             const quizWithRetryFlag = {
@@ -890,15 +1050,15 @@ const Quiz = memo(() => {
             
             try {
               await saveQuizToStorage(quizWithRetryFlag, { retries: 2, delay: 100 });
-              console.log('✅ [Quiz] Quiz marcado para retry no checkout (fallback)');
+              devLog('✅ [Quiz] Quiz marcado para retry no checkout (fallback)');
               quizSavedOrQueued = true; // localStorage é aceitável como fallback
             } catch (fallbackError) {
-              console.error('❌ [Quiz] Falha total: não foi possível salvar nem na fila nem no localStorage:', fallbackError);
+              devError('❌ [Quiz] Falha total: não foi possível salvar nem na fila nem no localStorage:', fallbackError);
               quizSavedOrQueued = false; // Falhou tudo
             }
           }
         } catch (queueError) {
-          console.error('❌ [Quiz] Exceção ao adicionar à fila do servidor, tentando fallback:', queueError);
+          devError('❌ [Quiz] Exceção ao adicionar à fila do servidor, tentando fallback:', queueError);
           
           // Fallback: marcar no localStorage para retry no checkout
           try {
@@ -909,37 +1069,36 @@ const Quiz = memo(() => {
               _lastRetryError: queueError instanceof Error ? queueError.message : 'Unknown error'
             };
             await saveQuizToStorage(quizWithRetryFlag, { retries: 2, delay: 100 });
-            console.log('✅ [Quiz] Quiz marcado para retry no checkout (fallback após exceção)');
+            devLog('✅ [Quiz] Quiz marcado para retry no checkout (fallback após exceção)');
             quizSavedOrQueued = true; // localStorage é aceitável como fallback
           } catch (fallbackError) {
-            console.error('❌ [Quiz] Falha total no fallback:', fallbackError);
+            devError('❌ [Quiz] Falha total no fallback:', fallbackError);
             quizSavedOrQueued = false; // Falhou tudo
           }
         }
 
         // ✅ REGRA DE OURO: Se não salvou E não foi para fila, NÃO navegar
         if (!quizSavedOrQueued) {
-          console.error('❌ [Quiz] CRÍTICO: Não foi possível salvar quiz nem na fila. Bloqueando navegação.');
+          devError('❌ [Quiz] CRÍTICO: Não foi possível salvar quiz nem na fila. Bloqueando navegação.');
           toast.error('Erro ao salvar suas respostas. Por favor, tente novamente. Se o problema persistir, entre em contato conosco.');
           setLoading(false);
           isSubmittingRef.current = false;
           return; // NÃO navegar - proteger as respostas do usuário
         }
 
-        // Se chegou aqui, foi para fila ou localStorage - mostrar mensagem não bloqueante
-        toast.info('Tivemos uma oscilação na conexão, estamos tentando de novo em segundo plano. Você pode continuar normalmente.');
+        // Se chegou aqui, foi para fila ou localStorage - processar em background silenciosamente
       }
 
       // ✅ VALIDAÇÃO FINAL: Só navegar se quiz foi salvo ou foi para fila
       if (!quizSavedOrQueued) {
-        console.error('❌ [Quiz] CRÍTICO: Validação final falhou - quiz não foi salvo nem foi para fila');
+        devError('❌ [Quiz] CRÍTICO: Validação final falhou - quiz não foi salvo nem foi para fila');
         toast.error('Erro ao salvar suas respostas. Por favor, tente novamente.');
         setLoading(false);
         isSubmittingRef.current = false;
         return;
       }
 
-      console.log('✅ [Quiz] Quiz salvo no localStorage com sucesso e validado:', {
+      devLog('✅ [Quiz] Quiz salvo no localStorage com sucesso e validado:', {
         hasAboutWho: !!quizData.about_who,
         hasStyle: !!quizData.style,
         hasLanguage: !!quizData.language,
@@ -968,21 +1127,13 @@ const Quiz = memo(() => {
       });
       
       // ✅ Só navegar se chegou até aqui (quiz foi salvo ou foi para fila)
-      const currentPath = window.location.pathname;
-      let checkoutPath = '/pt/checkout'; // fallback para português
+      // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+      const checkoutPath = '/checkout';
       
-      if (currentPath.startsWith('/en')) {
-        checkoutPath = '/en/checkout';
-      } else if (currentPath.startsWith('/es')) {
-        checkoutPath = '/es/checkout';
-      } else if (currentPath.startsWith('/pt')) {
-        checkoutPath = '/pt/checkout';
-      }
-      
-      console.log('🔄 [Quiz] Navegando para checkout (quiz protegido):', checkoutPath);
+      devLog('🔄 [Quiz] Navegando para checkout (quiz protegido):', checkoutPath);
       navigateWithUtms(checkoutPath);
     } catch (error: any) {
-      console.error('❌ [Quiz] Erro ao salvar quiz:', error);
+      devError('❌ [Quiz] Erro ao salvar quiz:', error);
       toast.error(t('quiz.messages.errorSaving'));
       setLoading(false);
       isSubmittingRef.current = false; // ✅ Resetar flag em caso de erro
@@ -992,227 +1143,36 @@ const Quiz = memo(() => {
   }, [validateCurrentStep, formData, navigate, searchParams, navigateWithUtms, t]);
 
   const renderStep = () => {
+    const commonProps = {
+      formData,
+      updateField,
+      markFieldTouched,
+      hasFieldError,
+      getFieldError
+    };
+
     switch (step) {
       case 1:
         return (
-          <div className="space-y-2.5 md:space-y-4">
-            <div>
-              <Label className="text-lg md:text-lg font-semibold mb-2 md:mb-2 block">{t('quiz.questions.forWho')} *</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-2.5">
-                {RELATIONSHIPS.map((rel) => (
-                  <button
-                    key={rel}
-                    type="button"
-                    onClick={() => updateField('relationship', rel)}
-                    className={`px-4 py-2.5 md:px-4 md:py-2.5 rounded-full border-2 transition-all font-medium text-lg md:text-base ${
-                      formData.relationship === rel
-                        ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                        : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
-                    }`}
-                  >
-                    {rel}
-                  </button>
-                ))}
-              </div>
-              {formData.relationship === t('quiz.relationships.other') && (
-                <div className="mt-3 md:mt-3">
-                  <Input
-                    placeholder={t('quiz.questions.enterRelationship')}
-                    value={formData.customRelationship}
-                    onChange={(e) => {
-                      updateField('customRelationship', e.target.value);
-                      markFieldTouched('customRelationship');
-                    }}
-                    onBlur={() => markFieldTouched('customRelationship')}
-                    className={`border-[hsl(var(--quiz-border))] text-lg md:text-base py-2.5 md:py-3 ${
-                      hasFieldError('customRelationship') ? 'border-red-500' : ''
-                    }`}
-                  />
-                  {hasFieldError('customRelationship') && (
-                    <p className="text-base md:text-sm text-red-500 mt-1">{getFieldError('customRelationship')}</p>
-                  )}
-                  <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mt-1">
-                    {formData.customRelationship.length}/100 {t('quiz.characterCount.characters')}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="aboutWho" className="text-lg md:text-lg font-semibold mb-1.5 md:mb-2 block">{t('quiz.questions.name')} *</Label>
-              <Input
-                id="aboutWho"
-                placeholder={t('quiz.questions.namePlaceholder')}
-                value={formData.aboutWho}
-                onChange={(e) => {
-                  updateField('aboutWho', e.target.value);
-                  markFieldTouched('about_who');
-                }}
-                onBlur={() => markFieldTouched('about_who')}
-                className={`border-[hsl(var(--quiz-border))] text-lg md:text-base py-2.5 md:py-3 ${
-                  hasFieldError('about_who') ? 'border-red-500' : ''
-                }`}
-              />
-              {hasFieldError('about_who') && (
-                <p className="text-base md:text-sm text-red-500 mt-1">{getFieldError('about_who')}</p>
-              )}
-              <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mt-1">
-                {t('quiz.questions.nameHint')} ({formData.aboutWho.length}/100 {t('quiz.characterCount.characters')})
-              </p>
-            </div>
-          </div>
+          <QuizStep1
+            {...commonProps}
+            relationships={RELATIONSHIPS}
+          />
         );
-
       case 2:
         return (
-          <div className="space-y-1 md:space-y-2">
-            <div>
-              <Label className="text-lg md:text-lg font-semibold mb-0.5 md:mb-1 block">{t('quiz.questions.styleQuestion')} *</Label>
-              <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mb-1.5 md:mb-1.5 leading-snug">
-                {t('quiz.questions.styleDescription')}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 md:gap-2">
-              {STYLES.map((style) => (
-                <button
-                  key={style}
-                  type="button"
-                  onClick={() => updateField('style', style)}
-                  className={`px-3 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-base md:text-sm ${
-                    formData.style === style
-                      ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                      : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
-                  }`}
-                >
-                  {style}
-                </button>
-              ))}
-            </div>
-
-            <div className="border-t border-[hsl(var(--quiz-border))] pt-1.5 md:pt-2 mt-2 md:mt-2.5">
-              <div>
-                <Label className="text-lg md:text-lg font-semibold mb-0.5 md:mb-1 block">{t('quiz.questions.vocalPreference')}</Label>
-                <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mb-1.5 md:mb-1.5 leading-snug">
-                  {t('quiz.questions.vocalDescription')}
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-0.5 md:gap-2">
-                {VOCAL_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => updateField('vocalGender', option.value)}
-                    className={`px-1 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-xs md:text-sm whitespace-nowrap ${
-                      formData.vocalGender === option.value
-                        ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
-                        : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <QuizStep2
+            {...commonProps}
+            styles={STYLES}
+            vocalOptions={VOCAL_OPTIONS}
+          />
         );
-
       case 3:
-        return (
-          <div className="space-y-1.5 md:space-y-3">
-            <div>
-              <Label htmlFor="qualities" className="text-xl md:text-xl font-semibold mb-1 block">{t('quiz.questions.qualities')} ({t('quiz.characterCount.optional')})</Label>
-              <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mb-2 md:mb-2 leading-snug">
-                {t('quiz.questions.qualitiesDescription')}
-              </p>
-            </div>
-            <Textarea
-              id="qualities"
-              placeholder={t('quiz.questions.qualitiesPlaceholder')}
-              value={formData.qualities}
-              onChange={(e) => {
-                updateField('qualities', e.target.value);
-                markFieldTouched('qualities');
-              }}
-              onBlur={() => markFieldTouched('qualities')}
-              rows={5}
-              className={`border-[hsl(var(--quiz-border))] resize-none text-lg md:text-lg py-2.5 md:py-3 ${
-                hasFieldError('qualities') ? 'border-red-500' : ''
-              }`}
-            />
-            {hasFieldError('qualities') && (
-              <p className="text-lg md:text-base text-red-500 mt-1">{getFieldError('qualities')}</p>
-            )}
-            <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mt-1">
-              {formData.qualities.length}/500 {t('quiz.characterCount.characters')} {formData.qualities.length > 500 && `(${t('quiz.characterCount.maxExceeded')})`}
-            </p>
-          </div>
-        );
-
+        return <QuizStep3 {...commonProps} />;
       case 4:
-        return (
-          <div className="space-y-1.5 md:space-y-3">
-            <div>
-              <Label htmlFor="memories" className="text-xl md:text-xl font-semibold mb-1 block">{t('quiz.questions.memories')} ({t('quiz.characterCount.optional')})</Label>
-              <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mb-2 md:mb-2 leading-snug">
-                {t('quiz.questions.memoriesDescription')}
-              </p>
-            </div>
-            <Textarea
-              id="memories"
-              placeholder={t('quiz.questions.memoriesPlaceholder')}
-              value={formData.memories}
-              onChange={(e) => {
-                updateField('memories', e.target.value);
-                markFieldTouched('memories');
-              }}
-              onBlur={() => markFieldTouched('memories')}
-              rows={5}
-              className={`border-[hsl(var(--quiz-border))] resize-none text-lg md:text-lg py-2.5 md:py-3 ${
-                hasFieldError('memories') ? 'border-red-500' : ''
-              }`}
-            />
-            {hasFieldError('memories') && (
-              <p className="text-lg md:text-base text-red-500 mt-1">{getFieldError('memories')}</p>
-            )}
-            <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mt-1">
-              {formData.memories.length}/800 {t('quiz.characterCount.characters')} {formData.memories.length > 800 && `(${t('quiz.characterCount.maxExceeded')})`}
-            </p>
-          </div>
-        );
-
+        return <QuizStep4 {...commonProps} />;
       case 5:
-        return (
-          <div className="space-y-1.5 md:space-y-4">
-            <div className="space-y-2 md:space-y-3">
-              <div>
-                <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mb-2 md:mb-2 leading-snug">
-                  {t('quiz.questions.heartMessageDescription')}
-                </p>
-              </div>
-              <Textarea
-                id="message"
-                placeholder={t('quiz.questions.heartMessagePlaceholder')}
-                value={formData.message}
-                onChange={(e) => {
-                  updateField('message', e.target.value);
-                  markFieldTouched('message');
-                }}
-                onBlur={() => markFieldTouched('message')}
-                rows={5}
-                className={`border-[hsl(var(--quiz-border))] resize-none text-lg md:text-lg py-2.5 md:py-3 ${
-                  hasFieldError('message') ? 'border-red-500' : ''
-                }`}
-              />
-              {hasFieldError('message') && (
-                <p className="text-lg md:text-base text-red-500 mt-1">{getFieldError('message')}</p>
-              )}
-              <p className="text-lg md:text-base text-[hsl(var(--quiz-text-muted))] mt-1">
-                {formData.message.length}/500 {t('quiz.characterCount.characters')} {formData.message.length > 500 && `(${t('quiz.characterCount.maxExceeded')})`}
-              </p>
-            </div>
-          </div>
-        );
-
+        return <QuizStep5 {...commonProps} />;
       default:
         return null;
     }
@@ -1231,17 +1191,7 @@ const Quiz = memo(() => {
       <div className="max-w-[700px] lg:max-w-[600px] mx-auto py-4 md:py-4">
         <Card className="relative border-[hsl(var(--quiz-border))] shadow-lg">
           <CardHeader className="pb-0 md:pb-3 px-4 md:px-5 pt-4 md:pt-5">
-            <div className="mb-2 md:mb-2">
-              <Progress value={progress} className="h-1" />
-              <div className="flex items-center justify-between mt-1 md:mt-1.5">
-                <p className="text-lg md:text-sm text-[hsl(var(--quiz-text-muted))]">
-                  {t('quiz.progress.step')} {step} {t('quiz.progress.of')} {totalSteps}
-                </p>
-                <p className="text-lg md:text-sm font-medium text-[hsl(var(--quiz-primary))]">
-                  {Math.round(progress)}% {t('quiz.progress.complete')}
-                </p>
-              </div>
-            </div>
+            <QuizProgress step={step} totalSteps={totalSteps} progress={progress} />
             <CardTitle className="text-2xl md:text-2xl lg:text-2xl mb-0">
               {stepTitles[step - 1]}
             </CardTitle>
@@ -1252,45 +1202,14 @@ const Quiz = memo(() => {
                 {renderStep()}
               </div>
 
-              <div className="flex gap-2 md:gap-3 mt-2.5 md:mt-4">
-                {step > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleBack}
-                    disabled={loading}
-                    className="border-[hsl(var(--quiz-border))] text-xl md:text-base font-semibold px-4 py-3 md:px-5 md:py-3"
-                  >
-                    <ArrowLeft className="mr-2 h-6 w-6 md:h-4 md:w-4 flex-shrink-0" />
-                    {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
-                    {t('quiz.buttons.back', 'Voltar')}
-                  </Button>
-                )}
-                
-                {step < totalSteps ? (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="ml-auto bg-[hsl(var(--quiz-primary))] hover:bg-[hsl(var(--quiz-primary-hover))] text-white text-xl md:text-base font-semibold px-4 py-3 md:px-5 md:py-3"
-                    disabled={loading}
-                  >
-                    {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
-                    {t('quiz.buttons.next', 'Próximo')}
-                    <ArrowRight className="ml-2 h-6 w-6 md:h-4 md:w-4 flex-shrink-0" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    className="ml-auto bg-[hsl(var(--quiz-primary))] hover:bg-[hsl(var(--quiz-primary-hover))] text-white text-base md:text-sm font-semibold px-4 py-3 md:px-5 md:py-3 whitespace-normal md:whitespace-nowrap leading-tight"
-                    disabled={loading}
-                  >
-                    {loading && <Loader2 className="mr-2 h-6 w-6 md:h-4 md:w-4 animate-spin flex-shrink-0" />}
-                    {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
-                    <span className="text-center">{t('quiz.buttons.continueToPayment', 'Continuar para Pagamento')}</span>
-                  </Button>
-                )}
-              </div>
+              <QuizNavigation
+                step={step}
+                totalSteps={totalSteps}
+                loading={loading}
+                onBack={handleBack}
+                onNext={handleNext}
+                onSubmit={handleSubmit}
+              />
             </form>
           </CardContent>
         </Card>

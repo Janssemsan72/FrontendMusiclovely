@@ -95,6 +95,10 @@ export default function HowItWorks() {
           <Link
             to="/quiz"
             className="inline-flex items-center gap-1.5 sm:gap-2 px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl bg-primary hover:bg-primary-600 text-white font-semibold text-sm sm:text-base shadow-soft transition-all hover:scale-105 group"
+            onMouseEnter={() => {
+              // Preload agressivo do Quiz no hover
+              import('../pages/Quiz').catch(() => {});
+            }}
           >
             {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
             <span>🎵 {t('features.cta.button', 'Criar Minha Música')}</span>

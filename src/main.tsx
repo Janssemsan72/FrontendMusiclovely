@@ -8,11 +8,12 @@ const isDev = import.meta.env.DEV;
 // Log removido para reduzir verbosidade
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
-import "./index.css";
-import { setupGlobalErrorHandling } from "./utils/errors/errorHandler";
-import { setupErrorSuppression } from "./utils/errors/errorSuppression";
-// ✅ CRÍTICO: Inicializar i18n antes de qualquer componente
-import "./i18n";
+// ✅ OTIMIZAÇÃO: CSS carregado de forma diferida (ver index.html)
+// import "./index.css"; // Movido para carregamento diferido
+// ✅ OTIMIZAÇÃO: Error handlers e i18n carregados após paint
+// import { setupGlobalErrorHandling } from "./utils/errors/errorHandler";
+// import { setupErrorSuppression } from "./utils/errors/errorSuppression";
+// import "./i18n"; // Carregado de forma diferida
 
 // ✅ CORREÇÃO: Declarar tipos para propriedades globais do window
 declare global {
@@ -27,12 +28,36 @@ declare global {
   }
 }
 
-// ✅ CORREÇÃO: Configurar supressão de erros conhecidos ANTES do tratamento global
-// Isso evita que erros esperados (como UTMify em dev) sejam logados
-const cleanupErrorSuppression = setupErrorSuppression();
+// ✅ OTIMIZAÇÃO: Error handlers e i18n carregados após paint para não bloquear FCP
+let cleanupErrorSuppression: (() => void) | null = null;
+let cleanupErrorHandling: (() => void) | null = null;
 
-// ✅ CORREÇÃO: Configurar tratamento global de erros ANTES de tudo
-const cleanupErrorHandling = setupGlobalErrorHandling();
+// i18n removido - sempre português do Brasil
+
+// Carregar error handlers de forma diferida (não crítico)
+const loadErrorHandlers = () => {
+  if (cleanupErrorSuppression || cleanupErrorHandling) return; // Já carregado
+  
+  Promise.all([
+    import("./utils/errors/errorSuppression").then(m => m.setupErrorSuppression()),
+    import("./utils/errors/errorHandler").then(m => m.setupGlobalErrorHandling())
+  ]).then(([suppressionCleanup, handlingCleanup]) => {
+    cleanupErrorSuppression = suppressionCleanup;
+    cleanupErrorHandling = handlingCleanup;
+  }).catch(() => {
+    // Ignorar erros silenciosamente
+  });
+};
+
+// i18n removido - sempre português do Brasil
+// Error handlers carregados após primeiro paint
+if (typeof window !== 'undefined') {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(loadErrorHandlers, 200);
+    });
+  });
+}
 
 // ✅ Tracking de comportamento removido conforme solicitado (save-behavior-event)
 
@@ -99,31 +124,10 @@ if (typeof window !== 'undefined') {
     }, { timeout: 100 });
   };
   
-  // ✅ OTIMIZAÇÃO: beforeunload precisa ser síncrono, mas podemos otimizar o código dentro
-  window.addEventListener('beforeunload', () => {
-    const now = Date.now();
-    const timeSinceLastReload = now - lastReloadTime;
-    
-    // Verificação rápida primeiro (não bloqueia)
-    if (timeSinceLastReload < RELOAD_COOLDOWN_MS && lastReloadTime > 0) {
-      reloadCount++;
-      if (isDev) {
-        console.warn(`⚠️ [Main] Recarregamento detectado rapidamente (${reloadCount} vez(es) em ${Math.round(timeSinceLastReload / 1000)}s)`);
-        
-        if (reloadCount >= MAX_RELOADS_PER_MINUTE) {
-          console.error('❌ [Main] POSSÍVEL LOOP DE RECARREGAMENTO DETECTADO!');
-        }
-      }
-    } else {
-      reloadCount = 0;
-    }
-    
-    lastReloadTime = now;
-    cleanupErrorHandling();
-    
-    // ✅ CAMADA 4 - SALVAMENTO DE ÚLTIMA HORA: Tentar salvar quiz antes de fechar
-    // Envia quiz via sendBeacon mesmo que já tenha ID (pode atualizar dados)
-    // ✅ OTIMIZAÇÃO: Usar try-catch mínimo e sendBeacon (não bloqueia)
+  // ✅ OTIMIZAÇÃO: Usar pagehide ao invés de beforeunload para não bloquear bfcache
+  // pagehide é disparado quando a página está sendo descarregada mas não bloqueia bfcache
+  // Função helper para salvar quiz
+  const savePendingQuiz = () => {
     try {
       const pendingQuiz = localStorage.getItem('pending_quiz');
       if (pendingQuiz && navigator.sendBeacon) {
@@ -156,7 +160,40 @@ if (typeof window !== 'undefined') {
         }
       }
     } catch (error) {
-      // Ignorar erros silenciosamente - não queremos bloquear o fechamento da página
+      // Ignorar erros silenciosamente
+    }
+  };
+
+  // Usar pagehide (não bloqueia bfcache)
+  window.addEventListener('pagehide', (event) => {
+    const now = Date.now();
+    const timeSinceLastReload = now - lastReloadTime;
+    
+    // Verificação rápida primeiro (não bloqueia)
+    if (timeSinceLastReload < RELOAD_COOLDOWN_MS && lastReloadTime > 0) {
+      reloadCount++;
+      if (isDev) {
+        console.warn(`⚠️ [Main] Recarregamento detectado rapidamente (${reloadCount} vez(es) em ${Math.round(timeSinceLastReload / 1000)}s)`);
+        
+        if (reloadCount >= MAX_RELOADS_PER_MINUTE) {
+          console.error('❌ [Main] POSSÍVEL LOOP DE RECARREGAMENTO DETECTADO!');
+        }
+      }
+    } else {
+      reloadCount = 0;
+    }
+    
+    lastReloadTime = now;
+    if (cleanupErrorHandling) {
+      cleanupErrorHandling();
+    }
+    savePendingQuiz();
+  });
+
+  // Também salvar quando a página fica oculta (não bloqueia bfcache)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      savePendingQuiz();
     }
   });
   

@@ -4,15 +4,119 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Musiclovely</title>
-    <!-- ✅ OTIMIZAÇÃO: Preload de recursos críticos para melhorar FCP e LCP -->
-    <!-- Removido preload de main.tsx pois o Vite já gerencia isso automaticamente -->
-    <link rel="preload" href="/src/index.css" as="style" />
-    <!-- Preconnect para recursos externos se necessário -->
-    <!-- <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin /> -->
+    
+    <!-- ✅ OTIMIZAÇÃO: DNS prefetch para domínios de terceiros -->
+    <link rel="dns-prefetch" href="https://zagkvtxarndluusiluhb.supabase.co" />
+    <link rel="dns-prefetch" href="https://cdn.utmify.com.br" />
+    <link rel="dns-prefetch" href="https://connect.facebook.net" />
+    <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
+    <!-- ✅ OTIMIZAÇÃO: DNS prefetch para gateways de pagamento -->
+    <link rel="dns-prefetch" href="https://pay.cakto.com.br" />
+    <link rel="dns-prefetch" href="https://pay.hotmart.com" />
+    <!-- ✅ NOVO: DNS prefetch para Random User API (avatares reais) -->
+    <link rel="dns-prefetch" href="https://randomuser.me" />
+    <link rel="preconnect" href="https://randomuser.me" crossorigin />
+    
+    <!-- ✅ OTIMIZAÇÃO: Preconnect para recursos críticos -->
+    <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
+    <!-- ✅ OTIMIZAÇÃO: Preconnect para gateways de pagamento (reduz latência de redirecionamento) -->
+    <link rel="preconnect" href="https://pay.cakto.com.br" crossorigin />
+    <link rel="preconnect" href="https://pay.hotmart.com" crossorigin />
+    
+    <!-- ✅ OTIMIZAÇÃO: Preload de imagem LCP crítica apenas na página inicial (evita aviso em outras rotas) -->
+    <script>
+      // Preload condicional - apenas na página inicial
+      if (window.location.pathname === '/' || window.location.pathname === '') {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = '/images/collage-memories-new.webp';
+        link.as = 'image';
+        link.type = 'image/webp';
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+        
+        // ✅ OTIMIZAÇÃO: Preload INSTANTÂNEO do vídeo 240p (163KB - versão única para mobile)
+        // Prioridade baixa para não competir com recursos críticos, mas começar o mais cedo possível
+        const minimalVideoLink = document.createElement('link');
+        minimalVideoLink.rel = 'preload';
+        minimalVideoLink.href = '/video/musiclovaly-240p.webm';
+        minimalVideoLink.as = 'video';
+        minimalVideoLink.setAttribute('fetchpriority', 'low');
+        document.head.appendChild(minimalVideoLink);
+      }
+    </script>
+    
+    <!-- ✅ OTIMIZAÇÃO: CSS crítico mínimo inline para FCP rápido -->
+    <style>
+      /* CSS Crítico Mínimo - Above the Fold - Otimizado para Performance */
+      *{margin:0;padding:0;box-sizing:border-box}
+      html{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-display:swap;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+      body{color:#1a1a1a;background:#fff;line-height:1.5;margin:0;overflow-x:hidden}
+      #root{min-height:100vh;display:flex;flex-direction:column}
+      .relative{position:relative}
+      .absolute{position:absolute}
+      .inset-0{top:0;right:0;bottom:0;left:0}
+      .w-full{width:100%}
+      .h-full{height:100%}
+      .object-cover{object-fit:cover;object-position:center}
+      .rounded-2xl{border-radius:1rem}
+      .overflow-hidden{overflow:hidden}
+      .shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+      /* ✅ OTIMIZAÇÃO: Evitar layout shift */
+      img,video{max-width:100%;height:auto;display:block}
+      /* ✅ OTIMIZAÇÃO: Melhorar renderização */
+      *{will-change:auto}
+    </style>
+    
+    <!-- ✅ OTIMIZAÇÃO: CSS completo carregado de forma diferida -->
+    <link rel="stylesheet" href="/src/index.css" media="print" onload="this.media='all';this.onload=null" />
+    <noscript><link rel="stylesheet" href="/src/index.css" /></noscript>
+    <script>
+      // Fallback para navegadores que não suportam onload em link
+      (function() {
+        var link = document.querySelector('link[href="/src/index.css"]');
+        if (link && link.media === 'print') {
+          var fallback = setTimeout(function() {
+            if (link.media === 'print') {
+              link.media = 'all';
+            }
+          }, 100);
+          if (link.onload) {
+            var originalOnload = link.onload;
+            link.onload = function() {
+              clearTimeout(fallback);
+              if (originalOnload) originalOnload.call(this);
+              this.onload = null;
+            };
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- ✅ OTIMIZAÇÃO: Script principal com defer para não bloquear parsing -->
+    <script type="module" src="/src/main.tsx" defer></script>
+    
+    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Preload de módulo principal -->
+    <link rel="modulepreload" href="/src/main.tsx" />
+    
+    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Resource hints para melhorar LCP -->
+    <link rel="preload" href="/src/index.css" as="style" />
+    
+    <!-- ✅ OTIMIZAÇÃO PERFORMANCE: Prefetch de recursos críticos -->
+    <link rel="prefetch" href="/images/collage-memories-new.webp" as="image" />
+    
+    <!-- ✅ Script UTMify UTMs (substituído pelo formato fornecido) -->
+    <script
+      src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+      data-utmify-prevent-subids
+      async
+      defer
+    ></script>
+    
+    <!-- ✅ Script UTMify Loader (carrega pixel do Facebook de forma diferida) -->
+    <script src="/utmify-loader.js" defer></script>
   </body>
 </html>
 

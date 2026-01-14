@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ✅ OTIMIZAÇÃO: Font-display swap para todas as fontes (previne FOIT) */
+@font-face {
+  font-family: 'system-ui';
+  font-display: swap;
+}
+
 /* Modern Scrollbar Styles */
 /* Para navegadores Webkit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {

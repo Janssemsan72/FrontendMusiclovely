@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Music, Calendar, Mail, AlertCircle, Trash2, RefreshCw, Send, Copy, Check, Loader2, Search, X } from "lucide-react";
@@ -1006,6 +1006,10 @@ export default function AdminReleases() {
           onPointerDownOutside={() => setSelectedCover(null)}
           onInteractOutside={() => setSelectedCover(null)}
         >
+          <div className="sr-only">
+            <DialogTitle>Capa ampliada</DialogTitle>
+            <DialogDescription>Visualização ampliada da capa da música</DialogDescription>
+          </div>
           <div className="relative">
             {selectedCover && (
               <>

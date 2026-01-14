@@ -11,12 +11,12 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 // LanguageProvider e LocaleProvider removidos - usando apenas português
 import { PublicErrorBoundary } from "@/components/PublicErrorBoundary";
 import PublicRoutes from "@/components/PublicRoutes";
-// ✅ CRÍTICO: Importar i18n para garantir inicialização antes de qualquer componente
-import '@/i18n';
+// ✅ OTIMIZAÇÃO: i18n carregado de forma diferida no main.tsx para não bloquear FCP
+// import '@/i18n'; // Removido - carregado diferidamente
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { devLog, isDevVerbose } from "@/utils/debug/devLogger";
 import { ensureE2EAdminStorageAuthorized, isE2EAdminFlagEnabled } from "@/utils/adminE2EBypass";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "@/utils/iconImports";
 
 // ✅ CORREÇÃO: Lazy load com retry para resolver "Failed to fetch dynamically imported module"
 // const Index = lazyWithRetry(() => import("./pages/Index"));
@@ -35,15 +35,12 @@ const AdminSongDetails = lazyWithRetry(() => import("./pages/admin/AdminSongDeta
 const AdminLogs = lazyWithRetry(() => import("./pages/admin/AdminLogs"));
 const AdminLyrics = lazyWithRetry(() => import("./pages/admin/AdminLyrics"));
 const AdminReleases = lazyWithRetry(() => import("./pages/admin/AdminReleases"));
-const AdminMedia = lazyWithRetry(() => import("./pages/admin/AdminMedia"));
-const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"));
 const AdminCollaborators = lazyWithRetry(() => import("./pages/admin/AdminCollaborators"));
 const AdminEmails = lazyWithRetry(() => import("./pages/admin/AdminEmails"));
 const AdminEmailLogs = lazyWithRetry(() => import("./pages/admin/AdminEmailLogs"));
 const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"));
 // AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
-const AdminFinancial = lazyWithRetry(() => import("./pages/admin/AdminFinancial"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
 const Quiz = lazyWithRetry(() => import("./pages/Quiz"));
 const Checkout = lazyWithRetry(() => import("./pages/Checkout"));
@@ -62,27 +59,6 @@ const ApproveLyrics = lazyWithRetry(() => import("./pages/ApproveLyrics"));
 // LocaleRouter removido - usando apenas português
 const AdminDashboardRedirect = lazyWithRetry(() => import("./components/admin/AdminDashboardRedirect"));
 
-// ✅ REFATORAÇÃO: Rotas de debug/teste removidas em produção
-// Descomente apenas se necessário para debug em desenvolvimento
-// const IPDebugger = lazyWithRetry(() => import("./components/IPDebugger"));
-// const LanguageStatus = lazyWithRetry(() => import("./components/LanguageStatus"));
-// const LanguageDebugger = lazyWithRetry(() => import("./components/LanguageDebugger"));
-// const LocaleTest = lazyWithRetry(() => import("./components/LocaleTest"));
-// const SimpleLocaleTest = lazyWithRetry(() => import("./components/SimpleLocaleTest"));
-// const ForceLocaleTest = lazyWithRetry(() => import("./components/ForceLocaleTest"));
-// const SimpleTranslationTest = lazyWithRetry(() => import("./components/SimpleTranslationTest"));
-// const SimpleLocaleTestPage = lazyWithRetry(() => import("./pages/SimpleLocaleTestPage"));
-// const RouteTester = lazyWithRetry(() => import("./components/RouteTester"));
-// const LanguageAnalyticsDashboard = lazyWithRetry(() => import("./components/LanguageAnalyticsDashboard"));
-// const LocaleForceTest = lazyWithRetry(() => import("./components/LocaleForceTest"));
-// const RedirectTest = lazyWithRetry(() => import("./components/RedirectTest"));
-// const MusicTranslationTest = lazyWithRetry(() => import("./components/MusicTranslationTest"));
-// const MusicDebugger = lazyWithRetry(() => import("./components/MusicDebugger"));
-// const MusicDirectionTest = lazyWithRetry(() => import("./components/MusicDirectionTest"));
-// const TranslationTest = lazyWithRetry(() => import("./components/TranslationTest"));
-// const TranslationDebugger = lazyWithRetry(() => import("./components/TranslationDebugger"));
-// const LanguageDetectionTest = lazyWithRetry(() => import("./components/LanguageDetectionTest"));
-// const TestCountryDetection = lazyWithRetry(() => import("./pages/test-country-detection"));
 
 // ✅ CORREÇÃO: PageLoader removido - não mostrar nenhum loading
 // O site deve aparecer imediatamente sem indicadores de carregamento
@@ -225,20 +201,28 @@ const AppContent = () => {
     let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     const prefetch = () => {
       if (cancelled) return;
+      // ✅ OTIMIZAÇÃO: Prefetch mais agressivo do Checkout
       Promise.all([
         import('./pages/Quiz').catch(() => {}),
-        import('./pages/Checkout').catch(() => {})
+        import('./pages/Checkout').catch(() => {}),
+        // Prefetch de componentes UI críticos do Checkout
+        import('./components/ui/button').catch(() => {}),
+        import('./components/ui/card').catch(() => {}),
+        import('./components/ui/input').catch(() => {}),
+        import('./components/ui/badge').catch(() => {}),
       ]).catch(() => {});
     };
 
     const schedulePrefetch = () => {
       if (cancelled) return;
+      // ✅ OTIMIZAÇÃO: Prefetch mais cedo (reduzido de 12s para 3s)
       if ('requestIdleCallback' in win) {
         const w = win as any;
-        idleId = w.requestIdleCallback(prefetch, { timeout: 12000 });
+        idleId = w.requestIdleCallback(prefetch, { timeout: 3000 });
         return;
       }
-      prefetchTimer = globalThis.setTimeout(prefetch, 6000);
+      // ✅ OTIMIZAÇÃO: Prefetch mais cedo (reduzido de 6s para 2s)
+      prefetchTimer = globalThis.setTimeout(prefetch, 2000);
     };
 
     const onFirstInteraction = () => {
@@ -372,13 +356,6 @@ const AppContent = () => {
                   </ProtectedAdminRoute>
                 </Suspense>
               } />
-              <Route path="financial" element={
-                <Suspense fallback={null}>
-                  <ProtectedAdminRoute requiredPermission="financial_management">
-                    <AdminFinancial />
-                  </ProtectedAdminRoute>
-                </Suspense>
-              } />
               <Route path="emails" element={
                 <Suspense fallback={null}>
                   <ProtectedAdminRoute requiredPermission="emails">
@@ -400,25 +377,11 @@ const AppContent = () => {
                   </ProtectedAdminRoute>
                 </Suspense>
               } />
-              <Route path="media" element={
-                <Suspense fallback={null}>
-                  <ProtectedAdminRoute requiredPermission="media">
-                    <AdminMedia />
-                  </ProtectedAdminRoute>
-                </Suspense>
-              } />
               {/* AdminExampleTracks removido - apenas português */}
               <Route path="collaborators" element={
                 <Suspense fallback={null}>
                   <ProtectedAdminRoute requiredPermission="collaborators">
                     <AdminCollaborators />
-                  </ProtectedAdminRoute>
-                </Suspense>
-              } />
-              <Route path="settings" element={
-                <Suspense fallback={null}>
-                  <ProtectedAdminRoute requiredPermission="settings">
-                    <AdminSettings />
                   </ProtectedAdminRoute>
                 </Suspense>
               } />

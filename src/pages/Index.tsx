@@ -3,12 +3,9 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 
-import { useScrollAnimations } from "@/hooks/use-scroll-animations";
-import { useTranslation } from "@/hooks/useTranslation";
 import { useUtmParams } from "@/hooks/useUtmParams";
 import { useUtmifyTracking } from "@/hooks/useUtmifyTracking";
 import { Mail } from "@/utils/iconImports";
-import { scrollToId } from "@/utils/scrollTo";
 
 // ✅ OTIMIZAÇÃO: Lazy load de todos os componentes não-críticos
 const VinylPlayer = React.lazy(() => import("@/components/VinylPlayer"));
@@ -16,6 +13,7 @@ const HowItWorks = React.lazy(() => import("@/components/HowItWorks"));
 const Testimonials = React.lazy(() => import("@/components/Testimonials"));
 const PricingSection = React.lazy(() => import("@/components/PricingSection"));
 const FAQ = React.lazy(() => import("@/components/FAQ"));
+const Footer = React.lazy(() => import("@/components/Footer"));
 
 function LazySection({
   children,
@@ -55,15 +53,66 @@ function LazySection({
 }
 
 const Index = memo(() => {
-  const { t } = useTranslation();
-  useScrollAnimations();
   // Capturar e salvar UTMs na página inicial
   const { hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
   
   // UTMs são capturados automaticamente pelo hook
 
-  // Rastrear visualização da homepage (UTMify)
+  // ✅ OTIMIZAÇÃO FASE 1.1: Deferir useScrollAnimations para não bloquear renderização inicial
+  useEffect(() => {
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) return;
+
+    let cancelled = false;
+    const initScrollAnimations = () => {
+      if (cancelled) return;
+      // Importar e inicializar scroll animations apenas quando necessário
+      import('@/hooks/use-scroll-animations').then(({ useScrollAnimations }) => {
+        if (cancelled) return;
+        // Criar observer manualmente (não usar hook diretamente)
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in-up');
+                entry.target.classList.remove('opacity-0', 'translate-y-8');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+          }
+        );
+
+        const elements = document.querySelectorAll('.scroll-animate:not(#radiola)');
+        elements.forEach((el) => {
+          observer.observe(el);
+        });
+      }).catch(() => {});
+    };
+
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(initScrollAnimations, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = globalThis.setTimeout(initScrollAnimations, 2000);
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
+  }, []);
+
+  // ✅ OTIMIZAÇÃO FASE 1.1: Deferir tracking de homepage_viewed para não bloquear renderização inicial
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
@@ -83,7 +132,7 @@ const Index = memo(() => {
 
     if ('requestIdleCallback' in win) {
       const w = win as any;
-      const id = w.requestIdleCallback(schedule, { timeout: 5000 });
+      const id = w.requestIdleCallback(schedule, { timeout: 6000 });
       return () => {
         cancelled = true;
         if (typeof w.cancelIdleCallback === 'function') {
@@ -92,44 +141,138 @@ const Index = memo(() => {
       };
     }
 
-    const timer = globalThis.setTimeout(schedule, 3000);
+    const timer = globalThis.setTimeout(schedule, 5000);
     return () => {
       cancelled = true;
       globalThis.clearTimeout(timer);
     };
   }, [trackEvent, hasUtms]);
 
-
-  // Tratar deep links com hash na URL ao carregar
+  // ✅ OTIMIZAÇÃO FASE 1.3: Preload condicional de Quiz/Checkout quando usuário está próximo de seções com botões
   useEffect(() => {
     const win = typeof window === "undefined" ? undefined : window;
     if (!win) return;
 
-    const hash = win.location.hash.replace('#', '');
-    if (hash) {
-      const scrollContainer = document.getElementById('main-scroll-container');
-      const element = document.getElementById(hash);
+    let cancelled = false;
+    let prefetchedQuiz = false;
+    let prefetchedCheckout = false;
+
+    const checkScrollAndPreload = () => {
+      if (cancelled) return;
       
-      if (element) {
-        // Offset negativo para preços aparecer ainda mais acima
-        const offset = hash === 'pricing' ? -50 : 80;
+      const scrollContainer = document.getElementById('main-scroll-container');
+      const scrollY = scrollContainer ? scrollContainer.scrollTop : win.pageYOffset;
+      const viewportHeight = win.innerHeight;
+      
+      // ✅ CORREÇÃO BUG 1: Preload baseado apenas em scroll, sem depender de elementos DOM
+      // Preload Quiz quando usuário scrollou mais de 1 viewport
+      const shouldPreloadQuiz = scrollY > viewportHeight * 0.5 && scrollY < viewportHeight * 3;
+      
+      if (shouldPreloadQuiz && !prefetchedQuiz) {
+        prefetchedQuiz = true;
+        import('../pages/Quiz').catch(() => {});
+      }
+      
+      // Preload Checkout apenas quando usuário está muito próximo do final
+      if (scrollY > viewportHeight * 3 && !prefetchedCheckout) {
+        prefetchedCheckout = true;
+        import('../pages/Checkout').catch(() => {});
+      }
+    };
+
+    // ✅ CORREÇÃO BUG 1: Deferir verificação inicial para garantir que DOM está pronto
+    const initialCheck = () => {
+      if (cancelled) return;
+      // Aguardar um frame para garantir que DOM está renderizado
+      win.requestAnimationFrame(() => {
+        if (!cancelled) {
+          checkScrollAndPreload();
+        }
+      });
+    };
+    
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      w.requestIdleCallback(initialCheck, { timeout: 1000 });
+    } else {
+      win.setTimeout(initialCheck, 1000);
+    }
+
+    // Throttle scroll listener
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        win.requestAnimationFrame(() => {
+          if (!cancelled) {
+            checkScrollAndPreload();
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const scrollContainer = document.getElementById('main-scroll-container');
+    const target = scrollContainer || win;
+    target.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      cancelled = true;
+      target.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // ✅ OTIMIZAÇÃO FASE 1.4: Deferir deep link hash handling
+  useEffect(() => {
+    const win = typeof window === "undefined" ? undefined : window;
+    if (!win) return;
+
+    let cancelled = false;
+    const handleHash = () => {
+      if (cancelled) return;
+      const hash = win.location.hash.replace('#', '');
+      if (hash) {
+        const scrollContainer = document.getElementById('main-scroll-container');
+        const element = document.getElementById(hash);
         
-        if (scrollContainer) {
-          // Container customizado
-          const containerRect = scrollContainer.getBoundingClientRect();
-          const elementRect = element.getBoundingClientRect();
-          const currentScrollTop = scrollContainer.scrollTop;
-          const elementTopRelativeToContainer = elementRect.top - containerRect.top;
-          const elementTopInContainer = currentScrollTop + elementTopRelativeToContainer;
-          scrollContainer.scrollTop = Math.max(0, elementTopInContainer - offset);
-        } else {
-          // Window scroll
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + win.pageYOffset - offset;
-          win.scrollTo(0, Math.max(0, offsetPosition));
+        if (element) {
+          // Offset negativo para preços aparecer ainda mais acima
+          const offset = hash === 'pricing' ? -50 : 80;
+          
+          if (scrollContainer) {
+            // Container customizado
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const currentScrollTop = scrollContainer.scrollTop;
+            const elementTopRelativeToContainer = elementRect.top - containerRect.top;
+            const elementTopInContainer = currentScrollTop + elementTopRelativeToContainer;
+            scrollContainer.scrollTop = Math.max(0, elementTopInContainer - offset);
+          } else {
+            // Window scroll
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + win.pageYOffset - offset;
+            win.scrollTo(0, Math.max(0, offsetPosition));
+          }
         }
       }
+    };
+
+    if ('requestIdleCallback' in win) {
+      const w = win as any;
+      const id = w.requestIdleCallback(handleHash, { timeout: 1000 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
     }
+
+    const timer = globalThis.setTimeout(handleHash, 1000);
+    return () => {
+      cancelled = true;
+      globalThis.clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -147,11 +290,11 @@ const Index = memo(() => {
         
         <main className="container mx-auto px-3 sm:px-4 py-0 sm:py-4 space-y-4 sm:space-y-12">
         
-        {/* ✅ OTIMIZAÇÃO: VinylPlayer carregado apenas quando visível, com rootMargin maior para preload */}
+        {/* ✅ OTIMIZAÇÃO FASE 1.2: Aumentar rootMargin para 600px em componentes abaixo do fold */}
         <div id="radiola" className="scroll-mt-20 mt-8 sm:mt-0">
           <div className="grid gap-4 sm:gap-6 items-center max-w-6xl mx-auto px-4">
             <div className="flex justify-center">
-              <LazySection minHeight={420} rootMargin="200px 0px">
+              <LazySection minHeight={420} rootMargin="600px 0px">
                 <VinylPlayer />
               </LazySection>
             </div>
@@ -159,53 +302,48 @@ const Index = memo(() => {
         </div>
         
         <div className="scroll-animate scroll-animate-delay-1">
-          <LazySection minHeight={520}>
+          <LazySection minHeight={520} rootMargin="600px 0px">
             <HowItWorks />
           </LazySection>
         </div>
         
         <div className="scroll-animate scroll-animate-delay-2" id="testimonials-section">
-          <Suspense fallback={
-            <section className="py-16 px-4">
-              <div className="container mx-auto">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Carregando depoimentos...</h2>
-                </div>
-              </div>
-            </section>
-          }>
+          <Suspense fallback={null}>
             <Testimonials />
           </Suspense>
         </div>
         
         <div className="scroll-animate scroll-animate-delay-3">
-          <LazySection minHeight={520}>
+          <LazySection minHeight={520} rootMargin="600px 0px">
             <PricingSection />
           </LazySection>
         </div>
         
         <div className="scroll-animate scroll-animate-delay-4">
-          <LazySection minHeight={520}>
+          <LazySection minHeight={520} rootMargin="600px 0px">
             <FAQ />
           </LazySection>
         </div>
         
         <div className="scroll-animate scroll-animate-delay-5">
           <section id="contato" className="container mx-auto px-4 py-8 sm:py-10 text-center scroll-mt-24">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3">{t('contact.title')}</h2>
-            <p className="text-muted-foreground text-sm sm:text-base md:text-lg mb-4">{t('contact.description')}</p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3">Entre em Contato</h2>
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg mb-4">Entre em contato conosco. Estamos prontos para ajudar você a criar a música perfeita para seus momentos especiais!</p>
             <div className="flex items-center justify-center gap-2">
               <Mail className="h-4 w-4 text-primary" />
               <a href="mailto:contato@musiclovely.com" className="text-sm sm:text-base text-primary hover:underline">
-                {t('footer.email')}
+                contato@musiclovely.com
               </a>
             </div>
           </section>
         </div>
       </main>
 
+      {/* ✅ OTIMIZAÇÃO FASE 1.4: Footer com IntersectionObserver para preload apenas quando visível */}
       <div className="scroll-animate scroll-animate-delay-6">
-        <Footer />
+        <LazySection minHeight={300} rootMargin="200px 0px">
+          <Footer />
+        </LazySection>
       </div>
       </div>
     </div>

@@ -3,25 +3,15 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
-import { MessageCircle, Users, Music, Clock, CheckCircle, ArrowRight, Star, Shield, Download } from 'lucide-react';
+import { MessageCircle, Users, Music, Clock, CheckCircle, ArrowRight, Star, Shield, Download } from '@/utils/iconImports';
 import { Link } from 'react-router-dom';
-import { getLocalizedPath } from '@/lib/i18nRoutes';
-import type { Locale } from '@/lib/detectLocale';
 
 export default function HowItWorks() {
-  const { t, currentLanguage } = useTranslation();
+  const { t } = useTranslation();
   
   const getLocalizedLink = (path: string) => {
-    // Detectar locale atual da URL
-    const currentPath = window.location.pathname;
-    const currentLocale = currentPath.split('/')[1];
-    
-    // Se estamos em uma rota localizada, usar o locale da URL
-    const activeLocale = (currentLocale === 'pt' || currentLocale === 'en' || currentLocale === 'es') 
-      ? (currentLocale as Locale)
-      : (currentLanguage as Locale);
-    
-    return getLocalizedPath(path, activeLocale);
+    // Sempre retornar path sem prefixo de idioma (apenas português)
+    return path;
   };
   
   const steps = [

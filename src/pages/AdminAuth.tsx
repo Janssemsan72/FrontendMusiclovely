@@ -15,6 +15,67 @@ export default function AdminAuth() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // ✅ Verificar se o cliente Supabase está inicializado corretamente
+  const isClientInitialized = () => {
+    try {
+      // Verificar se as variáveis de ambiente estão definidas
+      const url = import.meta.env.VITE_SUPABASE_URL;
+      const key = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      const hasUrl = !!url && url.trim() !== '';
+      const hasKey = !!key && key.trim() !== '';
+      
+      // Log de diagnóstico em desenvolvimento
+      if (import.meta.env.DEV) {
+        console.log('🔍 [AdminAuth] Verificação de inicialização:', {
+          hasUrl,
+          hasKey,
+          urlLength: url?.length || 0,
+          keyLength: key?.length || 0,
+          urlPreview: url ? `${url.substring(0, 30)}...` : 'undefined',
+        });
+      }
+      
+      // Se não tem variáveis de ambiente, definitivamente não está inicializado
+      if (!hasUrl || !hasKey) {
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ [AdminAuth] Variáveis de ambiente faltando:', {
+            VITE_SUPABASE_URL: hasUrl ? '✅' : '❌',
+            VITE_SUPABASE_ANON_KEY: hasKey ? '✅' : '❌',
+          });
+        }
+        return false;
+      }
+      
+      // Verificar se o cliente existe e tem a estrutura esperada
+      if (!supabase || !supabase.auth) {
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ [AdminAuth] Cliente Supabase não existe ou não tem auth');
+        }
+        return false;
+      }
+      
+      // Verificar se o cliente tem métodos reais (não é dummy)
+      if (typeof supabase.auth.signInWithPassword !== 'function') {
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ [AdminAuth] Cliente não tem método signInWithPassword');
+        }
+        return false;
+      }
+      
+      // Se passou todas as verificações, provavelmente está inicializado
+      if (import.meta.env.DEV) {
+        console.log('✅ [AdminAuth] Cliente Supabase inicializado corretamente');
+      }
+      return true;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('❌ [AdminAuth] Erro ao verificar inicialização:', error);
+      }
+      return false;
+    }
+  };
+
   const canBypassAdminAuth = () => {
     if (import.meta.env.MODE !== 'production') return true;
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -56,12 +117,44 @@ export default function AdminAuth() {
     setLoading(true);
 
     try {
+      // ✅ Verificar se o cliente está inicializado antes de tentar login
+      if (!isClientInitialized()) {
+        const errorMsg = 'Cliente Supabase não inicializado. Verifique as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.';
+        console.error('❌', errorMsg);
+        console.error('📋 Variáveis de ambiente:', {
+          VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? '✅ Definida' : '❌ Não definida',
+          VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ Definida' : '❌ Não definida',
+          VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? '✅ Definida' : '❌ Não definida',
+        });
+        toast.error('Erro de configuração: Cliente Supabase não inicializado. Verifique o console para mais detalhes.');
+        setLoading(false);
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) throw authError;
+      // ✅ Verificar se o erro é do cliente não inicializado
+      if (authError) {
+        // Verificar se é o erro específico do cliente dummy
+        if (authError.code === 'CLIENT_NOT_INITIALIZED' || 
+            authError.message?.includes('Cliente não inicializado') ||
+            authError.message?.includes('dummy client')) {
+          const errorMsg = 'Cliente Supabase não inicializado. Verifique as variáveis de ambiente.';
+          console.error('❌', errorMsg, authError);
+          console.error('📋 Variáveis de ambiente:', {
+            VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? '✅ Definida' : '❌ Não definida',
+            VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ? '✅ Definida' : '❌ Não definida',
+            VITE_SUPABASE_PUBLISHABLE_KEY: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? '✅ Definida' : '❌ Não definida',
+          });
+          toast.error('Erro de configuração: Cliente Supabase não inicializado. Verifique o console para mais detalhes.');
+          setLoading(false);
+          return;
+        }
+        throw authError;
+      }
 
       if (!authData.user) {
         throw new Error('Erro ao autenticar');
@@ -186,8 +279,44 @@ export default function AdminAuth() {
         navigate('/admin', { replace: true });
       }
     } catch (error: any) {
-      console.error('Erro no login:', error);
-      toast.error(error.message || 'Erro ao fazer login');
+      // ✅ Melhorar tratamento de erro com mais detalhes
+      console.error('❌ Erro no login:', error);
+      
+      // Extrair mensagem de erro de forma mais robusta
+      let errorMessage = 'Erro ao fazer login';
+      
+      if (error) {
+        if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error.message) {
+          errorMessage = error.message;
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (typeof error === 'object') {
+          // Tentar serializar o erro para obter mais informações
+          try {
+            const errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error));
+            console.error('📋 Detalhes completos do erro:', errorStr);
+            
+            // Verificar se contém mensagens específicas
+            if (errorStr.includes('Cliente não inicializado') || 
+                errorStr.includes('CLIENT_NOT_INITIALIZED') ||
+                errorStr.includes('dummy client')) {
+              errorMessage = 'Cliente Supabase não inicializado. Verifique as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.';
+            } else if (errorStr.includes('Invalid login credentials')) {
+              errorMessage = 'Credenciais inválidas. Verifique seu email e senha.';
+            } else if (errorStr.includes('Email not confirmed')) {
+              errorMessage = 'Email não confirmado. Verifique sua caixa de entrada.';
+            } else {
+              errorMessage = error.message || 'Erro ao fazer login. Verifique o console para mais detalhes.';
+            }
+          } catch {
+            errorMessage = error.message || 'Erro ao fazer login';
+          }
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -220,6 +349,24 @@ export default function AdminAuth() {
           </CardHeader>
           
           <CardContent className="px-4 pb-4">
+            {/* ✅ Aviso se cliente não estiver inicializado */}
+            {!isClientInitialized() && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <Shield className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-red-800 dark:text-red-200">
+                    <p className="font-medium">⚠️ Cliente Supabase não inicializado</p>
+                    <p className="text-red-700 dark:text-red-300 mt-1">
+                      Configure as variáveis de ambiente <code className="text-xs bg-red-100 dark:bg-red-900/40 px-1 py-0.5 rounded">VITE_SUPABASE_URL</code> e <code className="text-xs bg-red-100 dark:bg-red-900/40 px-1 py-0.5 rounded">VITE_SUPABASE_ANON_KEY</code> no arquivo <code className="text-xs bg-red-100 dark:bg-red-900/40 px-1 py-0.5 rounded">.env</code>
+                    </p>
+                    <p className="text-red-700 dark:text-red-300 mt-1 text-xs">
+                      Verifique o console do navegador para mais detalhes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleLogin} className="space-y-3">
               <div className="space-y-1">
                 <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">

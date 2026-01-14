@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
 const isDev = import.meta.env.DEV;
@@ -73,31 +73,93 @@ export function useUtmParams() {
     return utms;
   }, [isAdminRoute, currentTrackingParams]);
 
-  // Salvar TODOS os parâmetros de tracking no localStorage quando detectados
+  // ✅ OTIMIZAÇÃO FASE 1.2: Deferir leitura de localStorage usando useState
+  const [savedTrackingParamsState, setSavedTrackingParamsState] = useState<Record<string, string>>({});
+  const [isLocalStorageLoaded, setIsLocalStorageLoaded] = useState(false);
+
+  // Carregar parâmetros de tracking salvos do localStorage (deferido)
   useEffect(() => {
     if (isAdminRoute) {
+      setIsLocalStorageLoaded(true);
+      return;
+    }
+
+    let cancelled = false;
+    const loadFromStorage = () => {
+      if (cancelled) return;
+      try {
+        const saved = localStorage.getItem('musiclovely_tracking_params');
+        if (saved) {
+          setSavedTrackingParamsState(JSON.parse(saved));
+        }
+      } catch {
+        // Ignorar erros
+      } finally {
+        setIsLocalStorageLoaded(true);
+      }
+    };
+
+    // Deferir leitura de localStorage usando requestIdleCallback
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const w = window as any;
+      const id = w.requestIdleCallback(loadFromStorage, { timeout: 1000 });
+      return () => {
+        cancelled = true;
+        if (typeof w.cancelIdleCallback === 'function') {
+          w.cancelIdleCallback(id);
+        }
+      };
+    }
+
+    const timer = setTimeout(loadFromStorage, 1000);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isAdminRoute]);
+
+  // Usar savedTrackingParamsState após carregar
+  const savedTrackingParams = isLocalStorageLoaded ? savedTrackingParamsState : {};
+
+  // ✅ OTIMIZAÇÃO FASE 1.2: Deferir escrita em localStorage usando requestIdleCallback
+  useEffect(() => {
+    if (isAdminRoute || !isLocalStorageLoaded) {
       return;
     }
     if (Object.keys(currentTrackingParams).length > 0) {
-      localStorage.setItem('musiclovely_tracking_params', JSON.stringify(currentTrackingParams));
-      if (isDev) {
-        console.log('✅ Parâmetros de tracking salvos:', currentTrackingParams);
-      }
-    }
-  }, [isAdminRoute, currentTrackingParams]);
+      let cancelled = false;
+      const saveToStorage = () => {
+        if (cancelled) return;
+        try {
+          localStorage.setItem('musiclovely_tracking_params', JSON.stringify(currentTrackingParams));
+          setSavedTrackingParamsState(currentTrackingParams);
+          if (isDev) {
+            console.log('✅ Parâmetros de tracking salvos:', currentTrackingParams);
+          }
+        } catch {
+          // Ignorar erros
+        }
+      };
 
-  // Carregar parâmetros de tracking salvos do localStorage
-  const savedTrackingParams = useMemo(() => {
-    if (isAdminRoute) {
-      return {};
+      // Deferir escrita usando requestIdleCallback
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const w = window as any;
+        const id = w.requestIdleCallback(saveToStorage, { timeout: 2000 });
+        return () => {
+          cancelled = true;
+          if (typeof w.cancelIdleCallback === 'function') {
+            w.cancelIdleCallback(id);
+          }
+        };
+      }
+
+      const timer = setTimeout(saveToStorage, 2000);
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
     }
-    try {
-      const saved = localStorage.getItem('musiclovely_tracking_params');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  }, [isAdminRoute]);
+  }, [isAdminRoute, currentTrackingParams, isLocalStorageLoaded]);
 
   // Parâmetros de tracking finais: mesclar URL atual + localStorage (URL atual tem prioridade)
   const allTrackingParams = useMemo(() => {
@@ -123,18 +185,45 @@ export function useUtmParams() {
     return utms;
   }, [isAdminRoute, allTrackingParams]);
 
-  // Salvar parâmetros mesclados no localStorage sempre que mudarem
+  // ✅ OTIMIZAÇÃO FASE 1.2: Deferir escrita de parâmetros mesclados
   useEffect(() => {
-    if (isAdminRoute) {
+    if (isAdminRoute || !isLocalStorageLoaded) {
       return;
     }
     if (Object.keys(allTrackingParams).length > 0) {
-      localStorage.setItem('musiclovely_tracking_params', JSON.stringify(allTrackingParams));
-      if (isDev) {
-        console.log('✅ Parâmetros de tracking mesclados e salvos:', allTrackingParams);
+      let cancelled = false;
+      const saveMergedToStorage = () => {
+        if (cancelled) return;
+        try {
+          localStorage.setItem('musiclovely_tracking_params', JSON.stringify(allTrackingParams));
+          setSavedTrackingParamsState(allTrackingParams);
+          if (isDev) {
+            console.log('✅ Parâmetros de tracking mesclados e salvos:', allTrackingParams);
+          }
+        } catch {
+          // Ignorar erros
+        }
+      };
+
+      // Deferir escrita usando requestIdleCallback
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const w = window as any;
+        const id = w.requestIdleCallback(saveMergedToStorage, { timeout: 2000 });
+        return () => {
+          cancelled = true;
+          if (typeof w.cancelIdleCallback === 'function') {
+            w.cancelIdleCallback(id);
+          }
+        };
       }
+
+      const timer = setTimeout(saveMergedToStorage, 2000);
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
     }
-  }, [isAdminRoute, allTrackingParams]);
+  }, [isAdminRoute, allTrackingParams, isLocalStorageLoaded]);
 
   // ✅ DESABILITADO: Injeção de UTMs na URL removida para evitar conflito com script UTMify
   // O script UTMify (https://cdn.utmify.com.br/scripts/utms/latest.js) já gerencia os UTMs automaticamente
@@ -159,12 +248,43 @@ export function useUtmParams() {
 
   /**
    * Função helper para navegar preservando TODOS os parâmetros de tracking
+   * ✅ OTIMIZAÇÃO: Redirecionamento ULTRA-RÁPIDO usando window.location.href para /checkout
    */
   const navigateWithUtms = (path: string, options?: { replace?: boolean; state?: unknown }) => {
     if (isAdminRoute) {
       navigate(path, options);
       return;
     }
+    
+    // ✅ OTIMIZAÇÃO CRÍTICA: Para /checkout, usar window.location.href (bypass React Router = mais rápido)
+    if (path.includes('/checkout') || path === '/checkout') {
+      const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
+      let finalUrl = path;
+      
+      if (hasTrackingParams) {
+        const url = new URL(path, window.location.origin);
+        const existingParams = new URLSearchParams(url.search);
+        Object.entries(allTrackingParams).forEach(([key, value]) => {
+          if (value) {
+            existingParams.set(key, value as string);
+          }
+        });
+        const hash = url.hash || '';
+        finalUrl = url.pathname + (existingParams.toString() ? `?${existingParams.toString()}` : '') + hash;
+      }
+      
+      // ✅ REDIRECIONAMENTO IMEDIATO: window.location.href é mais rápido que React Router
+      window.location.href = finalUrl;
+      return;
+    }
+    
+    // ✅ OTIMIZAÇÃO: Se não há parâmetros de tracking, navegar diretamente (mais rápido)
+    const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
+    if (!hasTrackingParams) {
+      navigate(path, options);
+      return;
+    }
+    
     const url = new URL(path, window.location.origin);
     
     // Preservar parâmetros existentes na URL
@@ -181,6 +301,8 @@ export function useUtmParams() {
     // Preservar hash se existir no path original
     const hash = url.hash || '';
     const finalPath = url.pathname + (existingParams.toString() ? `?${existingParams.toString()}` : '') + hash;
+    
+    // ✅ OTIMIZAÇÃO: Remover log em produção para melhor performance
     if (isDev) {
       console.log('🔄 Navegando com parâmetros de tracking:', { path, finalPath, trackingParams: allTrackingParams });
     }

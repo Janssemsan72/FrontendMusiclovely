@@ -3,13 +3,22 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
+    "dev:backend": "tsx watch src/index.ts",
+    "prebuild": "node scripts/validate-env.js",
     "build": "vite build",
+    "build:backend": "tsc -p tsconfig.backend.json",
+    "build:analyze": "vite build && npm run analyze-bundle",
     "preview": "vite preview",
+    "start:backend": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "compress-video": "node scripts/compress-video.js",
+    "analyze-bundle": "node scripts/analyze-bundle.js",
+    "validate-env": "node scripts/validate-env.js"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "1.2.12",
@@ -63,7 +72,9 @@
     "sonner": "1.7.4",
     "tailwind-merge": "2.6.0",
     "vaul": "0.9.9",
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "fastify": "^5.6.2",
+    "@fastify/cors": "^11.2.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.1.0",
@@ -75,8 +86,12 @@
     "jsdom": "^24.0.0",
     "postcss": "8.5.6",
     "tailwindcss": "3.4.19",
+    "terser": "^5.36.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "vite": "5.4.21",
+    "vite-imagetools": "^7.0.0",
+    "vite-plugin-compression2": "^2.1.1",
     "vitest": "^2.1.8"
   }
 }

@@ -126,12 +126,10 @@ async function fetchRevenueAggregate(filters?: {
   try {
     // ✅ CORREÇÃO: Usar paginação ao invés de agregação (mais confiável para grandes volumes)
     // A sintaxe de agregação do Supabase pode não funcionar corretamente
-    console.log(`🔍 [fetchRevenueAggregate] Buscando receita para ${filters?.provider || 'all'}...`);
     
     // Se não há filtro de plan, usar função de paginação otimizada
     if (!filters?.plan) {
       const revenue = await fetchRevenuePaginated({ provider: filters?.provider });
-      console.log(`✅ [fetchRevenueAggregate] Receita ${filters?.provider || 'all'} (via paginação): R$ ${revenue.toFixed(2)}`);
       return revenue;
     }
     
@@ -176,7 +174,7 @@ async function fetchRevenueAggregate(filters?: {
     }
     
     const revenue = totalRevenue / 100;
-    console.log(`✅ [fetchRevenueAggregate] Receita ${filters?.provider || 'all'} (com plan ${filters.plan}): R$ ${revenue.toFixed(2)}`);
+    // Receita calculada com sucesso
     return revenue;
   } catch (error) {
     console.error(`❌ [fetchRevenueAggregate] Erro ao calcular receita (${filters?.provider || 'all'}):`, error);
@@ -250,7 +248,7 @@ export function useDashboardStats(options?: { enabled?: boolean }) {
           stripeOrders = cached.stripeOrders || 0;
           caktoOrders = cached.caktoOrders || 0;
         }
-        console.warn('Timeout ou erro ao contar pedidos, usando cache anterior:', error);
+        // Timeout ou erro ao contar pedidos, usando cache anterior
       }
       
       // ✅ OTIMIZAÇÃO: Buscar receitas com timeout de 30 segundos (aumentado para suportar milhões de pedidos)
@@ -275,11 +273,9 @@ export function useDashboardStats(options?: { enabled?: boolean }) {
           setTimeout(() => {
             // ✅ CORREÇÃO: Se timeout, usar cache se disponível, senão tentar buscar novamente sem timeout
             if (cachedRevenue && (cachedRevenue.stripe > 0 || cachedRevenue.cakto > 0)) {
-              console.warn('⚠️ [Dashboard] Timeout ao buscar receitas, usando cache:', cachedRevenue);
               resolve([cachedRevenue.stripe || 0, cachedRevenue.cakto || 0]);
             } else {
               // Se cache também está zerado, tentar buscar uma vez mais sem timeout
-              console.warn('⚠️ [Dashboard] Timeout e cache zerado, tentando buscar receitas novamente...');
               Promise.all([
                 fetchRevenueAggregate({ provider: 'stripe' }).catch(() => cachedRevenue?.stripe || 0),
                 fetchRevenueAggregate({ provider: 'cakto' }).catch(() => cachedRevenue?.cakto || 0),
@@ -294,19 +290,15 @@ export function useDashboardStats(options?: { enabled?: boolean }) {
         
         // ✅ CORREÇÃO: Se resultado for 0 mas cache tinha valores, usar cache
         if (stripeRevenue === 0 && caktoRevenue === 0 && cachedRevenue && (cachedRevenue.stripe > 0 || cachedRevenue.cakto > 0)) {
-          console.warn('⚠️ [Dashboard] Receitas retornaram 0, usando cache:', cachedRevenue);
           stripeRevenue = cachedRevenue.stripe || 0;
           caktoRevenue = cachedRevenue.cakto || 0;
-        } else if (stripeRevenue > 0 || caktoRevenue > 0) {
-          console.log(`✅ [Dashboard] Receitas carregadas: Stripe=$${stripeRevenue.toFixed(2)}, Cakto=R$${caktoRevenue.toFixed(2)}`);
         }
       } catch (error) {
         // Erro - usar cache anterior se disponível
-        console.error('❌ [Dashboard] Erro ao buscar receitas:', error);
         if (cachedRevenue && (cachedRevenue.stripe > 0 || cachedRevenue.cakto > 0)) {
           stripeRevenue = cachedRevenue.stripe || 0;
           caktoRevenue = cachedRevenue.cakto || 0;
-          console.warn('⚠️ [Dashboard] Usando receitas do cache devido a erro:', { stripeRevenue, caktoRevenue });
+          // Usando receitas do cache devido a erro
         } else {
           // Se não tem cache válido, tentar buscar uma última vez
           try {
@@ -317,7 +309,7 @@ export function useDashboardStats(options?: { enabled?: boolean }) {
             stripeRevenue = stripe;
             caktoRevenue = cakto;
           } catch (retryError) {
-            console.error('❌ [Dashboard] Erro ao tentar buscar receitas novamente:', retryError);
+            // Erro ao tentar buscar receitas novamente
             stripeRevenue = 0;
             caktoRevenue = 0;
           }
@@ -2272,7 +2264,7 @@ export function useSongs(filters?: {
         }
       }
       
-      console.log(`✅ Carregadas ${allSongs.length} músicas em ${batchCount} lotes`);
+      // Músicas carregadas com sucesso
       return allSongs;
     },
     staleTime: 3 * 60 * 1000, // ✅ 3 minutos de cache

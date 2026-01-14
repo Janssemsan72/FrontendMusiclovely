@@ -1,7 +1,18 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious,
+  PaginationEllipsis
+} from "@/components/ui/pagination";
+import { Copy, RefreshCw, Check } from "lucide-react";
 import { getAdminDashboardStatusBadge } from "./statusBadge";
 
 interface Job {
@@ -25,6 +36,12 @@ interface AdminDashboardJobsTabProps {
   retryingJob: string | null;
   onRetryJob: (jobId: string) => void;
   onCopyToClipboard: (value: string, label: string) => void;
+  // ✅ Paginação
+  currentPage: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 export function AdminDashboardJobsTab({
@@ -33,13 +50,175 @@ export function AdminDashboardJobsTab({
   retryingJob,
   onRetryJob,
   onCopyToClipboard,
+  currentPage,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
 }: AdminDashboardJobsTabProps) {
+  // ✅ Estado para controlar qual erro foi copiado
+  const [copiedErrorId, setCopiedErrorId] = useState<string | null>(null);
+  
+  // ✅ Função para copiar erro
+  const handleCopyError = async (error: string, jobId: string) => {
+    try {
+      await navigator.clipboard.writeText(error);
+      setCopiedErrorId(jobId);
+      setTimeout(() => setCopiedErrorId(null), 2000);
+      onCopyToClipboard(error, "Erro do job");
+    } catch (err) {
+      // Fallback para navegadores que não suportam clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = error;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopiedErrorId(jobId);
+        setTimeout(() => setCopiedErrorId(null), 2000);
+        onCopyToClipboard(error, "Erro do job");
+      } catch (copyErr) {
+        console.error('Erro ao copiar:', copyErr);
+      } finally {
+        document.body.removeChild(textArea);
+      }
+    }
+  };
+  
+  // Calcular informações de paginação
+  const totalPages = Math.ceil(total / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, total);
+  
+  // Função para gerar números de página para exibição
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      // Mostrar todas as páginas se houver poucas
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Sempre mostrar primeira página
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('ellipsis');
+      }
+      
+      // Mostrar páginas ao redor da atual
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== totalPages) {
+          pages.push(i);
+        }
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('ellipsis');
+      }
+      
+      // Sempre mostrar última página
+      if (totalPages > 1) {
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
   return (
     <Card className="admin-card-compact border-2">
       <CardHeader>
         <CardTitle>Jobs</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* ✅ Controles de Paginação - Topo */}
+        {total > 0 && (
+          <div className="mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-muted/20 rounded-lg">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                Mostrando {startIndex + 1}-{endIndex} de {total}
+              </p>
+              <Select 
+                value={pageSize.toString()} 
+                onValueChange={(value) => {
+                  onPageSizeChange(Number(value));
+                }}
+              >
+                <SelectTrigger className="w-[100px] h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage > 1) {
+                          onPageChange(currentPage - 1);
+                        }
+                      }}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {getPageNumbers().map((page, index) => (
+                    <PaginationItem key={index}>
+                      {page === 'ellipsis' ? (
+                        <PaginationEllipsis />
+                      ) : (
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            onPageChange(page);
+                          }}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      )}
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (currentPage < totalPages) {
+                          onPageChange(currentPage + 1);
+                        }
+                      }}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </div>
+        )}
+        
         <div className="space-y-2">
           {jobsLoading ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
@@ -111,8 +290,24 @@ export function AdminDashboardJobsTab({
                     </p>
                     {job.error && (
                       <div className="mt-1 p-2 bg-destructive/10 border border-destructive/20 rounded text-xs">
-                        <p className="text-destructive font-medium mb-1">Erro:</p>
-                        <p className="text-destructive/90 mb-2">{job.error}</p>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <p className="text-destructive font-medium">Erro:</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 w-5 p-0 shrink-0 opacity-60 hover:opacity-100"
+                            onClick={() => handleCopyError(job.error!, job.id)}
+                            title="Copiar erro"
+                            aria-label="Copiar erro"
+                          >
+                            {copiedErrorId === job.id ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-destructive/90 mb-2 select-text break-words">{job.error}</p>
                         {(job.error.includes("LOVABLE_API_KEY") ||
                           job.error.includes("OPENAI_API_KEY") ||
                           job.error.includes("ANTHROPIC_API_KEY")) && (
