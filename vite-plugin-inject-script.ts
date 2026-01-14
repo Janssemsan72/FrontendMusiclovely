@@ -42,6 +42,14 @@ export function injectScriptPlugin(): Plugin {
                         jsFiles.find(f => f.size > 100000) || // Arquivos grandes geralmente contêm código principal
                         jsFiles[0];
         
+        // Verificar se o Vite já injetou o script principal
+        const viteInjectedScript = html.match(/<script[^>]*src="\/assets\/js\/[^"]*\.js"[^>]*>/);
+        
+        if (viteInjectedScript) {
+          console.log('ℹ️ Vite já injetou o script principal, não é necessário injetar manualmente');
+          return; // Vite já fez o trabalho
+        }
+        
         if (mainFile && !html.includes(mainFile.name)) {
           // Injetar o script antes do fechamento do body
           const scriptTag = `    <script type="module" src="/assets/js/${mainFile.name}"></script>\n`;
