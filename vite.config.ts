@@ -3,11 +3,13 @@ import react from "@vitejs/plugin-react-swc";
 import path from "node:path";
 import { imagetools } from "vite-imagetools";
 import { compression } from "vite-plugin-compression2";
+import { injectScriptPlugin } from "./vite-plugin-inject-script";
 
 export default defineConfig({
   plugins: [
     react(), 
     imagetools(),
+    // Compression plugins movidos para o final para não interferir com o processamento do HTML
     compression({
       algorithm: 'gzip',
       exclude: [/\.(br)$/, /\.(gz)$/],
@@ -16,6 +18,8 @@ export default defineConfig({
       algorithm: 'brotliCompress',
       exclude: [/\.(br)$/, /\.(gz)$/],
     }),
+    // ✅ CORREÇÃO CRÍTICA: Plugin para injetar script principal no HTML
+    injectScriptPlugin(),
   ],
   // ✅ CORREÇÃO: Garantir base URL correto para produção
   base: "/",
@@ -64,6 +68,7 @@ export default defineConfig({
     },
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Tree shaking mais agressivo
     rollupOptions: {
+      input: './index.html', // ✅ CORREÇÃO CRÍTICA: Garantir que o index.html seja o entry point
       treeshake: {
         preset: 'recommended',
         moduleSideEffects: (id) => {
@@ -154,7 +159,12 @@ export default defineConfig({
         },
         // Nomes de arquivos otimizados
         chunkFileNames: "assets/js/[name]-[hash].js",
-        entryFileNames: "assets/js/[name]-[hash].js",
+        entryFileNames: (chunkInfo) => {
+          // Garantir que o entry point principal seja gerado corretamente
+          return chunkInfo.name === 'main' 
+            ? "assets/js/main-[hash].js" 
+            : "assets/js/[name]-[hash].js";
+        },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split(".") || [];
           const ext = info[info.length - 1];
