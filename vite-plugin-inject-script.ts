@@ -44,6 +44,7 @@ export function injectScriptPlugin(): Plugin {
           const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || jsFiles[0];
           
           if (mainFile && !html.includes(mainFile.name)) {
+            // ✅ CORREÇÃO: Adicionar defer para não bloquear parsing
             const scriptTag = `    <script type="module" src="/assets/js/${mainFile.name}" defer></script>\n`;
             const bodyEndIndex = html.lastIndexOf('</body>');
             
