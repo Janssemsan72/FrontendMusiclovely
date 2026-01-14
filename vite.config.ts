@@ -98,8 +98,14 @@ export default defineConfig({
           
           // Separar node_modules grandes
           if (id.includes("node_modules")) {
+            // ✅ CORREÇÃO: React deve estar no chunk principal para Radix UI funcionar
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react/jsx-runtime")) {
+              return undefined; // React no chunk principal
+            }
             if (id.includes("@radix-ui")) {
-              return "vendor-radix";
+              // ✅ CORREÇÃO: Radix UI precisa do React, então não separar (ou garantir que React carregue primeiro)
+              // Separar apenas se React já estiver carregado
+              return undefined; // Deixar Radix UI no chunk principal com React
             }
             if (id.includes("recharts")) {
               return "vendor-recharts";
