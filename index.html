@@ -89,27 +89,8 @@
     <link rel="dns-prefetch" href="https://pay.cakto.com.br" />
     <link rel="dns-prefetch" href="https://randomuser.me" />
     
-    <!-- ✅ OTIMIZAÇÃO: Preload de imagem LCP crítica apenas na página inicial (evita aviso em outras rotas) -->
-    <script>
-      // Preload condicional - apenas na página inicial
-      if (window.location.pathname === '/' || window.location.pathname === '') {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = '/images/collage-memories-new.webp';
-        link.as = 'image';
-        link.type = 'image/webp';
-        link.setAttribute('fetchpriority', 'high');
-        document.head.appendChild(link);
-        
-        // ✅ OTIMIZAÇÃO: Preload INSTANTÂNEO do vídeo 240p (163KB - versão única para mobile)
-        // Prioridade baixa para não competir com recursos críticos, mas começar o mais cedo possível
-        const minimalVideoLink = document.createElement('link');
-        minimalVideoLink.rel = 'prefetch';
-        minimalVideoLink.href = '/video/musiclovaly-240p.webm';
-        minimalVideoLink.setAttribute('fetchpriority', 'low');
-        document.head.appendChild(minimalVideoLink);
-      }
-    </script>
+    <!-- ✅ OTIMIZAÇÃO: Preload de imagem LCP crítica (sempre, não apenas na página inicial) -->
+    <link rel="preload" href="/images/collage-memories-new.webp" as="image" type="image/webp" fetchpriority="high" />
     
     <!-- ✅ OTIMIZAÇÃO: CSS crítico mínimo inline para FCP rápido -->
     <style>
@@ -133,12 +114,12 @@
       *{will-change:auto}
     </style>
     
-    <!-- ✅ OTIMIZAÇÃO: CSS carregado de forma não-bloqueante -->
+    <!-- ✅ OTIMIZAÇÃO: CSS carregado de forma não-bloqueante (defer total) -->
     <link rel="preload" href="/src/index.css" as="style" />
     <link rel="stylesheet" href="/src/index.css" media="print" onload="this.media='all';this.onload=null" />
     <noscript><link rel="stylesheet" href="/src/index.css" /></noscript>
     <script>
-      // Fallback para navegadores que não suportam onload em link
+      // Fallback otimizado - timeout reduzido para 25ms
       (function() {
         var link = document.querySelector('link[href="/src/index.css"]');
         if (link && link.media === 'print') {
@@ -146,7 +127,7 @@
             if (link.media === 'print') {
               link.media = 'all';
             }
-          }, 50); // Reduzido de 100ms para 50ms
+          }, 25);
           if (link.onload) {
             var originalOnload = link.onload;
             link.onload = function() {
@@ -165,16 +146,41 @@
     <script type="module" src="/src/main.tsx"></script>
     
     
-    <!-- ✅ Script UTMify UTMs (substituído pelo formato fornecido) -->
-    <script
-      src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-      data-utmify-prevent-subids
-      async
-      defer
-    ></script>
-    
-    <!-- ✅ Script UTMify Loader (carrega pixel do Facebook de forma diferida) -->
-    <script src="/utmify-loader.js" defer></script>
+    <!-- ✅ OTIMIZAÇÃO: Scripts de terceiros carregados após paint (não bloqueiam renderização) -->
+    <script>
+      // Carregar scripts de terceiros apenas após paint completo
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          requestAnimationFrame(function() {
+            // UTMify
+            var utmify = document.createElement('script');
+            utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+            utmify.setAttribute('data-utmify-prevent-subids', '');
+            utmify.async = true;
+            document.body.appendChild(utmify);
+            
+            // UTMify Loader
+            var utmifyLoader = document.createElement('script');
+            utmifyLoader.src = '/utmify-loader.js';
+            utmifyLoader.async = true;
+            document.body.appendChild(utmifyLoader);
+          });
+        });
+      } else {
+        requestAnimationFrame(function() {
+          var utmify = document.createElement('script');
+          utmify.src = 'https://cdn.utmify.com.br/scripts/utms/latest.js';
+          utmify.setAttribute('data-utmify-prevent-subids', '');
+          utmify.async = true;
+          document.body.appendChild(utmify);
+          
+          var utmifyLoader = document.createElement('script');
+          utmifyLoader.src = '/utmify-loader.js';
+          utmifyLoader.async = true;
+          document.body.appendChild(utmifyLoader);
+        });
+      }
+    </script>
   </body>
 </html>
 

@@ -135,6 +135,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
     // ✅ OTIMIZAÇÃO PERFORMANCE: Otimizar carregamento de fontes
     assetsInlineLimit: 4096, // Inline assets menores que 4KB
+    // ✅ OTIMIZAÇÃO PERFORMANCE: CSS code splitting para reduzir bundle inicial
+    cssCodeSplit: true,
+    // ✅ OTIMIZAÇÃO PERFORMANCE: Minificar CSS agressivamente
+    cssMinify: 'lightningcss', // Usar lightningcss se disponível, senão esbuild
     // Source maps apenas em dev (economia de ~30% no bundle)
     sourcemap: process.env.NODE_ENV === "development",
     // Code splitting de CSS

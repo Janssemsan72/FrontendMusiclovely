@@ -169,6 +169,7 @@ export default function HeroSection() {
                 sizes="(max-width: 640px) 384px, (max-width: 1024px) 640px, 1024px"
                 loading="eager"
                 decoding="async"
+                importance="high"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   const posterFallback = '/images/collage-memories-DEqE2yio.webp';
