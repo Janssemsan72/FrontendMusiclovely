@@ -188,7 +188,6 @@ export default function HeroSection() {
                 muted
                 playsInline
                 preload="metadata"
-                loading="lazy"
                 onLoadedData={() => {
                   setVideoReady(true);
                 }}
