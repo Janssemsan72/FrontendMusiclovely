@@ -56,9 +56,17 @@ export default defineConfig({
       treeshake: {
         preset: 'recommended',
         moduleSideEffects: (id) => {
-          // ✅ CORREÇÃO: Permitir side effects para código fonte e CSS
+          // ✅ OTIMIZAÇÃO: Tree-shaking mais agressivo para reduzir bundle
           if (id.includes('src/') || id.includes('.css')) {
-            return true; // Código fonte precisa de side effects
+            // Apenas código crítico precisa de side effects
+            if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx')) {
+              return true;
+            }
+            // Código admin/quiz pode ser tree-shaken se não usado
+            if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
+              return false; // Admin pode ser tree-shaken
+            }
+            return true; // Outro código fonte precisa de side effects
           }
           // Permitir side effects para alguns módulos específicos
           return id.includes('@radix-ui/react-toast');
