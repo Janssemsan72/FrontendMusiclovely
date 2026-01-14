@@ -245,17 +245,62 @@
           }
         });
         
-        // Detectar erros de console (backup)
+        // Detectar erros de console (backup) - DEVE SER EXECUTADO ANTES DE QUALQUER OUTRO SCRIPT
         const originalError = console.error;
         console.error = function(...args) {
           const errorStr = args.join(' ');
-          if (errorStr.includes('admin-6kmaUs1Q') || 
-              errorStr.includes('VinylPlayer-BqFpQ0Rn') ||
-              (errorStr.includes('Unexpected token') && errorStr.includes('/assets/js/'))) {
-            console.warn('⚠️ [Cache Fix] Erro no console detectado:', errorStr);
+          const errorObj = args[0];
+          
+          // Verificar se é erro relacionado a arquivos antigos
+          const hasOldFile = errorStr.includes('admin-6kmaUs1Q') || 
+                            errorStr.includes('VinylPlayer-BqFpQ0Rn') ||
+                            errorStr.includes('BqFpQ0Rn');
+          
+          // Verificar se é erro de "Unexpected token" (HTML sendo executado como JS)
+          const hasUnexpectedToken = errorStr.includes('Unexpected token') || 
+                                     (errorObj && errorObj.message && errorObj.message.includes('Unexpected token'));
+          
+          // Verificar se é erro de "appendChild" ou "Failed to execute"
+          const hasAppendChildError = errorStr.includes('appendChild') || 
+                                      errorStr.includes('Failed to execute');
+          
+          if (hasOldFile || hasUnexpectedToken || hasAppendChildError) {
+            console.warn('⚠️ [Cache Fix] Erro no console detectado - forçando reload:', {
+              errorStr: errorStr.substring(0, 200),
+              hasOldFile,
+              hasUnexpectedToken,
+              hasAppendChildError
+            });
             forceReload();
           }
+          
           originalError.apply(console, args);
+        };
+        
+        // ✅ CORREÇÃO CRÍTICA: Interceptar erros ANTES do React Error Boundary
+        // Isso garante que o reload aconteça antes que o erro seja capturado pelo ErrorBoundary
+        const originalAddEventListener = window.addEventListener;
+        window.addEventListener = function(type, listener, options) {
+          if (type === 'error') {
+            const wrappedListener = function(e) {
+              const errorMsg = (e.message || e.toString() || '');
+              const errorSrc = (e.target && (e.target.src || e.target.href)) || '';
+              
+              if (errorMsg.includes('admin-6kmaUs1Q') || 
+                  errorMsg.includes('VinylPlayer-BqFpQ0Rn') ||
+                  errorMsg.includes('Unexpected token') ||
+                  errorSrc.includes('admin-6kmaUs1Q') ||
+                  errorSrc.includes('VinylPlayer-BqFpQ0Rn')) {
+                console.warn('⚠️ [Cache Fix] Erro detectado via addEventListener:', { errorMsg, errorSrc });
+                forceReload();
+                return;
+              }
+              
+              if (listener) listener.call(this, e);
+            };
+            return originalAddEventListener.call(this, type, wrappedListener, options);
+          }
+          return originalAddEventListener.call(this, type, listener, options);
         };
       })();
     </script>
