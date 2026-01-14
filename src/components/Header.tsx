@@ -151,7 +151,7 @@ export default function Header() {
 
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 bg-background/98 backdrop-blur-lg border-b border-border/20 transition-shadow duration-300 supports-[backdrop-filter]:bg-background/98 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 bg-background border-b border-border/20 transition-shadow duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
       <div className="w-full py-3 sm:py-4 flex items-center justify-between px-4 sm:px-6 relative">
         {/* Logo à esquerda */}
         <div 
@@ -230,7 +230,7 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden bg-background border-t border-border/50 animate-in slide-in-from-top-2 duration-200">
           <nav className="container mx-auto px-4 py-4 flex flex-col gap-3">
             {SECTIONS.map((section) => (
               <button

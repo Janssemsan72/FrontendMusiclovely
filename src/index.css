@@ -327,19 +327,10 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Fallback para navegadores sem suporte a backdrop-filter */
-  @supports not (backdrop-filter: blur(12px)) {
-    header {
-      background-color: hsl(var(--background) / 0.95) !important;
-    }
-  }
-  
-  /* Desabilitar blur em modo de economia de energia */
-  @media (prefers-reduced-motion: reduce) {
-    header {
-      backdrop-filter: none !important;
-      background-color: hsl(var(--background) / 0.95) !important;
-    }
+  /* Header com cor sólida do background (sem transparência ou blur) */
+  header {
+    background-color: hsl(var(--background)) !important;
+    backdrop-filter: none !important;
   }
   
   /* Safe area para iPhone com notch */
