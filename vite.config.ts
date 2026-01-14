@@ -87,6 +87,12 @@ export default defineConfig({
         // ✅ CORREÇÃO CRÍTICA: Remover chunking manual problemático e usar estratégia mais segura
         // O Vite já faz code splitting automático eficiente, então vamos ser mais conservadores
         manualChunks: (id) => {
+          // ✅ CORREÇÃO CRÍTICA: Não separar o entry point principal (main.tsx, App.tsx)
+          // Isso garante que o código principal seja gerado como entry point
+          if (id.includes('src/main.tsx') || id.includes('src/App.tsx') || id.includes('src/index.tsx')) {
+            return undefined; // Deixar no chunk principal
+          }
+          
           // ✅ OTIMIZAÇÃO PERFORMANCE: Separar código não crítico em chunks menores
           // Separar i18n em chunk próprio (não crítico)
           if (id.includes("i18n") || id.includes("i18next") || id.includes("react-i18next")) {

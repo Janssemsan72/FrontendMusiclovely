@@ -16,14 +16,15 @@ export function injectScriptPlugin(): Plugin {
       try {
         let html = readFileSync(distIndexPath, 'utf-8');
         
-        // Encontrar o arquivo JS principal (o maior arquivo JS geralmente é o entry point)
+        // Encontrar o arquivo JS principal
+        // Se não houver arquivo não-vendor, usar o maior vendor (React geralmente)
         const jsDir = join(process.cwd(), 'dist', 'assets', 'js');
         let jsFiles: { name: string; size: number }[] = [];
         
         try {
           const files = readdirSync(jsDir);
           jsFiles = files
-            .filter((f: string) => f.endsWith('.js') && !f.includes('vendor-'))
+            .filter((f: string) => f.endsWith('.js'))
             .map((f: string) => {
               const filePath = join(jsDir, f);
               const stats = require('fs').statSync(filePath);
@@ -35,7 +36,8 @@ export function injectScriptPlugin(): Plugin {
           return;
         }
         
-        const mainFile = jsFiles[0];
+        // Priorizar arquivos não-vendor, mas se não houver, usar o maior vendor
+        const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || jsFiles[0];
         
         if (mainFile && !html.includes(mainFile.name)) {
           // Injetar o script antes do fechamento do body
@@ -47,7 +49,13 @@ export function injectScriptPlugin(): Plugin {
             html = html.slice(0, bodyEndIndex) + scriptTag + html.slice(bodyEndIndex);
             writeFileSync(distIndexPath, html, 'utf-8');
             console.log(`✅ Script injetado: /assets/js/${mainFile.name}`);
+          } else {
+            console.warn('❌ Não foi possível encontrar </body> no HTML');
           }
+        } else if (mainFile) {
+          console.log(`ℹ️ Script já existe no HTML: ${mainFile.name}`);
+        } else {
+          console.warn('❌ Nenhum arquivo JS encontrado para injetar');
         }
       } catch (error) {
         console.error('Erro ao injetar script:', error);
