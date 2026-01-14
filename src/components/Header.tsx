@@ -128,6 +128,9 @@ export default function Header() {
 
   // Handler para navegação para seções da página inicial
   const handleSectionClick = (sectionId: string) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:130',message:'handleSectionClick called',data:{sectionId,currentPath:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     setMobileMenuOpen(false);
     const scrollContainer = document.getElementById('main-scroll-container');
     
@@ -144,6 +147,9 @@ export default function Header() {
 
   // Handler para clique no logo - sempre vai para o topo
   const handleLogoClick = (e: React.MouseEvent) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:146',message:'handleLogoClick called',data:{currentPath:location.pathname,isOnHomePage:location.pathname === '/'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     e.preventDefault();
     e.stopPropagation();
     

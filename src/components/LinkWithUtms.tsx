@@ -1,6 +1,7 @@
 import { Link, LinkProps } from 'react-router-dom';
 import { useUtmParams } from '@/hooks/useUtmParams';
 import { useEffect, useRef } from 'react';
+import React from 'react';
 
 /**
  * Componente Link que automaticamente preserva parâmetros UTM
@@ -11,6 +12,15 @@ export function LinkWithUtms({ to, ...props }: LinkProps & { to: string }) {
   const { utms, getUtmQueryString } = useUtmParams();
   const linkRef = useRef<HTMLAnchorElement>(null);
   const prefetchedRef = useRef(false);
+  
+  // #region agent log
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LinkWithUtms.tsx:10',message:'LinkWithUtms click',data:{to,currentPath:window.location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    if (props.onClick) {
+      props.onClick(e);
+    }
+  };
+  // #endregion
 
   // ✅ OTIMIZAÇÃO: Prefetch de rotas quando hover
   useEffect(() => {
@@ -47,7 +57,7 @@ export function LinkWithUtms({ to, ...props }: LinkProps & { to: string }) {
 
   // Se não há UTMs, usar Link normal
   if (Object.keys(utms).length === 0) {
-    return <Link to={to} ref={linkRef} {...props} />;
+    return <Link to={to} ref={linkRef} {...props} onClick={handleClick} />;
   }
 
   // Adicionar UTMs ao link
@@ -68,6 +78,6 @@ export function LinkWithUtms({ to, ...props }: LinkProps & { to: string }) {
   const hash = url.hash || '';
   const finalTo = url.pathname + (existingParams.toString() ? `?${existingParams.toString()}` : '') + hash;
 
-  return <Link to={finalTo} ref={linkRef} {...props} />;
+  return <Link to={finalTo} ref={linkRef} {...props} onClick={handleClick} />;
 }
 

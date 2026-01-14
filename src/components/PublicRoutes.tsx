@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Suspense } from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
@@ -93,6 +93,11 @@ const CheckoutFallback = () => {
 
 // ✅ CORREÇÃO: Sempre renderizar rotas - React Router lida com paths automaticamente
 export default function PublicRoutes() {
+  const location = useLocation();
+  // #region agent log
+  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PublicRoutes.tsx:95',message:'PublicRoutes render',data:{pathname:location.pathname,search:location.search},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+  // #endregion
+  
   // Verificar se estamos no projeto music-lovely-novo ou musiclovely.shop (usando hostname)
   // Para esses projetos, sempre usar IndexCompany como página inicial
   const isCompanyPage = 

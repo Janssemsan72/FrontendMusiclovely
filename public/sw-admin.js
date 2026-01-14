@@ -316,7 +316,94 @@ self.addEventListener("fetch", (event) => {
 
   // HTML: Network First com fallback para cache e página offline
   if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request));
+    // #region agent log
+    const logData = {
+      location: 'sw-admin.js:318',
+      message: 'SW intercepting navigation',
+      data: {
+        url: request.url,
+        pathname: url.pathname,
+        method: request.method,
+        mode: request.mode,
+        timestamp: Date.now()
+      },
+      timestamp: Date.now(),
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'F'
+    };
+    // Enviar log via postMessage para a página
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({ type: 'SW_NAV_LOG', data: logData });
+      });
+    });
+    // #endregion
+    
+    event.respondWith(
+      (async () => {
+        // ✅ CORREÇÃO: Para navegações, SEMPRE buscar da rede primeiro e NUNCA usar cache antigo
+        // Isso evita problemas onde a URL muda mas a página não atualiza
+        try {
+          const networkResponse = await fetch(request, { 
+            cache: 'no-store', // Forçar não usar cache do navegador
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          });
+          
+          if (networkResponse && networkResponse.ok) {
+            // #region agent log
+            const logData2 = {
+              location: 'sw-admin.js:336',
+              message: 'SW navigation network success',
+              data: {
+                url: request.url,
+                status: networkResponse.status,
+                timestamp: Date.now()
+              },
+              timestamp: Date.now(),
+              sessionId: 'debug-session',
+              runId: 'run1',
+              hypothesisId: 'F'
+            };
+            self.clients.matchAll().then(clients => {
+              clients.forEach(client => {
+                client.postMessage({ type: 'SW_NAV_LOG', data: logData2 });
+              });
+            });
+            // #endregion
+            return networkResponse;
+          }
+        } catch (error) {
+          // #region agent log
+          const logData3 = {
+            location: 'sw-admin.js:355',
+            message: 'SW navigation network failed',
+            data: {
+              url: request.url,
+              error: error.message,
+              timestamp: Date.now()
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'run1',
+            hypothesisId: 'F'
+          };
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+              client.postMessage({ type: 'SW_NAV_LOG', data: logData3 });
+            });
+          });
+          // #endregion
+        }
+        
+        // Se rede falhar, retornar página offline (não usar cache antigo)
+        return caches.match("/admin/offline");
+      })()
+    );
     return;
   }
 

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -306,7 +306,10 @@ export function AdminSidebar() {
   }, [userRole, permissions, isLoading]);
 
   // Handler para fechar sidebar ao clicar em item no mobile
-  const handleItemClick = () => {
+  const handleItemClick = (url: string) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminSidebar.tsx:309',message:'AdminSidebar item clicked',data:{url,currentPath:typeof window !== 'undefined' ? window.location.pathname : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    // #endregion
     if (isMobile && openMobile) {
       setOpenMobile(false);
     }
@@ -356,7 +359,7 @@ export function AdminSidebar() {
                       <NavLink
                         to={item.url}
                         end={item.url === "/admin"}
-                        onClick={handleItemClick}
+                        onClick={() => handleItemClick(item.url)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();

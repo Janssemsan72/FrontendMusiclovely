@@ -10,10 +10,17 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
   const lastSearchRef = useRef<string>(''); // ✅ FASE 5: Ref para rastrear último search
   
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:12',message:'CheckoutRedirectWrapper effect',data:{pathname:location.pathname,search:location.search,lastSearch:lastSearchRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
     const isDev = import.meta.env.DEV;
 
     // ✅ FASE 5: Verificar se search não mudou antes de processar
     if (lastSearchRef.current === location.search) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'CheckoutRedirectWrapper.tsx:17',message:'CheckoutRedirectWrapper early return (same search)',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       return;
     }
     lastSearchRef.current = location.search;
