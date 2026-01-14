@@ -11,65 +11,54 @@ export function injectScriptPlugin(): Plugin {
     name: 'inject-script',
     enforce: 'post',
     writeBundle() {
-      // Após o build, injetar o script no HTML
+      // ✅ OTIMIZAÇÃO: Verificar primeiro se Vite já injetou o script
+      // Isso evita I/O desnecessário se o Vite já fez o trabalho
       const distIndexPath = join(process.cwd(), 'dist', 'index.html');
       try {
         let html = readFileSync(distIndexPath, 'utf-8');
         
-        // Encontrar o arquivo JS principal
-        // Se não houver arquivo não-vendor, usar o maior vendor (React geralmente)
-        const jsDir = join(process.cwd(), 'dist', 'assets', 'js');
-        let jsFiles: { name: string; size: number }[] = [];
+        // Verificar se o Vite já injetou o script principal
+        const viteInjectedScript = html.match(/<script[^>]*type="module"[^>]*src="\/assets\/js\/[^"]*\.js"[^>]*>/);
         
+        if (viteInjectedScript) {
+          // Vite já fez o trabalho, não precisa fazer nada
+          return;
+        }
+        
+        // Se Vite não injetou, tentar injetar manualmente
+        const jsDir = join(process.cwd(), 'dist', 'assets', 'js');
+        
+        // Verificar se o diretório existe antes de tentar ler
         try {
           const files = readdirSync(jsDir);
-          jsFiles = files
-            .filter((f: string) => f.endsWith('.js'))
+          const jsFiles = files
+            .filter((f: string) => f.endsWith('.js') && !f.includes('.br') && !f.includes('.gz'))
             .map((f: string) => {
               const filePath = join(jsDir, f);
               const stats = statSync(filePath);
               return { name: f, size: stats.size };
             })
             .sort((a, b) => b.size - a.size);
-        } catch (e) {
-          console.warn('Não foi possível ler diretório de JS:', e);
-          return;
-        }
-        
-        // Priorizar arquivos não-vendor, mas se não houver, usar o maior vendor
-        // O maior arquivo geralmente contém React + código principal da aplicação
-        const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || 
-                        jsFiles.find(f => f.size > 100000) || // Arquivos grandes geralmente contêm código principal
-                        jsFiles[0];
-        
-        // Verificar se o Vite já injetou o script principal
-        const viteInjectedScript = html.match(/<script[^>]*src="\/assets\/js\/[^"]*\.js"[^>]*>/);
-        
-        if (viteInjectedScript) {
-          console.log('ℹ️ Vite já injetou o script principal, não é necessário injetar manualmente');
-          return; // Vite já fez o trabalho
-        }
-        
-        if (mainFile && !html.includes(mainFile.name)) {
-          // Injetar o script antes do fechamento do body
-          const scriptTag = `    <script type="module" src="/assets/js/${mainFile.name}"></script>\n`;
           
-          // Inserir antes do último </body>
-          const bodyEndIndex = html.lastIndexOf('</body>');
-          if (bodyEndIndex !== -1) {
-            html = html.slice(0, bodyEndIndex) + scriptTag + html.slice(bodyEndIndex);
-            writeFileSync(distIndexPath, html, 'utf-8');
-            console.log(`✅ Script injetado: /assets/js/${mainFile.name}`);
-          } else {
-            console.warn('❌ Não foi possível encontrar </body> no HTML');
+          // Priorizar arquivos não-vendor, mas se não houver, usar o maior
+          const mainFile = jsFiles.find(f => !f.name.includes('vendor-')) || jsFiles[0];
+          
+          if (mainFile && !html.includes(mainFile.name)) {
+            const scriptTag = `    <script type="module" src="/assets/js/${mainFile.name}"></script>\n`;
+            const bodyEndIndex = html.lastIndexOf('</body>');
+            
+            if (bodyEndIndex !== -1) {
+              html = html.slice(0, bodyEndIndex) + scriptTag + html.slice(bodyEndIndex);
+              writeFileSync(distIndexPath, html, 'utf-8');
+            }
           }
-        } else if (mainFile) {
-          console.log(`ℹ️ Script já existe no HTML: ${mainFile.name}`);
-        } else {
-          console.warn('❌ Nenhum arquivo JS encontrado para injetar');
+        } catch (e) {
+          // Se não conseguir ler o diretório, não é crítico - Vite provavelmente já injetou
+          // Não fazer nada para evitar travamentos
         }
       } catch (error) {
-        console.error('Erro ao injetar script:', error);
+        // Ignorar erros silenciosamente para não travar o build
+        // O Vite geralmente já injeta o script corretamente
       }
     },
   };

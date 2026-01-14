@@ -47,28 +47,9 @@ export default defineConfig({
   // ✅ CORREÇÃO: Configuração de assets para garantir processamento correto
   assetsInclude: ["**/*.webp", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.svg", "**/*.mp4", "**/*.webm"],
   build: {
-    // Otimizações de compressão - usar terser para minificação mais agressiva
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-        passes: 2, // ✅ OTIMIZAÇÃO PRODUÇÃO: Múltiplas passadas para melhor compressão
-        unsafe: true, // ✅ OTIMIZAÇÃO PRODUÇÃO: Otimizações não seguras (mas eficientes)
-        unsafe_comps: true,
-        unsafe_math: true,
-        unsafe_methods: true,
-        unsafe_proto: true,
-        unsafe_regexp: true,
-        unsafe_undefined: true,
-        dead_code: true,
-        unused: true,
-      },
-      format: {
-        comments: false, // ✅ OTIMIZAÇÃO PRODUÇÃO: Remover todos os comentários
-      },
-    },
+    // ✅ OTIMIZAÇÃO: Usar esbuild ao invés de terser - muito mais rápido e estável
+    // esbuild é significativamente mais rápido que terser e evita travamentos
+    minify: "esbuild",
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Tree shaking mais agressivo
     rollupOptions: {
       input: './index.html', // ✅ CORREÇÃO CRÍTICA: Garantir que o index.html seja o entry point
