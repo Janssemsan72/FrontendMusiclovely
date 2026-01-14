@@ -145,13 +145,6 @@ export default defineConfig({
     modulePreload: {
       polyfill: false, // Não precisa de polyfill em navegadores modernos
     },
-    // ✅ OTIMIZAÇÃO PRODUÇÃO: Minificação mais agressiva de CSS
-    cssMinifyOptions: {
-      preset: ['default', {
-        discardComments: { removeAll: true },
-        normalizeWhitespace: true,
-      }],
-    },
     // Otimizações adicionais
     target: "es2020", // Reduzir transpilação desnecessária
     // ✅ OTIMIZAÇÃO PRODUÇÃO: Habilitar report de tamanhos comprimidos apenas em produção para análise
