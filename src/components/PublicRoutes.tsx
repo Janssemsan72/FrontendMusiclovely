@@ -137,14 +137,7 @@ export default function PublicRoutes() {
           <Route path="pricing" element={<Pricing />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
-          <Route 
-            path="quiz" 
-            element={
-              <Suspense fallback={<RouteFallback />}>
-                <Quiz />
-              </Suspense>
-            } 
-          />
+          <Route path="quiz" element={<Quiz />} />
           <Route path="checkout" element={
             <Suspense fallback={<CheckoutFallback />}>
               <Checkout />

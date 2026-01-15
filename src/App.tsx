@@ -363,11 +363,7 @@ const AppContent = () => {
           <Suspense fallback={null}>
             <Routes>
               {/* Rotas públicas - apenas português */}
-              <Route path="/*" element={
-                <Suspense fallback={null}>
-                  <PublicRoutes />
-                </Suspense>
-              } />
+              <Route path="/*" element={<PublicRoutes />} />
             
             {/* Admin sem prefixo */}
             <Route

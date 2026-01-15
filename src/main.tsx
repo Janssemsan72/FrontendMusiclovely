@@ -290,14 +290,52 @@ let hasInitialized = false; // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicializaç�
 
 function initializeReact() {
   // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicialização duplicada
+  // ✅ CORREÇÃO MOBILE: Verificação adicional para mobile
   if (isInitializing || hasInitialized) {
     if (isDev) {
-      console.warn('⚠️ [Main] React já está sendo inicializado ou já foi inicializado, ignorando...');
+      console.warn('⚠️ [Main] React já está sendo inicializado ou já foi inicializado, ignorando...', {
+        isInitializing,
+        hasInitialized,
+        hasReactRoot: !!reactRoot,
+        hasReactContainer: !!reactContainer,
+        timestamp: Date.now()
+      });
     }
     return;
   }
   
+  // ✅ CORREÇÃO MOBILE: Verificação adicional - verificar se já existe root montado
+  if (reactRoot && reactContainer) {
+    const existingRoot = document.getElementById('root');
+    if (existingRoot && existingRoot.children.length > 0) {
+      if (isDev) {
+        console.warn('⚠️ [Main] React root já existe e tem conteúdo, ignorando inicialização duplicada');
+      }
+      hasInitialized = true;
+      return;
+    }
+  }
+  
+  // ✅ CORREÇÃO MOBILE: Verificar se window já tem flags de inicialização
+  if (typeof window !== 'undefined') {
+    if ((window as any).__REACT_INITIALIZED__ || (window as any).__REACT_INITIALIZING__) {
+      if (isDev) {
+        console.warn('⚠️ [Main] React já foi inicializado (flags do window detectadas), ignorando...');
+      }
+      hasInitialized = true;
+      return;
+    }
+    (window as any).__REACT_INITIALIZING__ = true;
+  }
+  
   isInitializing = true;
+  
+  if (isDev) {
+    console.log('[Main] Inicializando React...', {
+      timestamp: Date.now(),
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
+    });
+  }
   try {
     const finalizeBoot = () => {
       requestAnimationFrame(() => {
@@ -322,6 +360,21 @@ function initializeReact() {
       return newRoot;
     })();
 
+    // ✅ CORREÇÃO MOBILE: Verificar se root já tem conteúdo antes de criar novo root
+    if (rootHost.children.length > 0 && reactRoot) {
+      if (isDev) {
+        console.warn('⚠️ [Main] Root já tem conteúdo, desmontando antes de re-renderizar...');
+      }
+      try {
+        reactRoot.unmount();
+      } catch (error) {
+        if (isDev) {
+          console.warn('⚠️ [Main] Erro ao desmontar root existente:', error);
+        }
+      }
+      reactRoot = null;
+    }
+
     if (reactRoot && reactContainer && reactContainer !== rootHost) {
       try {
         reactRoot.unmount();
@@ -331,7 +384,18 @@ function initializeReact() {
     }
 
     reactContainer = rootHost;
-    reactRoot = reactRoot ?? createRoot(rootHost);
+    
+    // ✅ CORREÇÃO MOBILE: Verificar se root já existe antes de criar
+    if (!reactRoot) {
+      reactRoot = createRoot(rootHost);
+      if (isDev) {
+        console.log('[Main] Novo React root criado');
+      }
+    } else {
+      if (isDev) {
+        console.log('[Main] Reutilizando React root existente');
+      }
+    }
 
     let didRender = false;
     try {
@@ -398,8 +462,21 @@ function initializeReact() {
             reactRoot = null;
           }
 
+          // ✅ CORREÇÃO MOBILE: Verificar novamente antes de renderizar no retry
+          if (hasInitialized) {
+            if (isDev) {
+              console.warn('⚠️ [Main] React já foi inicializado durante retry, ignorando...');
+            }
+            return;
+          }
+          
           reactContainer = rootHost;
-          reactRoot = reactRoot ?? createRoot(rootHost);
+          
+          // ✅ CORREÇÃO MOBILE: Verificar se root já existe antes de criar
+          if (!reactRoot) {
+            reactRoot = createRoot(rootHost);
+          }
+          
           reactRoot.render(<App />);
           hasInitialized = true; // ✅ Marcar como inicializado
           if (typeof window !== 'undefined') {
@@ -435,16 +512,41 @@ function initializeReact() {
 // });
 
 // ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas inicializações
+// ✅ CORREÇÃO MOBILE: Proteção adicional contra inicialização duplicada
+let initializationScheduled = false;
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    if (!hasInitialized && !isInitializing) {
+    // ✅ CORREÇÃO MOBILE: Verificar múltiplas condições antes de inicializar
+    if (!hasInitialized && !isInitializing && !initializationScheduled) {
+      initializationScheduled = true;
+      if (isDev) {
+        console.log('[Main] DOMContentLoaded - inicializando React');
+      }
       initializeReact();
+    } else if (isDev) {
+      console.warn('[Main] DOMContentLoaded - inicialização já agendada ou em progresso', {
+        hasInitialized,
+        isInitializing,
+        initializationScheduled
+      });
     }
   }, { once: true }); // ✅ Usar once: true para garantir que só executa uma vez
 } else {
   // ✅ CORREÇÃO: Inicializar imediatamente sem setTimeout - React deve renderizar o mais rápido possível
   // O setTimeout estava causando delay desnecessário que poderia fazer o loading ficar preso
-  if (!hasInitialized && !isInitializing) {
+  // ✅ CORREÇÃO MOBILE: Verificar múltiplas condições antes de inicializar
+  if (!hasInitialized && !isInitializing && !initializationScheduled) {
+    initializationScheduled = true;
+    if (isDev) {
+      console.log('[Main] DOM já pronto - inicializando React imediatamente');
+    }
     initializeReact();
+  } else if (isDev) {
+    console.warn('[Main] DOM já pronto - inicialização já agendada ou em progresso', {
+      hasInitialized,
+      isInitializing,
+      initializationScheduled
+    });
   }
 }

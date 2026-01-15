@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+const isDev = import.meta.env.DEV;
+
 /**
  * Componente que detecta divergências entre window.location e React Router
  * e força atualização quando necessário
@@ -13,12 +15,54 @@ export default function RouterSync({ children }: { children: React.ReactNode }) 
   const lastWindowPathRef = useRef<string>('');
   const isSyncingRef = useRef(false);
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mountCountRef = useRef(0);
+  const renderCountRef = useRef(0);
+  
+  // ✅ CORREÇÃO MOBILE: Proteção contra renderização dupla
+  useEffect(() => {
+    mountCountRef.current += 1;
+    renderCountRef.current += 1;
+    
+    if (isDev) {
+      console.log('[RouterSync] Componente montado/renderizado', {
+        mountCount: mountCountRef.current,
+        renderCount: renderCountRef.current,
+        timestamp: Date.now()
+      });
+    }
+    
+    // Se o componente foi montado mais de uma vez, pode indicar problema
+    if (mountCountRef.current > 1 && isDev) {
+      console.warn('[RouterSync] ⚠️ Componente foi montado múltiplas vezes!', {
+        mountCount: mountCountRef.current
+      });
+    }
+    
+    return () => {
+      if (isDev) {
+        console.log('[RouterSync] Componente desmontado', {
+          mountCount: mountCountRef.current
+        });
+      }
+    };
+  }, []);
   
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const reactPath = location.pathname + location.search;
     const windowPath = window.location.pathname + window.location.search;
+    
+    // ✅ CORREÇÃO MOBILE: Log temporário para debug (apenas em dev)
+    if (isDev) {
+      console.log('[RouterSync] Verificando sincronização', {
+        reactPath,
+        windowPath,
+        lastReactPath: lastReactPathRef.current,
+        lastWindowPath: lastWindowPathRef.current,
+        isSyncing: isSyncingRef.current
+      });
+    }
     
     // Se React Router atualizou, atualizar referências
     if (reactPath !== lastReactPathRef.current) {
@@ -37,11 +81,23 @@ export default function RouterSync({ children }: { children: React.ReactNode }) 
     // Mas NÃO forçar navegação se window.location está em '/' e React Router está em outra rota
     // Isso pode causar loops de redirecionamento
     if (windowPath !== reactPath && windowPath !== lastWindowPathRef.current && !isSyncingRef.current) {
+      // ✅ CORREÇÃO MOBILE: Log temporário para debug (apenas em dev)
+      if (isDev) {
+        console.log('[RouterSync] Divergência detectada, verificando se deve sincronizar', {
+          reactPath,
+          windowPath,
+          willSync: windowPath !== '/'
+        });
+      }
+      
       // ✅ CORREÇÃO CRÍTICA: NÃO forçar navegação se window.location está em '/'
       // Isso pode causar loops onde algo redireciona para '/' e RouterSync tenta corrigir
       // Apenas sincronizar se window.location mudou para uma rota diferente de '/'
       if (windowPath === '/') {
         lastWindowPathRef.current = windowPath;
+        if (isDev) {
+          console.log('[RouterSync] Ignorando sincronização para / - pode ser redirecionamento intencional');
+        }
         return;
       }
       
@@ -54,6 +110,14 @@ export default function RouterSync({ children }: { children: React.ReactNode }) 
       // Marcar que está sincronizando para evitar loops
       isSyncingRef.current = true;
       
+      // ✅ CORREÇÃO MOBILE: Log temporário para debug (apenas em dev)
+      if (isDev) {
+        console.log('[RouterSync] Forçando sincronização', {
+          windowPath,
+          reactPath
+        });
+      }
+      
       // ✅ CORREÇÃO CRÍTICA: Forçar navegação IMEDIATAMENTE sem delays
       // Usar requestAnimationFrame apenas para garantir que está no próximo frame
       requestAnimationFrame(() => {
@@ -63,6 +127,12 @@ export default function RouterSync({ children }: { children: React.ReactNode }) 
         
         // Se ainda há divergência, forçar navegação IMEDIATAMENTE
         if (currentWindowPath !== currentReactPath && currentWindowPath !== '/') {
+          if (isDev) {
+            console.log('[RouterSync] Executando navigate() para sincronizar', {
+              currentWindowPath,
+              currentReactPath
+            });
+          }
           navigate(currentWindowPath, { replace: true });
         }
         
