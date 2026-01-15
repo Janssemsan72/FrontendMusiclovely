@@ -14,13 +14,14 @@ export function LinkWithUtms({ to, ...props }: LinkProps & { to: string }) {
   const prefetchedRef = useRef(false);
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    // ✅ CORREÇÃO: Não prevenir comportamento padrão - deixar Link navegar normalmente
-    // Apenas chamar onClick customizado se fornecido
+    // ✅ CORREÇÃO CRÍTICA: Permitir que onClick customizado execute
+    // Mas NÃO prevenir comportamento padrão do Link
+    // O Link do React Router deve gerenciar a navegação normalmente
     if (props.onClick) {
       props.onClick(e);
+      // Se onClick customizado chamou preventDefault, não interferir
+      // Mas normalmente o Link deve navegar
     }
-    // ✅ CORREÇÃO CRÍTICA: Se onClick customizado chamou preventDefault, não navegar
-    // Caso contrário, deixar o Link do React Router navegar normalmente
   };
 
   // ✅ OTIMIZAÇÃO: Prefetch de rotas quando hover

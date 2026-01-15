@@ -6,7 +6,7 @@ import { ArrowRight, Star } from "@/utils/iconImports";
 const heroAvatar1 = "/testimonials/avatar-1.webp";
 const heroAvatar2 = "/testimonials/avatar-2.webp";
 const heroAvatar3 = "/testimonials/avatar-3.webp";
-import { useUtmParams } from "@/hooks/useUtmParams";
+import { LinkWithUtms } from "@/components/LinkWithUtms";
 
 // ✅ OTIMIZAÇÃO: Versão única 240p para carregamento INSTANTÂNEO (otimizado para mobile - 99% dos usuários)
 // Fallback para vídeo original se versão comprimida não existir
@@ -17,8 +17,6 @@ const heroVideoSources = {
 const heroPoster = '/images/collage-memories-new.webp';
 
 export default function HeroSection() {
-  const { navigateWithUtms } = useUtmParams();
-
   // ✅ CORREÇÃO: Usar sessionStorage para preservar estado do vídeo entre remontagens
   const [videoReady, setVideoReady] = React.useState(() => {
     try {
@@ -39,32 +37,6 @@ export default function HeroSection() {
 
   // Função para gerar links (apenas português)
   const getLocalizedLink = (path: string) => path;
-
-  // ✅ CORREÇÃO PRODUÇÃO: Ref para prevenir cliques duplicados
-  const isNavigatingRef = React.useRef(false);
-  
-  // Navegação para quiz
-  const handleQuizClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // ✅ CORREÇÃO PRODUÇÃO: Prevenir cliques duplicados
-    if (isNavigatingRef.current) {
-      return;
-    }
-    
-    isNavigatingRef.current = true;
-    
-    // Preload agressivo do Quiz antes de redirecionar
-    import('../pages/Quiz').catch(() => {});
-    const quizPath = getLocalizedLink('/quiz');
-    navigateWithUtms(quizPath);
-    
-    // Resetar flag após navegação (fallback de segurança)
-    setTimeout(() => {
-      isNavigatingRef.current = false;
-    }, 1000);
-  };
 
   // ✅ OTIMIZAÇÃO: Listener para evento online (recarregar vídeo quando conexão voltar)
   React.useEffect(() => {
@@ -290,14 +262,16 @@ export default function HeroSection() {
         <div className="flex justify-center items-center mb-4 sm:mb-6 px-2">
           <Button
             size="lg"
-            onClick={handleQuizClick}
+            asChild
             className="text-base sm:text-lg md:text-xl px-8 sm:px-10 md:px-12 py-4 sm:py-5 md:py-6 rounded-2xl bg-primary hover:bg-primary-600 text-white shadow-soft hover:shadow-medium transition-all hover:scale-105 w-full sm:w-auto group btn-pulse"
           >
-            <span className="flex items-center justify-center gap-2 sm:gap-3">
-              {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
-              <span>🎵 Criar Sua Música Aqui</span>
-              <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
-            </span>
+            <LinkWithUtms to={getLocalizedLink('/quiz')}>
+              <span className="flex items-center justify-center gap-2 sm:gap-3">
+                {/* ✅ CORREÇÃO: Fallback para garantir texto sempre visível */}
+                <span>🎵 Criar Sua Música Aqui</span>
+                <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
+              </span>
+            </LinkWithUtms>
           </Button>
         </div>
 
