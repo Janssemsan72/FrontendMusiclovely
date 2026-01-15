@@ -326,20 +326,41 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
-        // ✅ CORREÇÃO: Para navegações, SEMPRE buscar da rede primeiro e NUNCA usar cache antigo
+        // ✅ CORREÇÃO CRÍTICA: Para navegações, SEMPRE buscar da rede primeiro e NUNCA usar cache antigo
         // Isso evita problemas onde a URL muda mas a página não atualiza
         try {
-          const networkResponse = await fetch(request, { 
+          // ✅ CORREÇÃO: Criar nova requisição com cache bypass explícito
+          const fetchRequest = new Request(request.url, {
+            method: request.method,
+            headers: request.headers,
+            body: request.body,
+            mode: request.mode,
+            credentials: request.credentials,
             cache: 'no-store', // Forçar não usar cache do navegador
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            }
+            redirect: request.redirect,
+            referrer: request.referrer,
+            referrerPolicy: request.referrerPolicy,
+            integrity: request.integrity,
+            keepalive: request.keepalive,
+            signal: request.signal
           });
           
+          const networkResponse = await fetch(fetchRequest);
+          
           if (networkResponse && networkResponse.ok) {
-            return networkResponse;
+            // ✅ CORREÇÃO: Criar nova resposta com headers anti-cache explícitos
+            const headers = new Headers(networkResponse.headers);
+            headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+            headers.set('Pragma', 'no-cache');
+            headers.set('Expires', '0');
+            headers.delete('ETag'); // Remover ETag para evitar cache baseado em ETag
+            headers.delete('Last-Modified'); // Remover Last-Modified para evitar cache baseado em data
+            
+            return new Response(networkResponse.body, {
+              status: networkResponse.status,
+              statusText: networkResponse.statusText,
+              headers: headers
+            });
           }
         } catch (error) {
           // Erro na rede - continuar para fallback

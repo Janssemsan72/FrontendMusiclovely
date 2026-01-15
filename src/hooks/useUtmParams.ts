@@ -251,7 +251,6 @@ export function useUtmParams() {
    * ✅ OTIMIZAÇÃO: Redirecionamento ULTRA-RÁPIDO usando window.location.href para /checkout
    */
   const navigateWithUtms = (path: string, options?: { replace?: boolean; state?: unknown }) => {
-    
     if (isAdminRoute) {
       navigate(path, options);
       return;

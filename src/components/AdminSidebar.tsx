@@ -357,6 +357,9 @@ export function AdminSidebar() {
                         to={item.url}
                         end={item.url === "/admin"}
                         onClick={(e) => {
+                          // ✅ CORREÇÃO: Não prevenir comportamento padrão - deixar NavLink navegar normalmente
+                          // Apenas fechar sidebar no mobile se necessário
+                          // Não chamar preventDefault - isso bloqueia a navegação do React Router
                           handleItemClick(item.url);
                         }}
                         onKeyDown={(e) => {

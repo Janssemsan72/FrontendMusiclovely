@@ -119,7 +119,7 @@ const App = () => {
   if (!queryRuntime) {
     // Renderizar estrutura básica sem QueryClient para FCP mais rápido
     return (
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: true }}>
         <AppContent />
       </BrowserRouter>
     );
@@ -127,7 +127,7 @@ const App = () => {
 
   return (
     <queryRuntime.QueryClientProvider client={queryRuntime.queryClient}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: true }}>
         <AppContent />
       </BrowserRouter>
     </queryRuntime.QueryClientProvider>
