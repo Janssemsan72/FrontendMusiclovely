@@ -2746,7 +2746,13 @@ export default function Checkout() {
                 {/* ✅ Botão para desktop */}
                 <div className="hidden md:block mt-4">
                   <Button
-                    onClick={() => handleCheckout(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (!processing) {
+                        handleCheckout(false);
+                      }
+                    }}
                     disabled={processing}
                     className={`w-full btn-pulse h-12 font-bold text-lg lg:text-xl ${
                       buttonError
@@ -3077,7 +3083,13 @@ export default function Checkout() {
       {/* ✅ Botão fixo na parte inferior (mobile only) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 bg-background/95 backdrop-blur-sm border-t border-border shadow-2xl">
         <Button
-          onClick={() => handleCheckout(false)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!processing) {
+              handleCheckout(false);
+            }
+          }}
           disabled={processing}
           className={`w-full btn-pulse h-14 font-bold text-base ${
             buttonError

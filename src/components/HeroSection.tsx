@@ -40,13 +40,30 @@ export default function HeroSection() {
   // Função para gerar links (apenas português)
   const getLocalizedLink = (path: string) => path;
 
+  // ✅ CORREÇÃO PRODUÇÃO: Ref para prevenir cliques duplicados
+  const isNavigatingRef = React.useRef(false);
+  
   // Navegação para quiz
   const handleQuizClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // ✅ CORREÇÃO PRODUÇÃO: Prevenir cliques duplicados
+    if (isNavigatingRef.current) {
+      return;
+    }
+    
+    isNavigatingRef.current = true;
+    
     // Preload agressivo do Quiz antes de redirecionar
     import('../pages/Quiz').catch(() => {});
     const quizPath = getLocalizedLink('/quiz');
     navigateWithUtms(quizPath);
+    
+    // Resetar flag após navegação (fallback de segurança)
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 1000);
   };
 
   // ✅ OTIMIZAÇÃO: Listener para evento online (recarregar vídeo quando conexão voltar)

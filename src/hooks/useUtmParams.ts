@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import * as React from 'react';
 
 const isDev = import.meta.env.DEV;
 
@@ -246,14 +247,32 @@ export function useUtmParams() {
   //   }
   // }, [location.pathname, location.search, savedTrackingParams, currentTrackingParams]);
 
+  // ✅ CORREÇÃO PRODUÇÃO: Ref para prevenir navegação duplicada
+  const navigationInProgressRef = React.useRef(false);
+  
   /**
    * Função helper para navegar preservando TODOS os parâmetros de tracking
    * ✅ OTIMIZAÇÃO: Redirecionamento ULTRA-RÁPIDO usando window.location.href para /checkout
    */
   const navigateWithUtms = (path: string, options?: { replace?: boolean; state?: unknown }) => {
+    // ✅ CORREÇÃO PRODUÇÃO: Prevenir navegação duplicada
+    if (navigationInProgressRef.current) {
+      if (isDev) {
+        console.warn('⚠️ [navigateWithUtms] Navegação já em progresso, ignorando:', path);
+      }
+      return;
+    }
+    
+    navigationInProgressRef.current = true;
+    
+    // ✅ Resetar flag após um tempo (fallback de segurança)
+    setTimeout(() => {
+      navigationInProgressRef.current = false;
+    }, 1000);
     
     if (isAdminRoute) {
       navigate(path, options);
+      navigationInProgressRef.current = false;
       return;
     }
     
@@ -276,13 +295,14 @@ export function useUtmParams() {
       
       // ✅ REDIRECIONAMENTO IMEDIATO: window.location.href é mais rápido que React Router
       window.location.href = finalUrl;
-      return;
+      return; // Não resetar flag aqui pois a página vai recarregar
     }
     
     // ✅ OTIMIZAÇÃO: Se não há parâmetros de tracking, navegar diretamente (mais rápido)
     const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
     if (!hasTrackingParams) {
       navigate(path, options);
+      navigationInProgressRef.current = false;
       return;
     }
     
@@ -308,21 +328,9 @@ export function useUtmParams() {
       console.log('🔄 Navegando com parâmetros de tracking:', { path, finalPath, trackingParams: allTrackingParams });
     }
     
-    // ✅ CORREÇÃO PRODUÇÃO: Garantir que navigate() dispare popstate para forçar atualização
+    // ✅ CORREÇÃO PRODUÇÃO: Navegar diretamente sem setTimeout que causa duplicação
     navigate(finalPath, options);
-    
-    // ✅ CORREÇÃO PRODUÇÃO: Forçar popstate event se navigate não disparar (fallback para produção)
-    if (typeof window !== 'undefined') {
-      // Pequeno delay para garantir que navigate() foi processado
-      setTimeout(() => {
-        const currentWindowPath = window.location.pathname + window.location.search;
-        const expectedPath = finalPath;
-        // Se a URL mudou mas React Router não atualizou, forçar popstate
-        if (currentWindowPath === expectedPath) {
-          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
-        }
-      }, 0);
-    }
+    navigationInProgressRef.current = false;
   };
 
   /**

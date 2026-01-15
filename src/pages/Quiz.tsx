@@ -64,6 +64,7 @@ const Quiz = memo(() => {
   
   const hasShownDataLoadedRef = useRef(false);
   const isSubmittingRef = useRef(false); // ✅ Proteção contra cliques duplicados
+  const isNavigatingRef = useRef(false); // ✅ CORREÇÃO PRODUÇÃO: Proteção contra navegação duplicada
   const isMountedRef = useRef(true); // ✅ Verificação de montagem para prevenir erros de DOM
   const dataLoadedRef = useRef(false); // ✅ Flag para indicar que dados foram carregados
   const [formData, setFormData] = useState({
@@ -759,13 +760,14 @@ const Quiz = memo(() => {
       e.stopPropagation();
     }
     
-    // ✅ CORREÇÃO: Proteção contra cliques duplicados
-    if (loading) {
+    // ✅ CORREÇÃO PRODUÇÃO: Proteção contra cliques duplicados com ref
+    if (loading || isNavigatingRef.current) {
       devLog('⚠️ [Quiz] handleNext ignorado - já está processando');
       return;
     }
     
     if (validateCurrentStep()) {
+      isNavigatingRef.current = true;
       const nextStep = step + 1;
       setStep(nextStep);
       
@@ -777,6 +779,11 @@ const Quiz = memo(() => {
         style: formData.style,
         relationship: formData.relationship,
       });
+      
+      // Resetar flag após um tempo (fallback de segurança)
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 500);
     }
   }, [validateCurrentStep, step, formData, trackEvent, loading]);
 
@@ -787,13 +794,19 @@ const Quiz = memo(() => {
       e.stopPropagation();
     }
     
-    // ✅ CORREÇÃO: Proteção contra cliques duplicados
-    if (loading) {
+    // ✅ CORREÇÃO PRODUÇÃO: Proteção contra cliques duplicados com ref
+    if (loading || isNavigatingRef.current) {
       devLog('⚠️ [Quiz] handleBack ignorado - já está processando');
       return;
     }
     
+    isNavigatingRef.current = true;
     setStep(step - 1);
+    
+    // Resetar flag após um tempo (fallback de segurança)
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 500);
   }, [step, loading]);
 
   const handleSubmit = useCallback(async () => {
