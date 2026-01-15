@@ -497,22 +497,23 @@ serve(async (req) => {
       }
     }
 
-    // Estratégia 1: transaction_id (usar campo genérico, não hotmart_transaction_id)
+    // Estratégia 1: provider_ref (usar campo TEXT, não transaction_id UUID)
     if (!order && transaction_id && transaction_id.trim().length >= 6) {
-      console.log("🔍 [Hotmart Webhook] Tentando Estratégia 1 (transaction_id)...", {
+      console.log("🔍 [Hotmart Webhook] Tentando Estratégia 1 (provider_ref)...", {
         transaction_id: transaction_id.substring(0, 20) + "..."
       });
       
       const { data: orderByTxId, error } = await supabase
         .from("orders")
         .select("*")
-        .eq("transaction_id", transaction_id)  // Usar transaction_id genérico
+        .eq("provider_ref", transaction_id)  // ✅ Usar provider_ref (TEXT) em vez de transaction_id (UUID)
+        .eq("provider", "hotmart")  // ✅ Garantir que é pedido da Hotmart
         .single();
 
       if (orderByTxId && !error) {
         order = orderByTxId;
         strategyUsed = "hotmart_transaction_id";
-        console.log("✅ [Hotmart Webhook] Pedido encontrado pela Estratégia 1 (transaction_id)", {
+        console.log("✅ [Hotmart Webhook] Pedido encontrado pela Estratégia 1 (provider_ref)", {
           order_id: order.id,
           transaction_id: transaction_id.substring(0, 20) + "..."
         });
@@ -719,13 +720,13 @@ serve(async (req) => {
     const paidAtTimestamp = paid_at || new Date().toISOString();
 
     // ✅ Atualizar pedido para 'paid' (usando apenas campos que existem)
+    // NOTA: transaction_id é UUID, então usamos apenas provider_ref (TEXT) para Hotmart
     const { error: updateError, data: updateData } = await supabase
       .from("orders")
       .update({
         status: "paid",
         provider: "hotmart",
-        transaction_id: transaction_id,  // Usar transaction_id genérico
-        provider_ref: transaction_id,  // Armazenar também em provider_ref para referência
+        provider_ref: transaction_id,  // ✅ Usar apenas provider_ref (TEXT) para transaction_id da Hotmart
         paid_at: paidAtTimestamp || order.paid_at,
         updated_at: new Date().toISOString()
       })
