@@ -3,6 +3,19 @@ import React from "react";
 // Verificar se está em desenvolvimento
 const isDev = import.meta.env.DEV;
 
+// ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas execuções do módulo
+if (typeof window !== 'undefined') {
+  // Se já existe uma flag de inicialização, não executar novamente
+  if ((window as any).__REACT_INITIALIZING__ || (window as any).__REACT_INITIALIZED__) {
+    if (isDev) {
+      console.warn('⚠️ [Main] Script já foi executado, ignorando execução duplicada...');
+    }
+    // Não fazer nada - React já está sendo inicializado ou já foi inicializado
+  } else {
+    (window as any).__REACT_INITIALIZING__ = true;
+  }
+}
+
 // Debug logs removidos para otimização de performance
 
 // Log removido para reduzir verbosidade
@@ -257,8 +270,19 @@ if (typeof window !== 'undefined') {
 // Função para inicializar React com tratamento de erro
 let reactRoot: ReturnType<typeof createRoot> | null = null;
 let reactContainer: HTMLElement | null = null;
+let isInitializing = false; // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicialização duplicada
+let hasInitialized = false; // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicialização duplicada
 
 function initializeReact() {
+  // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicialização duplicada
+  if (isInitializing || hasInitialized) {
+    if (isDev) {
+      console.warn('⚠️ [Main] React já está sendo inicializado ou já foi inicializado, ignorando...');
+    }
+    return;
+  }
+  
+  isInitializing = true;
   try {
     const finalizeBoot = () => {
       requestAnimationFrame(() => {
@@ -296,63 +320,93 @@ function initializeReact() {
 
     let didRender = false;
     try {
-      reactRoot.render(
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
-      );
+      // ✅ CORREÇÃO PRODUÇÃO: Remover StrictMode em produção para evitar duplicação
+      // StrictMode causa renderização dupla apenas em dev, mas em produção pode causar problemas
+      const AppComponent = <App />;
+      reactRoot.render(AppComponent);
       didRender = true;
+      hasInitialized = true; // ✅ Marcar como inicializado
+      if (typeof window !== 'undefined') {
+        (window as any).__REACT_INITIALIZED__ = true;
+        (window as any).__REACT_INITIALIZING__ = false;
+      }
     } catch (renderError) {
       console.error('❌ [Main] Erro ao renderizar React:', renderError);
       try {
         reactRoot.render(<App />);
         didRender = true;
+        hasInitialized = true; // ✅ Marcar como inicializado
+        if (typeof window !== 'undefined') {
+          (window as any).__REACT_INITIALIZED__ = true;
+          (window as any).__REACT_INITIALIZING__ = false;
+        }
       } catch (fallbackError) {
         console.error('❌ [Main] Erro crítico ao inicializar React:', fallbackError);
         rootHost.innerHTML = '<div style="padding: 20px; text-align: center;"><h1>Erro ao carregar a aplicação</h1><p>Por favor, recarregue a página.</p></div>';
+        isInitializing = false; // ✅ Resetar flag em caso de erro
       }
     }
 
     if (didRender) {
       finalizeBoot();
     }
+    isInitializing = false; // ✅ Resetar flag após renderização
   } catch (error) {
     console.error('❌ [Main] Erro crítico na inicialização do React:', error);
-    // Último recurso: tentar criar root e renderizar após um delay
-    setTimeout(() => {
-      try {
-        const rootHost = document.getElementById("root") || (() => {
-          const newRoot = document.createElement('div');
-          newRoot.id = 'root';
-          document.body.appendChild(newRoot);
-          return newRoot;
-        })();
-
-        if (reactRoot && reactContainer && reactContainer !== rootHost) {
-          try {
-            reactRoot.unmount();
-          } catch {
+    isInitializing = false; // ✅ Resetar flag em caso de erro
+    
+    // ✅ CORREÇÃO PRODUÇÃO: Só tentar retry se ainda não foi inicializado
+    if (!hasInitialized) {
+      // Último recurso: tentar criar root e renderizar após um delay
+      setTimeout(() => {
+        // ✅ Verificar novamente antes de tentar
+        if (hasInitialized) {
+          if (isDev) {
+            console.warn('⚠️ [Main] React já foi inicializado, ignorando retry...');
           }
-          reactRoot = null;
+          return;
         }
+        
+        try {
+          const rootHost = document.getElementById("root") || (() => {
+            const newRoot = document.createElement('div');
+            newRoot.id = 'root';
+            document.body.appendChild(newRoot);
+            return newRoot;
+          })();
 
-        reactContainer = rootHost;
-        reactRoot = reactRoot ?? createRoot(rootHost);
-        reactRoot.render(<App />);
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            window.__REACT_READY__ = true;
-            window.dispatchEvent(new Event('react-ready'));
-            const placeholder = document.getElementById('ml-placeholder');
-            if (placeholder) {
-              placeholder.remove();
+          if (reactRoot && reactContainer && reactContainer !== rootHost) {
+            try {
+              reactRoot.unmount();
+            } catch {
             }
+            reactRoot = null;
+          }
+
+          reactContainer = rootHost;
+          reactRoot = reactRoot ?? createRoot(rootHost);
+          reactRoot.render(<App />);
+          hasInitialized = true; // ✅ Marcar como inicializado
+          if (typeof window !== 'undefined') {
+            (window as any).__REACT_INITIALIZED__ = true;
+            (window as any).__REACT_INITIALIZING__ = false;
+          }
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.__REACT_READY__ = true;
+              window.dispatchEvent(new Event('react-ready'));
+              const placeholder = document.getElementById('ml-placeholder');
+              if (placeholder) {
+                placeholder.remove();
+              }
+            });
           });
-        });
-      } catch (retryError) {
-        console.error('❌ [Main] Falha total na inicialização do React:', retryError);
-      }
-    }, 1000);
+        } catch (retryError) {
+          console.error('❌ [Main] Falha total na inicialização do React:', retryError);
+          isInitializing = false; // ✅ Resetar flag em caso de erro
+        }
+      }, 1000);
+    }
   }
 }
 
@@ -365,12 +419,17 @@ function initializeReact() {
 //   reactDOMAvailable: typeof createRoot !== 'undefined'
 // });
 
+// ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas inicializações
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    initializeReact();
-  });
+    if (!hasInitialized && !isInitializing) {
+      initializeReact();
+    }
+  }, { once: true }); // ✅ Usar once: true para garantir que só executa uma vez
 } else {
   // ✅ CORREÇÃO: Inicializar imediatamente sem setTimeout - React deve renderizar o mais rápido possível
   // O setTimeout estava causando delay desnecessário que poderia fazer o loading ficar preso
-  initializeReact();
+  if (!hasInitialized && !isInitializing) {
+    initializeReact();
+  }
 }

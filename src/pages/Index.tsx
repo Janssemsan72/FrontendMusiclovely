@@ -1,4 +1,6 @@
 import React, { memo, Suspense, useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef, Suspense, memo } from "react";
+
 // ✅ OTIMIZAÇÃO PERFORMANCE: Lazy load do Header para reduzir bundle inicial
 const Header = React.lazy(() => import("@/components/Header"));
 import HeroSection from "@/components/HeroSection";
@@ -83,6 +85,17 @@ function LazySection({
 }
 
 const Index = memo(() => {
+  // ✅ CORREÇÃO PRODUÇÃO: Prevenir renderização duplicada
+  const hasRenderedRef = useRef(false);
+  
+  useEffect(() => {
+    if (hasRenderedRef.current) {
+      console.error('❌ [Index] Componente Index está sendo renderizado duas vezes!');
+      return;
+    }
+    hasRenderedRef.current = true;
+  }, []);
+  
   // ✅ OTIMIZAÇÃO PERFORMANCE: Usar hooks diretamente (já otimizados internamente)
   const { hasUtms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();

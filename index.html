@@ -97,6 +97,8 @@
     <!-- A imagem será carregada normalmente quando o componente HeroSection renderizar -->
     
     <!-- ✅ CORREÇÃO CRÍTICA: Script principal deve estar no HTML para o Vite processar -->
+    <!-- ✅ CORREÇÃO PRODUÇÃO: Vite injeta automaticamente em produção, este script só é necessário em dev -->
+    <!-- Em produção, o Vite substitui este script pelo bundle otimizado -->
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- ✅ OTIMIZAÇÃO: CSS crítico mínimo inline para FCP rápido -->

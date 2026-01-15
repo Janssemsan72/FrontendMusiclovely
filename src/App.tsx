@@ -116,57 +116,11 @@ const App = () => {
     };
   }, []);
 
-  // ✅ CORREÇÃO PRODUÇÃO: Wrapper para garantir que BrowserRouter detecte mudanças de URL
-  const RouterWrapper = ({ children }: { children: React.ReactNode }) => {
-    // Forçar atualização quando window.location muda
-    React.useEffect(() => {
-      if (typeof window === 'undefined') return;
-      
-      let lastPath = window.location.pathname + window.location.search;
-      let lastCheck = Date.now();
-      
-      const checkPathChange = () => {
-        const now = Date.now();
-        // Throttle: verificar no máximo a cada 100ms
-        if (now - lastCheck < 100) return;
-        lastCheck = now;
-        
-        const currentPath = window.location.pathname + window.location.search;
-        if (currentPath !== lastPath) {
-          lastPath = currentPath;
-          // Disparar popstate para forçar React Router a atualizar
-          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
-        }
-      };
-      
-      // Verificar apenas quando há interação do usuário ou eventos de navegação
-      const handleUserInteraction = () => {
-        setTimeout(checkPathChange, 0);
-      };
-      
-      window.addEventListener('popstate', checkPathChange);
-      window.addEventListener('hashchange', checkPathChange);
-      window.addEventListener('click', handleUserInteraction, { passive: true });
-      window.addEventListener('touchstart', handleUserInteraction, { passive: true });
-      
-      return () => {
-        window.removeEventListener('popstate', checkPathChange);
-        window.removeEventListener('hashchange', checkPathChange);
-        window.removeEventListener('click', handleUserInteraction);
-        window.removeEventListener('touchstart', handleUserInteraction);
-      };
-    }, []);
-    
-    return <>{children}</>;
-  };
-
   if (!queryRuntime) {
     // Renderizar estrutura básica sem QueryClient para FCP mais rápido
     return (
       <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: true }}>
-        <RouterWrapper>
-          <AppContent />
-        </RouterWrapper>
+        <AppContent />
       </BrowserRouter>
     );
   }
@@ -174,9 +128,7 @@ const App = () => {
   return (
     <queryRuntime.QueryClientProvider client={queryRuntime.queryClient}>
       <BrowserRouter future={{ v7_startTransition: false, v7_relativeSplatPath: true }}>
-        <RouterWrapper>
-          <AppContent />
-        </RouterWrapper>
+        <AppContent />
       </BrowserRouter>
     </queryRuntime.QueryClientProvider>
   );
@@ -187,40 +139,6 @@ const AppContent = () => {
   const isLoading = false;
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // ✅ CORREÇÃO PRODUÇÃO: Forçar atualização quando URL muda mas React Router não detecta
-  React.useEffect(() => {
-    const currentPath = location.pathname;
-    const windowPath = typeof window !== 'undefined' ? window.location.pathname : currentPath;
-    
-    // Se a URL do window mudou mas location.pathname não, forçar navegação
-    if (windowPath !== currentPath && windowPath !== '/') {
-      // Pequeno delay para evitar loops
-      const timeoutId = setTimeout(() => {
-        if (typeof window !== 'undefined' && window.location.pathname !== currentPath) {
-          navigate(window.location.pathname + window.location.search, { replace: true });
-        }
-      }, 50);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [location.pathname, navigate]);
-  
-  // ✅ CORREÇÃO PRODUÇÃO: Listener para popstate que força atualização
-  React.useEffect(() => {
-    const handlePopState = () => {
-      // Forçar atualização quando popstate é disparado
-      if (typeof window !== 'undefined') {
-        const windowPath = window.location.pathname;
-        const windowSearch = window.location.search;
-        if (windowPath !== location.pathname || windowSearch !== location.search) {
-          navigate(windowPath + windowSearch, { replace: true });
-        }
-      }
-    };
-    
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [location.pathname, location.search, navigate]);
   
   if (isDevVerbose) {
     devLog.debug('[App] AppContent renderizando...', {
