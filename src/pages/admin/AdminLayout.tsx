@@ -8,6 +8,7 @@ import { LogOut, Loader2, Download, Shield, User } from "@/utils/iconImports";
 import { toast } from "sonner";
 import { usePWA } from "@/hooks/usePWA";
 import { useAdminAuthGate } from "@/hooks/useAdminAuthGate";
+import { useGlobalErrorHandler } from "@/hooks/useGlobalErrorHandler";
 import { OfflineIndicator } from "@/components/admin/OfflineIndicator";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 
@@ -15,6 +16,66 @@ const InstallPrompt = lazyWithRetry(() => import("@/components/admin/InstallProm
 const WeatherWidget = lazyWithRetry(() =>
   import("@/components/admin/WeatherWidget").then((m) => ({ default: m.WeatherWidget }))
 );
+
+/**
+ * Helper para lidar com resultado da instalação PWA
+ * Mostra toast com instruções de instalação manual se necessário
+ */
+const handlePWAInstallResult = async (
+  result: boolean | { fallback: boolean; instructions?: string; steps?: string[]; isMobile?: boolean },
+  dismissNotification?: () => void,
+  notificationId?: string | number
+) => {
+  if (notificationId) {
+    toast.dismiss(notificationId);
+  }
+
+  if (result === true) {
+    toast.success('App instalado com sucesso!');
+    dismissNotification?.();
+    return;
+  }
+
+  if (result && typeof result === 'object' && result.fallback) {
+    const isMobile = result.isMobile || false;
+    const steps = result.steps || [];
+    
+    toast.info(
+      <div className="space-y-3 max-w-md">
+        <div>
+          <p className="font-semibold text-base mb-2">
+            {isMobile ? '📱 Instalar no Mobile' : '💻 Instalar no Desktop'}
+          </p>
+          {steps.length > 0 ? (
+            <ol className="space-y-1.5 text-sm list-decimal list-inside">
+              {steps.map((step, idx) => (
+                <li key={idx} className="text-muted-foreground">
+                  {step.replace(/^\d+\.\s*/, '')}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {result.instructions}
+            </p>
+          )}
+        </div>
+        {!isMobile && (
+          <p className="text-xs text-muted-foreground italic">
+            💡 Dica: Procure o ícone ➕ na barra de endereços do navegador
+          </p>
+        )}
+      </div>,
+      { 
+        duration: 12000,
+        position: 'top-center',
+        className: 'max-w-md'
+      }
+    );
+  } else {
+    toast.error('Não foi possível instalar o app. Tente usar o menu do navegador.');
+  }
+};
 
 export default function AdminLayout() {
   // 1. Todos os hooks no topo
@@ -25,6 +86,7 @@ export default function AdminLayout() {
     pathname: location.pathname,
   });
   const { isInstallable, isInstalled, installPWA, shouldShowNotification, dismissNotification } = usePWA();
+  useGlobalErrorHandler(); // Tratamento global de erros
   const isMountedRef = useRef(true); // ✅ Verificação de montagem para prevenir erros de DOM
   const notificationShownRef = useRef(false); // ✅ PWA: Evitar múltiplas notificações
   const [nonCriticalEnabled, setNonCriticalEnabled] = useState(false);
@@ -32,45 +94,13 @@ export default function AdminLayout() {
   
 
   // 2. Todos os useEffects (devem ser sempre executados na mesma ordem)
-  
-  // Error handler
-  useEffect(() => {
-    const handleError = (event: ErrorEvent) => {
-      // ✅ CORREÇÃO: Filtrar erros de bibliotecas externas minificadas
-      const errorSource = event.filename || '';
-      const errorMessage = event.message || '';
-      
-      // Verificar se é erro de código minificado (VM*.js) ou bibliotecas externas
-      const isMinifiedCode = errorSource.includes('VM') || 
-                            errorSource.includes('js.js') ||
-                            errorSource.includes('eval') ||
-                            errorSource.includes('Function');
-      
-      // Verificar se é erro de biblioteca externa conhecida
-      const isExternalLibraryError = errorSource.includes('utmify') ||
-                                    errorMessage.includes('Cannot read properties of undefined') ||
-                                    errorMessage.includes('reading \'forEach\'');
-      
-      // ✅ OTIMIZAÇÃO: Filtrar erros de recursos do navegador (não são erros críticos do código)
-      const isResourceError = errorMessage.includes('ERR_INSUFFICIENT_RESOURCES') ||
-                             errorMessage.includes('ERR_QUIC_PROTOCOL_ERROR') ||
-                             errorMessage.includes('ERR_NETWORK_CHANGED') ||
-                             errorMessage.includes('ERR_INTERNET_DISCONNECTED') ||
-                             errorMessage.includes('Failed to load resource') ||
-                             (errorSource.includes('.mp3') && errorMessage.includes('Failed'));
-      
-      // Suprimir erros de código minificado, bibliotecas externas e recursos do navegador
-      if (isMinifiedCode || isExternalLibraryError || isResourceError) {
-        event.preventDefault(); // Suprimir o erro
-        return;
-      }
-      
-      // Logar outros erros normalmente
-      console.error('Erro capturado:', event.error);
-    };
 
-    window.addEventListener('error', handleError, true); // Usar capture phase
-    return () => window.removeEventListener('error', handleError, true);
+  // Cleanup de montagem
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -176,51 +206,8 @@ export default function AdminLayout() {
             <Button
               size="sm"
               onClick={async () => {
-                toast.dismiss(notificationId);
                 const result = await installPWA();
-                if (result === true) {
-                  toast.success('App instalado com sucesso!');
-                  dismissNotification();
-                } else if (result && typeof result === 'object' && result.fallback) {
-                  // Mostrar instruções de instalação manual melhoradas
-                  const isMobile = result.isMobile || false;
-                  const steps = result.steps || [];
-                  
-                  toast.info(
-                    <div className="space-y-3 max-w-md">
-                      <div>
-                        <p className="font-semibold text-base mb-2">
-                          {isMobile ? '📱 Instalar no Mobile' : '💻 Instalar no Desktop'}
-                        </p>
-                        {steps.length > 0 ? (
-                          <ol className="space-y-1.5 text-sm list-decimal list-inside">
-                            {steps.map((step, idx) => (
-                              <li key={idx} className="text-muted-foreground">
-                                {step.replace(/^\d+\.\s*/, '')}
-                              </li>
-                            ))}
-                          </ol>
-                        ) : (
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">
-                            {result.instructions}
-                          </p>
-                        )}
-                      </div>
-                      {!isMobile && (
-                        <p className="text-xs text-muted-foreground italic">
-                          💡 Dica: Procure o ícone ➕ na barra de endereços do navegador
-                        </p>
-                      )}
-                    </div>,
-                    { 
-                      duration: 12000,
-                      position: 'top-center',
-                      className: 'max-w-md'
-                    }
-                  );
-                } else {
-                  toast.error('Não foi possível instalar o app. Tente usar o menu do navegador.');
-                }
+                await handlePWAInstallResult(result, dismissNotification, notificationId);
               }}
               className="bg-primary hover:bg-primary/90"
             >
@@ -271,7 +258,7 @@ export default function AdminLayout() {
       <div className="h-[100dvh] flex w-full overflow-hidden">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="h-16 md:h-16 border-b flex items-center justify-between px-3 md:px-4 sticky top-0 bg-background z-10 flex-shrink-0 relative">
+          <header className="h-16 md:h-16 border-b flex items-center justify-between px-3 md:px-4 sticky top-0 bg-background z-10 flex-shrink-0">
             {/* Esquerda: Menu + Tag de Autorização */}
             <div className="flex items-center gap-2 md:gap-2 flex-shrink-0 z-10">
               <SidebarTrigger
@@ -326,48 +313,7 @@ export default function AdminLayout() {
                   size="sm"
                   onClick={async () => {
                     const result = await installPWA();
-                    if (result === true) {
-                      toast.success('App instalado com sucesso!');
-                    } else if (result && typeof result === 'object' && result.fallback) {
-                      // Mostrar instruções de instalação manual em um dialog mais visível
-                      const isMobile = result.isMobile || false;
-                      const steps = result.steps || [];
-                      
-                      toast.info(
-                        <div className="space-y-3 max-w-md">
-                          <div>
-                            <p className="font-semibold text-base mb-2">
-                              {isMobile ? '📱 Instalar no Mobile' : '💻 Instalar no Desktop'}
-                            </p>
-                            {steps.length > 0 ? (
-                              <ol className="space-y-1.5 text-sm list-decimal list-inside">
-                                {steps.map((step, idx) => (
-                                  <li key={idx} className="text-muted-foreground">
-                                    {step.replace(/^\d+\.\s*/, '')}
-                                  </li>
-                                ))}
-                              </ol>
-                            ) : (
-                              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                                {result.instructions}
-                              </p>
-                            )}
-                          </div>
-                          {!isMobile && (
-                            <p className="text-xs text-muted-foreground italic">
-                              💡 Dica: Procure o ícone ➕ na barra de endereços do navegador
-                            </p>
-                          )}
-                        </div>,
-                        { 
-                          duration: 12000,
-                          position: 'top-center',
-                          className: 'max-w-md'
-                        }
-                      );
-                    } else {
-                      toast.error('Não foi possível instalar o app. Tente usar o menu do navegador.');
-                    }
+                    await handlePWAInstallResult(result, dismissNotification);
                   }}
                   className="flex items-center gap-1 md:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all h-7 md:h-9 px-2 md:px-3"
                 >
