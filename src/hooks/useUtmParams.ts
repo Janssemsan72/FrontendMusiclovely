@@ -251,6 +251,7 @@ export function useUtmParams() {
    * ✅ OTIMIZAÇÃO: Redirecionamento ULTRA-RÁPIDO usando window.location.href para /checkout
    */
   const navigateWithUtms = (path: string, options?: { replace?: boolean; state?: unknown }) => {
+    
     if (isAdminRoute) {
       navigate(path, options);
       return;
@@ -306,7 +307,22 @@ export function useUtmParams() {
     if (isDev) {
       console.log('🔄 Navegando com parâmetros de tracking:', { path, finalPath, trackingParams: allTrackingParams });
     }
+    
+    // ✅ CORREÇÃO PRODUÇÃO: Garantir que navigate() dispare popstate para forçar atualização
     navigate(finalPath, options);
+    
+    // ✅ CORREÇÃO PRODUÇÃO: Forçar popstate event se navigate não disparar (fallback para produção)
+    if (typeof window !== 'undefined') {
+      // Pequeno delay para garantir que navigate() foi processado
+      setTimeout(() => {
+        const currentWindowPath = window.location.pathname + window.location.search;
+        const expectedPath = finalPath;
+        // Se a URL mudou mas React Router não atualizou, forçar popstate
+        if (currentWindowPath === expectedPath) {
+          window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+        }
+      }, 0);
+    }
   };
 
   /**

@@ -752,7 +752,19 @@ const Quiz = memo(() => {
     return true;
   }, [step, formData, t, markFieldTouched, scrollToElement]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    // ✅ CORREÇÃO: Prevenir comportamento padrão e propagação
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // ✅ CORREÇÃO: Proteção contra cliques duplicados
+    if (loading) {
+      devLog('⚠️ [Quiz] handleNext ignorado - já está processando');
+      return;
+    }
+    
     if (validateCurrentStep()) {
       const nextStep = step + 1;
       setStep(nextStep);
@@ -766,11 +778,23 @@ const Quiz = memo(() => {
         relationship: formData.relationship,
       });
     }
-  }, [validateCurrentStep, step, formData, trackEvent]);
+  }, [validateCurrentStep, step, formData, trackEvent, loading]);
 
-  const handleBack = useCallback(() => {
+  const handleBack = useCallback((e?: React.MouseEvent) => {
+    // ✅ CORREÇÃO: Prevenir comportamento padrão e propagação
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // ✅ CORREÇÃO: Proteção contra cliques duplicados
+    if (loading) {
+      devLog('⚠️ [Quiz] handleBack ignorado - já está processando');
+      return;
+    }
+    
     setStep(step - 1);
-  }, [step]);
+  }, [step, loading]);
 
   const handleSubmit = useCallback(async () => {
     // ✅ OTIMIZAÇÃO: Preload imediato do Checkout quando usuário clica em submit

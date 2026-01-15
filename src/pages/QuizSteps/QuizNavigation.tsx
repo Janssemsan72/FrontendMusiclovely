@@ -22,13 +22,38 @@ export default function QuizNavigation({
 }: QuizNavigationProps) {
   const { t } = useTranslation();
 
+  // ✅ CORREÇÃO: Wrappers com preventDefault para evitar duplo clique
+  const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading) {
+      onBack(e);
+    }
+  };
+
+  const handleNextClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading) {
+      onNext(e);
+    }
+  };
+
+  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading) {
+      onSubmit();
+    }
+  };
+
   return (
     <div className="flex gap-2 md:gap-3 mt-2.5 md:mt-4">
       {step > 1 && (
         <Button
           type="button"
           variant="outline"
-          onClick={onBack}
+          onClick={handleBackClick}
           disabled={loading}
           className="border-[hsl(var(--quiz-border))] text-xl md:text-base font-semibold px-4 py-3 md:px-5 md:py-3"
         >
@@ -40,7 +65,7 @@ export default function QuizNavigation({
       {step < totalSteps ? (
         <Button
           type="button"
-          onClick={onNext}
+          onClick={handleNextClick}
           className="ml-auto bg-[hsl(var(--quiz-primary))] hover:bg-[hsl(var(--quiz-primary-hover))] text-white text-xl md:text-base font-semibold px-4 py-3 md:px-5 md:py-3"
           disabled={loading}
         >
@@ -50,7 +75,7 @@ export default function QuizNavigation({
       ) : (
         <Button
           type="button"
-          onClick={onSubmit}
+          onClick={handleSubmitClick}
           className="ml-auto bg-[hsl(var(--quiz-primary))] hover:bg-[hsl(var(--quiz-primary-hover))] text-white text-base md:text-sm font-semibold px-4 py-3 md:px-5 md:py-3 whitespace-normal md:whitespace-nowrap leading-tight"
           disabled={loading}
         >

@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { Suspense } from "react";
+import React from "react";
 import CheckoutRedirectWrapper from "./CheckoutRedirectWrapper";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
 import { Gift } from "@/utils/iconImports";
@@ -94,6 +95,48 @@ const CheckoutFallback = () => {
 // ✅ CORREÇÃO: Sempre renderizar rotas - React Router lida com paths automaticamente
 export default function PublicRoutes() {
   const location = useLocation();
+  
+  // ✅ CORREÇÃO PRODUÇÃO: Forçar re-render quando window.location muda mas location não
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    let lastCheck = Date.now();
+    const checkLocationSync = () => {
+      const now = Date.now();
+      // Throttle: verificar no máximo a cada 200ms
+      if (now - lastCheck < 200) return;
+      lastCheck = now;
+      
+      const windowPath = window.location.pathname;
+      const windowSearch = window.location.search;
+      const reactPath = location.pathname;
+      const reactSearch = location.search;
+      
+      // Se window.location mudou mas React Router location não, forçar atualização
+      if (windowPath !== reactPath || windowSearch !== reactSearch) {
+        // Disparar popstate para forçar React Router a atualizar
+        window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+      }
+    };
+    
+    // Verificar apenas quando necessário (não em intervalo fixo)
+    // Usar MutationObserver para detectar mudanças no DOM que podem indicar navegação
+    const observer = new MutationObserver(() => {
+      checkLocationSync();
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: false });
+    
+    // Também verificar em eventos de navegação
+    window.addEventListener('popstate', checkLocationSync);
+    window.addEventListener('hashchange', checkLocationSync);
+    
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('popstate', checkLocationSync);
+      window.removeEventListener('hashchange', checkLocationSync);
+    };
+  }, [location.pathname, location.search]);
   
   // Verificar se estamos no projeto music-lovely-novo ou musiclovely.shop (usando hostname)
   // Para esses projetos, sempre usar IndexCompany como página inicial

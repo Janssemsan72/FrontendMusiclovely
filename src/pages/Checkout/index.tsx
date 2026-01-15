@@ -2660,7 +2660,11 @@ export default function Checkout() {
 
                 {/* ✅ Botão acima dos planos (mobile only) */}
                 <Button
-                  onClick={() => handleCheckout(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleCheckout(false);
+                  }}
                   disabled={processing}
                   className={`w-full btn-pulse h-16 md:h-12 font-bold text-lg md:text-lg lg:text-xl ${
                     buttonError
