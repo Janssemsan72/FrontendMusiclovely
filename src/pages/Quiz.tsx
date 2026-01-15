@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useCallback, useMemo, useRef, Suspense } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +56,7 @@ import QuizStep5 from './QuizSteps/QuizStep5';
 const Quiz = memo(() => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const location = useLocation();
   // Preservar UTMs através do funil
   const { navigateWithUtms, utms } = useUtmParams();
   const { trackEvent } = useUtmifyTracking();
@@ -67,6 +68,7 @@ const Quiz = memo(() => {
   const isNavigatingRef = useRef(false); // ✅ CORREÇÃO PRODUÇÃO: Proteção contra navegação duplicada
   const isMountedRef = useRef(true); // ✅ Verificação de montagem para prevenir erros de DOM
   const dataLoadedRef = useRef(false); // ✅ Flag para indicar que dados foram carregados
+  const lastPathRef = useRef<string>('');
   const [formData, setFormData] = useState({
     relationship: '',
     customRelationship: '',
@@ -512,6 +514,37 @@ const Quiz = memo(() => {
       globalThis.clearTimeout(timer);
     };
   }, [searchParams, t]);
+
+  // ✅ CORREÇÃO: Verificar se componente está na rota correta
+  // Se window.location é /quiz mas React Router não atualizou, forçar atualização
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const currentPath = location.pathname + location.search;
+    const windowPath = window.location.pathname + window.location.search;
+    
+    // Se estamos na rota /quiz mas window.location não corresponde, pode indicar problema
+    if (currentPath.includes('/quiz') && windowPath.includes('/quiz') && currentPath !== windowPath) {
+      // Log apenas em dev para debug
+      if (import.meta.env.DEV) {
+        console.warn('[Quiz] Divergência detectada entre location e window.location:', {
+          reactPath: currentPath,
+          windowPath: windowPath
+        });
+      }
+      
+      // Se window.location mudou mas location não, pode ser que RouterSync vai corrigir
+      // Mas adicionar verificação adicional aqui como backup
+      if (windowPath !== lastPathRef.current && currentPath === lastPathRef.current) {
+        // window.location mudou mas location não - forçar navegação
+        requestAnimationFrame(() => {
+          navigate(windowPath, { replace: true });
+        });
+      }
+    }
+    
+    lastPathRef.current = currentPath;
+  }, [location.pathname, location.search, navigate]);
 
   // Rastrear início do quiz quando usuário começa (step 1)
   useEffect(() => {
