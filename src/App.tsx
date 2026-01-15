@@ -358,9 +358,10 @@ const AppContent = () => {
           <ScrollRestoration />
         </>
       )}
-      <PublicErrorBoundary>
-        <Suspense fallback={null}>
-          <Routes>
+      <RouterSync>
+        <PublicErrorBoundary>
+          <Suspense fallback={null}>
+            <Routes>
               {/* Rotas públicas - apenas português */}
               <Route path="/*" element={
                 <Suspense fallback={null}>
@@ -520,6 +521,7 @@ const AppContent = () => {
           </Routes>
         </Suspense>
       </PublicErrorBoundary>
+      </RouterSync>
     </TooltipProvider>
   );
 };

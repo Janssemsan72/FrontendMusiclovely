@@ -34,43 +34,41 @@ export default function RouterSync({ children }: { children: React.ReactNode }) 
     }
     
     // ✅ CORREÇÃO CRÍTICA: Se window.location mudou mas React Router não atualizou
-    // Forçar navegação após um pequeno delay para dar tempo do React Router processar
+    // Mas NÃO forçar navegação se window.location está em '/' e React Router está em outra rota
+    // Isso pode causar loops de redirecionamento
     if (windowPath !== reactPath && windowPath !== lastWindowPathRef.current && !isSyncingRef.current) {
+      // ✅ CORREÇÃO CRÍTICA: NÃO forçar navegação se window.location está em '/'
+      // Isso pode causar loops onde algo redireciona para '/' e RouterSync tenta corrigir
+      // Apenas sincronizar se window.location mudou para uma rota diferente de '/'
+      if (windowPath === '/') {
+        lastWindowPathRef.current = windowPath;
+        return;
+      }
+      
       // Limpar timeout anterior se existir
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
       }
       
       // Marcar que está sincronizando para evitar loops
       isSyncingRef.current = true;
       
-      // Aguardar um pouco para dar tempo do React Router processar naturalmente
-      syncTimeoutRef.current = setTimeout(() => {
+      // ✅ CORREÇÃO CRÍTICA: Forçar navegação IMEDIATAMENTE sem delays
+      // Usar requestAnimationFrame apenas para garantir que está no próximo frame
+      requestAnimationFrame(() => {
         // Verificar novamente se ainda há divergência
         const currentWindowPath = window.location.pathname + window.location.search;
         const currentReactPath = location.pathname + location.search;
         
-        // Se ainda há divergência após delay, forçar navegação
-        if (currentWindowPath !== currentReactPath && currentWindowPath === windowPath) {
-          // Usar requestAnimationFrame para garantir que está no próximo frame
-          requestAnimationFrame(() => {
-            // Forçar navegação apenas se não estiver sincronizando
-            if (!isSyncingRef.current) return;
-            
-            navigate(currentWindowPath, { replace: true });
-            
-            // Resetar flag após navegação
-            setTimeout(() => {
-              isSyncingRef.current = false;
-            }, 100);
-          });
-        } else {
-          // Divergência foi resolvida, resetar flag
-          isSyncingRef.current = false;
+        // Se ainda há divergência, forçar navegação IMEDIATAMENTE
+        if (currentWindowPath !== currentReactPath && currentWindowPath !== '/') {
+          navigate(currentWindowPath, { replace: true });
         }
         
-        syncTimeoutRef.current = null;
-      }, 100); // Delay de 100ms para dar tempo do React Router processar
+        // Resetar flag IMEDIATAMENTE após navegação
+        isSyncingRef.current = false;
+      });
       
       lastWindowPathRef.current = windowPath;
     }

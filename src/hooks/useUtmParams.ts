@@ -305,34 +305,13 @@ export function useUtmParams() {
     // ✅ OTIMIZAÇÃO: Se não há parâmetros de tracking, navegar diretamente (mais rápido)
     const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
     if (!hasTrackingParams) {
+      // ✅ CORREÇÃO CRÍTICA: Navegar IMEDIATAMENTE sem delays
       navigate(path, options);
-      // ✅ CORREÇÃO: Aguardar navegação completar antes de resetar flag
+      // ✅ CORREÇÃO CRÍTICA: Resetar flag IMEDIATAMENTE após navegar
+      // Não aguardar requestAnimationFrame ou setTimeout - isso pode bloquear navegações subsequentes
+      navigationInProgressRef.current = false;
       if (typeof window !== 'undefined') {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            const windowPath = window.location.pathname + window.location.search;
-            const expectedPath = path;
-            
-            // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
-            // O BrowserRouter deve gerenciar popstate automaticamente
-            // Disparar manualmente interfere com navegação do histórico
-            // if (windowPath === expectedPath) {
-            //   window.dispatchEvent(new PopStateEvent('popstate', { 
-            //     state: history.state || {} 
-            //   }));
-            // }
-            
-            navigationInProgressRef.current = false;
-            if (typeof window !== 'undefined') {
-              (window as any).__REACT_ROUTER_NAVIGATING__ = false;
-            }
-          }, 150);
-        });
-      } else {
-        navigationInProgressRef.current = false;
-        if (typeof window !== 'undefined') {
-          (window as any).__REACT_ROUTER_NAVIGATING__ = false;
-        }
+        (window as any).__REACT_ROUTER_NAVIGATING__ = false;
       }
       return;
     }
@@ -360,87 +339,13 @@ export function useUtmParams() {
     }
     
     // ✅ CORREÇÃO PRODUÇÃO: Navegar diretamente sem setTimeout que causa duplicação
+    // ✅ CORREÇÃO CRÍTICA: Navegar IMEDIATAMENTE sem delays
     navigate(finalPath, options);
-    
-    // ✅ CORREÇÃO CRÍTICA: NÃO resetar navigationInProgressRef imediatamente
-    // Adicionar verificação pós-navegação que confirma se React Router atualizou
+    // ✅ CORREÇÃO CRÍTICA: Resetar flag IMEDIATAMENTE após navegar
+    // Não aguardar requestAnimationFrame ou setTimeout - isso pode bloquear navegações subsequentes
+    navigationInProgressRef.current = false;
     if (typeof window !== 'undefined') {
-      requestAnimationFrame(() => {
-        const verifyNavigation = () => {
-          const windowPath = window.location.pathname + window.location.search;
-          const expectedPath = finalPath;
-          
-          // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
-          // O BrowserRouter deve gerenciar popstate automaticamente
-          // Verificar apenas se navegação completou, sem forçar eventos
-          setTimeout(() => {
-            // Apenas verificar se navegação completou, sem disparar eventos
-            // if (windowPath === expectedPath) {
-            //   const popStateEvent = new PopStateEvent('popstate', { 
-            //     state: history.state || {} 
-            //   });
-            //   window.dispatchEvent(popStateEvent);
-            // }
-            
-            // Resetar flag após verificação
-            navigationInProgressRef.current = false;
-            // Resetar flag global também
-            if (typeof window !== 'undefined') {
-              (window as any).__REACT_ROUTER_NAVIGATING__ = false;
-            }
-          }, 150);
-        };
-        
-        verifyNavigation();
-      });
-      
-      // ✅ CORREÇÃO: Adicionar verificação adicional para scripts externos (UTMify)
-      // Aguardar um pouco antes de verificar para dar tempo de scripts externos
-      setTimeout(() => {
-        const windowPath = window.location.pathname + window.location.search;
-        const expectedPath = finalPath;
-        
-        // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
-        // Scripts externos não devem forçar eventos de popstate
-        // Se scripts externos modificaram a URL, apenas logar em dev
-        if (windowPath !== expectedPath && !windowPath.includes('utm_') && windowPath.startsWith(expectedPath.split('?')[0])) {
-          // URL foi modificada por script externo - apenas logar em dev
-          if (isDev) {
-            console.warn('[useUtmParams] URL modificada por script externo:', {
-              expected: expectedPath,
-              actual: windowPath
-            });
-          }
-          // Não forçar popstate - deixar BrowserRouter gerenciar
-        }
-      }, 200);
-      
-      // ✅ CORREÇÃO: Fallback com window.location.href se React Router não atualizar após 500ms
-      setTimeout(() => {
-        const windowPath = window.location.pathname + window.location.search;
-        const expectedPath = finalPath;
-        
-        // Se ainda há divergência após 500ms, usar fallback
-        if (windowPath !== expectedPath && !windowPath.includes('pay.cakto.com.br')) {
-          // Último recurso: recarregar página para garantir navegação
-          // Mas apenas se não for checkout (que já usa window.location.href)
-          if (!path.includes('/checkout') && path !== '/checkout') {
-            window.location.href = expectedPath;
-            return;
-          }
-        }
-        
-        // Resetar flag global após fallback também
-        if (typeof window !== 'undefined') {
-          (window as any).__REACT_ROUTER_NAVIGATING__ = false;
-        }
-      }, 500);
-    } else {
-      // Fallback se window não estiver disponível
-      navigationInProgressRef.current = false;
-      if (typeof window !== 'undefined') {
-        (window as any).__REACT_ROUTER_NAVIGATING__ = false;
-      }
+      (window as any).__REACT_ROUTER_NAVIGATING__ = false;
     }
   };
 
