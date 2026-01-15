@@ -317,8 +317,23 @@ const Index = memo(() => {
     };
   }, []);
 
+  // ✅ CORREÇÃO PRODUÇÃO: Adicionar classe ao body para desabilitar scroll quando há container customizado
+  useEffect(() => {
+    document.body.classList.add('has-custom-scroll');
+    // ✅ OTIMIZAÇÃO: Forçar height fixo no body para prevenir scroll
+    const originalBodyHeight = document.body.style.height;
+    document.body.style.height = '100dvh';
+    document.body.style.overflowY = 'hidden';
+    
+    return () => {
+      document.body.classList.remove('has-custom-scroll');
+      document.body.style.height = originalBodyHeight;
+      document.body.style.overflowY = '';
+    };
+  }, []);
+
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden">
+    <div className="h-[100dvh] flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
       {/* ✅ OTIMIZAÇÃO PERFORMANCE: Header lazy loaded com fallback mínimo */}
       <Suspense fallback={<div className="fixed top-0 left-0 right-0 z-50 h-[80px] bg-background border-b border-border/20" />}>
         <Header />
@@ -328,7 +343,8 @@ const Index = memo(() => {
         className="flex-1 overflow-y-auto overflow-x-hidden main-scroll-container mt-[80px] sm:mt-[88px]"
         style={{ 
           WebkitOverflowScrolling: 'touch',
-          height: 'calc(100vh - 80px)',
+          height: 'calc(100dvh - 80px)', /* ✅ CORREÇÃO: Usar 100dvh para mobile */
+          maxHeight: 'calc(100dvh - 80px)', /* ✅ OTIMIZAÇÃO: Prevenir overflow */
         }}
       >
         <HeroSection />

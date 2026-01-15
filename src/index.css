@@ -300,23 +300,39 @@ All colors MUST be HSL.
   html {
     /* Dynamic viewport height para mobile - resolve problemas com barras de navegação */
     height: 100%;
-    /* ✅ CORREÇÃO: Permitir scroll normalmente */
-    overflow-x: hidden; /* Apenas prevenir scroll horizontal */
-    overflow-y: auto; /* Permitir scroll vertical */
+    /* ✅ CORREÇÃO PRODUÇÃO: Prevenir scroll horizontal, scroll vertical será controlado pelo body */
+    overflow-x: hidden;
+    overflow-y: hidden; /* ✅ CORREÇÃO: Remover scroll do html para evitar duplicação */
   }
 
   body {
     @apply bg-background text-foreground;
     /* Dynamic viewport height */
-    min-height: 100vh;
-    min-height: 100dvh;
-    /* ✅ CORREÇÃO: Permitir scroll normalmente para todas as páginas */
-    overflow-x: hidden; /* Apenas prevenir scroll horizontal */
-    overflow-y: auto; /* Permitir scroll vertical */
+    height: 100vh;
+    height: 100dvh;
+    /* ✅ CORREÇÃO PRODUÇÃO: Prevenir scroll duplo - body não terá scroll quando há main-scroll-container */
+    overflow-x: hidden;
+    overflow-y: auto; /* ✅ Permitir scroll apenas quando não há container customizado */
     background-image: 
       radial-gradient(circle at 20% 50%, rgba(231, 185, 128, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(199, 133, 94, 0.08) 0%, transparent 50%);
     background-attachment: fixed;
+  }
+  
+  /* ✅ CORREÇÃO PRODUÇÃO: Quando há main-scroll-container, desabilitar scroll do body */
+  body:has(#main-scroll-container) {
+    overflow-y: hidden; /* ✅ Desabilitar scroll do body quando há container customizado */
+    height: 100vh;
+    height: 100dvh;
+  }
+  
+  /* ✅ Fallback para navegadores que não suportam :has() */
+  @supports not selector(:has(*)) {
+    body.has-custom-scroll {
+      overflow-y: hidden;
+      height: 100vh;
+      height: 100dvh;
+    }
   }
 
   /* Fix para mobile - prevent text size adjustment */
@@ -483,7 +499,20 @@ All colors MUST be HSL.
   /* Firefox */
   .main-scroll-container {
     scrollbar-width: thin;
-    /* ✅ OTIMIZAÇÃO PERFORMANCE: scrollbar-color removido - não é suportado para composição */
+    scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+  }
+  
+  /* ✅ CORREÇÃO PRODUÇÃO: Esconder scrollbar do body quando há main-scroll-container */
+  body:has(#main-scroll-container)::-webkit-scrollbar,
+  body.has-custom-scroll::-webkit-scrollbar {
+    display: none;
+    width: 0;
+  }
+  
+  body:has(#main-scroll-container),
+  body.has-custom-scroll {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   /* Compact mobile cards */
