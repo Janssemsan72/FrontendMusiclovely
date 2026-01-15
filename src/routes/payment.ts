@@ -1059,16 +1059,27 @@ export async function paymentRoutes(app: FastifyInstance) {
       const event = body.event || '';
       const data = body.data || body;
       
-      // Extrair dados do webhook da Hotmart
+      // ✅ CORREÇÃO: Extrair dados do webhook da Hotmart conforme estrutura real do payload
       const purchase = data.purchase || {};
-      const buyer = purchase.buyer || {};
+      // ✅ CORREÇÃO: buyer está em data.buyer, não em data.purchase.buyer
+      const buyer = data.buyer || purchase.buyer || {};
       const transaction = purchase.transaction || '';
-      const orderId = purchase.order?.id || '';
+      
+      // ✅ CORREÇÃO: Extrair order_id de metadata ou purchase.order
+      const order_id_from_webhook = data.metadata?.order_id ||
+                                   purchase.order?.id ||
+                                   data.external_id ||
+                                   null;
       
       const customer_email_raw = buyer.email || data.email || '';
       const customer_email = customer_email_raw ? String(customer_email_raw).toLowerCase().trim() : '';
       
-      const customer_phone = buyer.phone || buyer.phone_number || purchase.buyer?.phone || null;
+      // ✅ CORREÇÃO: Combinar checkout_phone_code e checkout_phone
+      const phoneCode = buyer.checkout_phone_code || '';
+      const phoneNumber = buyer.checkout_phone || '';
+      const customer_phone = phoneCode && phoneNumber 
+        ? `${phoneCode}${phoneNumber}` 
+        : (buyer.phone || buyer.phone_number || null);
       
       const price = purchase.price || {};
       const amount_reais_raw = price.value || purchase.amount || 0;
@@ -1077,17 +1088,22 @@ export async function paymentRoutes(app: FastifyInstance) {
         : Number(amount_reais_raw) || 0;
       const amount_cents = Math.round(amount_reais * 100);
       
-      const paid_at = purchase.approved_date || purchase.date_approved || new Date().toISOString();
+      // ✅ CORREÇÃO: Converter timestamp de milissegundos para ISO string
+      const approvedDateTimestamp = purchase.approved_date || purchase.date_approved;
+      const paid_at = approvedDateTimestamp 
+        ? new Date(approvedDateTimestamp).toISOString() 
+        : new Date().toISOString();
       
+      const hasOrderId = order_id_from_webhook && String(order_id_from_webhook).trim().length > 0;
       const hasTransactionId = transaction && String(transaction).trim().length > 0;
       const hasCustomerEmail = customer_email && customer_email.trim().length > 0;
       
-      if (!hasTransactionId && !hasCustomerEmail) {
+      if (!hasOrderId && !hasTransactionId && !hasCustomerEmail) {
         console.error('❌ [Hotmart Webhook] NENHUM identificador encontrado');
         await supabaseClient.from('hotmart_webhook_logs').insert({
           webhook_body: body,
           transaction_id: transaction || null,
-          order_id_from_webhook: null,
+          order_id_from_webhook: order_id_from_webhook || null,
           status_received: event || null,
           customer_email: customer_email || null,
           amount_cents: amount_cents || null,
@@ -1102,7 +1118,7 @@ export async function paymentRoutes(app: FastifyInstance) {
           .headers(secureHeaders)
           .send({ 
             error: 'Nenhum identificador encontrado',
-            message: 'Webhook não contém transaction_id ou customer_email'
+            message: 'Webhook não contém order_id, transaction_id ou customer_email'
           });
       }
       
@@ -1120,7 +1136,22 @@ export async function paymentRoutes(app: FastifyInstance) {
       let order: any = null;
       let strategyUsed = 'none';
       
-      // Estratégia 0: hotmart_transaction_id
+      // ✅ Estratégia 0: order_id_from_webhook (mais confiável - igual à Cakto)
+      if (!order && order_id_from_webhook && isValidUUID(order_id_from_webhook)) {
+        const { data: orderById, error } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('id', order_id_from_webhook)
+          .eq('provider', 'hotmart')
+          .single();
+        
+        if (orderById && !error) {
+          order = orderById;
+          strategyUsed = 'order_id_from_webhook';
+        }
+      }
+      
+      // Estratégia 1: hotmart_transaction_id
       if (!order && transaction && transaction.trim().length >= 6) {
         const { data: orderByTxId, error } = await supabaseClient
           .from('orders')
@@ -1134,7 +1165,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         }
       }
       
-      // Estratégia 1: Email (próximo pedido pendente)
+      // Estratégia 2: Email (próximo pedido pendente)
       if (!order && customer_email) {
         const { data: ordersByEmail, error } = await supabaseClient
           .from('orders')
@@ -1150,7 +1181,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         }
       }
       
-      // Estratégia 2: Telefone/WhatsApp
+      // Estratégia 3: Telefone/WhatsApp
       if (!order && customer_phone) {
         const normalizedPhone = customer_phone.replace(/\D/g, '');
         
@@ -1181,7 +1212,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         await supabaseClient.from('hotmart_webhook_logs').insert({
           webhook_body: body,
           transaction_id: transaction,
-          order_id_from_webhook: null,
+          order_id_from_webhook: order_id_from_webhook || null,
           status_received: statusNormalized,
           customer_email,
           amount_cents,
@@ -1200,7 +1231,8 @@ export async function paymentRoutes(app: FastifyInstance) {
           });
       }
       
-      const isReliableIdentifier = strategyUsed === 'hotmart_transaction_id' || 
+      const isReliableIdentifier = strategyUsed === 'order_id_from_webhook' || 
+                                   strategyUsed === 'hotmart_transaction_id' ||
                                    strategyUsed === 'phone_most_recent';
       
       if (!isReliableIdentifier && customer_email && order.customer_email !== customer_email) {
@@ -1292,7 +1324,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       await supabaseClient.from('hotmart_webhook_logs').insert({
         webhook_body: body,
         transaction_id: transaction,
-        order_id_from_webhook: null,
+        order_id_from_webhook: order_id_from_webhook || null,
         status_received: statusNormalized,
         customer_email,
         amount_cents,

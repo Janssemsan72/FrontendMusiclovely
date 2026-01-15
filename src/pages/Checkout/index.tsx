@@ -392,9 +392,26 @@ export default function Checkout() {
     url.searchParams.set('checkoutMode', '2'); // Modo checkout direto
     url.searchParams.set('email', email);
     
-    // Adicionar telefone se válido
+    // Adicionar telefone se válido (Hotmart usa phoneac e phonenumber)
     if (normalizedWhatsapp && normalizedWhatsapp.trim() !== '') {
-      url.searchParams.set('phone', normalizedWhatsapp);
+      // Formato esperado: 55XXXXXXXXXXX (55 + DDD + número)
+      // Extrair DDD (2 dígitos após o 55) e número (restante)
+      const phoneMatch = normalizedWhatsapp.match(/^55(\d{2})(\d+)$/);
+      if (phoneMatch) {
+        const [, ddd, phoneNumber] = phoneMatch;
+        url.searchParams.set('phoneac', ddd);
+        url.searchParams.set('phonenumber', phoneNumber);
+      } else {
+        // Fallback: tentar extrair DDD e número mesmo sem código do país
+        const numbersOnly = normalizedWhatsapp.replace(/\D/g, '');
+        if (numbersOnly.length >= 10) {
+          // Assumir que os 2 primeiros dígitos são o DDD
+          const ddd = numbersOnly.substring(0, 2);
+          const phoneNumber = numbersOnly.substring(2);
+          url.searchParams.set('phoneac', ddd);
+          url.searchParams.set('phonenumber', phoneNumber);
+        }
+      }
     }
     
     // Adicionar nome se disponível (opcional)
