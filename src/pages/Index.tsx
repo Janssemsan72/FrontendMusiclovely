@@ -1,5 +1,4 @@
 import React, { memo, Suspense, useEffect, useRef, useState } from "react";
-import React, { useState, useEffect, useRef, Suspense, memo } from "react";
 
 // ✅ OTIMIZAÇÃO PERFORMANCE: Lazy load do Header para reduzir bundle inicial
 const Header = React.lazy(() => import("@/components/Header"));
