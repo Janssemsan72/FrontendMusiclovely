@@ -137,11 +137,19 @@ if (typeof window !== 'undefined') {
   // ✅ OTIMIZAÇÃO: Mover verificação de href para requestIdleCallback para não bloquear thread principal
   const checkHrefChange = () => {
     const win = typeof window !== 'undefined' ? window : null;
-    if (!win || !('requestIdleCallback' in win)) {
+    if (!win) return;
+    
+    // ✅ CORREÇÃO PRODUÇÃO: Não interferir se React Router está navegando
+    // Verificar se há flag global indicando navegação do React Router
+    if ((win as any).__REACT_ROUTER_NAVIGATING__) {
+      return;
+    }
+    
+    if (!('requestIdleCallback' in win)) {
       // Fallback síncrono se requestIdleCallback não estiver disponível
       const now = Date.now();
       const timeSinceLastChange = now - lastHrefChange;
-      
+
       if (timeSinceLastChange < HREF_CHANGE_COOLDOWN_MS && lastHrefChange > 0) {
         hrefChangeCount++;
         if (isDev) {

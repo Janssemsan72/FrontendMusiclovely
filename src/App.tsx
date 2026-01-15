@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 // LanguageProvider e LocaleProvider removidos - usando apenas português
 import { PublicErrorBoundary } from "@/components/PublicErrorBoundary";
 import PublicRoutes from "@/components/PublicRoutes";
+import RouterSync from "@/components/RouterSync";
 // ✅ OTIMIZAÇÃO: i18n carregado de forma diferida no main.tsx para não bloquear FCP
 // import '@/i18n'; // Removido - carregado diferidamente
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
@@ -146,6 +147,35 @@ const AppContent = () => {
       timestamp: new Date().toISOString()
     });
   }
+  
+  // ✅ CORREÇÃO PRODUÇÃO: Monitoramento ativo de sincronização entre window.location e React Router
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    let checkTimeout: NodeJS.Timeout | null = null;
+    
+    const verifyNavigation = () => {
+      const windowPath = window.location.pathname + window.location.search;
+      const reactPath = location.pathname + location.search;
+      
+      // Se há divergência após 50ms, forçar sincronização
+      if (windowPath !== reactPath) {
+        // Usar requestAnimationFrame para garantir que está no próximo frame
+        requestAnimationFrame(() => {
+          navigate(windowPath, { replace: true });
+        });
+      }
+    };
+    
+    // Verificar após um pequeno delay para dar tempo do React Router processar
+    checkTimeout = setTimeout(verifyNavigation, 50);
+    
+    return () => {
+      if (checkTimeout) {
+        clearTimeout(checkTimeout);
+      }
+    };
+  }, [location.pathname, location.search, navigate]);
   
   // ✅ CORREÇÃO: Rotas admin não precisam de traduções, não bloquear
   const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/app/admin');

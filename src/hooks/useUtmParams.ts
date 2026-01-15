@@ -265,10 +265,14 @@ export function useUtmParams() {
     
     navigationInProgressRef.current = true;
     
-    // ✅ Resetar flag após um tempo (fallback de segurança)
-    setTimeout(() => {
-      navigationInProgressRef.current = false;
-    }, 1000);
+    // ✅ CORREÇÃO PRODUÇÃO: Marcar que React Router está navegando (para checkHrefChange não interferir)
+    if (typeof window !== 'undefined') {
+      (window as any).__REACT_ROUTER_NAVIGATING__ = true;
+      // Resetar flag após navegação (fallback de segurança)
+      setTimeout(() => {
+        (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+      }, 1000);
+    }
     
     if (isAdminRoute) {
       navigate(path, options);
@@ -302,7 +306,32 @@ export function useUtmParams() {
     const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
     if (!hasTrackingParams) {
       navigate(path, options);
-      navigationInProgressRef.current = false;
+      // ✅ CORREÇÃO: Aguardar navegação completar antes de resetar flag
+      if (typeof window !== 'undefined') {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const windowPath = window.location.pathname + window.location.search;
+            const expectedPath = path;
+            
+            if (windowPath === expectedPath) {
+              // Disparar popstate para forçar React Router a atualizar
+              window.dispatchEvent(new PopStateEvent('popstate', { 
+                state: history.state || {} 
+              }));
+            }
+            
+            navigationInProgressRef.current = false;
+            if (typeof window !== 'undefined') {
+              (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+            }
+          }, 150);
+        });
+      } else {
+        navigationInProgressRef.current = false;
+        if (typeof window !== 'undefined') {
+          (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+        }
+      }
       return;
     }
     
@@ -330,7 +359,77 @@ export function useUtmParams() {
     
     // ✅ CORREÇÃO PRODUÇÃO: Navegar diretamente sem setTimeout que causa duplicação
     navigate(finalPath, options);
-    navigationInProgressRef.current = false;
+    
+    // ✅ CORREÇÃO CRÍTICA: NÃO resetar navigationInProgressRef imediatamente
+    // Adicionar verificação pós-navegação que confirma se React Router atualizou
+    if (typeof window !== 'undefined') {
+      requestAnimationFrame(() => {
+        const verifyNavigation = () => {
+          const windowPath = window.location.pathname + window.location.search;
+          const expectedPath = finalPath;
+          
+          // Se a URL mudou mas React Router não atualizou após 150ms, disparar popstate
+          setTimeout(() => {
+            if (windowPath === expectedPath) {
+              // Disparar popstate para forçar React Router a atualizar
+              const popStateEvent = new PopStateEvent('popstate', { 
+                state: history.state || {} 
+              });
+              window.dispatchEvent(popStateEvent);
+            }
+            
+            // Resetar flag após verificação
+            navigationInProgressRef.current = false;
+            // Resetar flag global também
+            if (typeof window !== 'undefined') {
+              (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+            }
+          }, 150);
+        };
+        
+        verifyNavigation();
+      });
+      
+      // ✅ CORREÇÃO: Adicionar verificação adicional para scripts externos (UTMify)
+      // Aguardar um pouco antes de verificar para dar tempo de scripts externos
+      setTimeout(() => {
+        const windowPath = window.location.pathname + window.location.search;
+        const expectedPath = finalPath;
+        
+        // Se scripts externos modificaram a URL, ajustar
+        if (windowPath !== expectedPath && !windowPath.includes('utm_') && windowPath.startsWith(expectedPath.split('?')[0])) {
+          // URL foi modificada por script externo, forçar popstate
+          window.dispatchEvent(new PopStateEvent('popstate', { state: history.state || {} }));
+        }
+      }, 200);
+      
+      // ✅ CORREÇÃO: Fallback com window.location.href se React Router não atualizar após 500ms
+      setTimeout(() => {
+        const windowPath = window.location.pathname + window.location.search;
+        const expectedPath = finalPath;
+        
+        // Se ainda há divergência após 500ms, usar fallback
+        if (windowPath !== expectedPath && !windowPath.includes('pay.cakto.com.br')) {
+          // Último recurso: recarregar página para garantir navegação
+          // Mas apenas se não for checkout (que já usa window.location.href)
+          if (!path.includes('/checkout') && path !== '/checkout') {
+            window.location.href = expectedPath;
+            return;
+          }
+        }
+        
+        // Resetar flag global após fallback também
+        if (typeof window !== 'undefined') {
+          (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+        }
+      }, 500);
+    } else {
+      // Fallback se window não estiver disponível
+      navigationInProgressRef.current = false;
+      if (typeof window !== 'undefined') {
+        (window as any).__REACT_ROUTER_NAVIGATING__ = false;
+      }
+    }
   };
 
   /**
