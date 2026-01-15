@@ -114,6 +114,12 @@ export default function AdminAuth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // ✅ CORREÇÃO: Prevenir múltiplos cliques simultâneos
+    if (loading) {
+      return;
+    }
+    
     setLoading(true);
 
     try {

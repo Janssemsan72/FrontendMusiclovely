@@ -30,33 +30,6 @@ export default function AdminLayout() {
   const [nonCriticalEnabled, setNonCriticalEnabled] = useState(false);
   const [showWeatherWidget, setShowWeatherWidget] = useState(false);
   
-  // #region agent log - Service Worker navigation logs
-  useEffect(() => {
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
-    
-    const handleSWMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'SW_NAV_LOG') {
-        const logData = event.data.data;
-        fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(logData)
-        }).catch(()=>{});
-      }
-    };
-    
-    navigator.serviceWorker.addEventListener('message', handleSWMessage);
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', handleSWMessage);
-    };
-  }, []);
-  // #endregion
-  
-  // #region agent log - AdminLayout render
-  useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminLayout.tsx:19',message:'AdminLayout render',data:{pathname:location.pathname,search:location.search,hasSW:'serviceWorker' in navigator},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-  }, [location.pathname, location.search]);
-  // #endregion
 
   // 2. Todos os useEffects (devem ser sempre executados na mesma ordem)
   

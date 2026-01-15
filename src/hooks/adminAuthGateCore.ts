@@ -134,6 +134,7 @@ export async function runAdminAuthCheck(params: {
     authorize,
   } = params;
 
+
   const clearMainTimeout = () => {
     if (checkTimeoutRef.current) {
       clearTimeout(checkTimeoutRef.current);
@@ -142,12 +143,16 @@ export async function runAdminAuthCheck(params: {
   };
 
   try {
-    if (ensureE2EAdminAuthorized()) return;
+    if (ensureE2EAdminAuthorized()) {
+      return;
+    }
   } catch {
     void 0;
   }
 
-  if (checkInProgressRef.current) return;
+  if (checkInProgressRef.current) {
+    return;
+  }
 
   if (maxCheckAttemptsRef.current >= maxAttempts) {
     if (isMountedRef.current) {
@@ -189,17 +194,21 @@ export async function runAdminAuthCheck(params: {
     }
 
     const cachedRole = getCachedRole();
+    
     if (cachedRole) {
-      authorize(cachedRole);
-      checkInProgressRef.current = false;
-      clearMainTimeout();
-      maxCheckAttemptsRef.current = 0;
-
+      // ✅ CORREÇÃO: Verificar sessão ANTES de autorizar para evitar redirecionamentos desnecessários
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session?.user) {
         clearRoleAndNavigateToAdminAuth();
         return;
       }
+      
+      // ✅ CORREÇÃO: Só autorizar se tiver sessão válida
+      authorize(cachedRole);
+      checkInProgressRef.current = false;
+      clearMainTimeout();
+      maxCheckAttemptsRef.current = 0;
 
       supabase
         .from('user_roles')
@@ -217,6 +226,7 @@ export async function runAdminAuthCheck(params: {
     }
 
     const user = await getSessionUserWithRecovery();
+    
     if (!user) {
       if (ensureE2EAdminAuthorized()) return;
       checkInProgressRef.current = false;
@@ -229,6 +239,7 @@ export async function runAdminAuthCheck(params: {
     }
 
     const role = await verifyRoleWithTimeout(user.id);
+    
     if (!role) {
       if (isMountedRef.current) {
         toast.error('Acesso negado - apenas administradores e colaboradores');

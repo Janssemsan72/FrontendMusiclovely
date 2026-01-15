@@ -251,14 +251,8 @@ export function useUtmParams() {
    * ✅ OTIMIZAÇÃO: Redirecionamento ULTRA-RÁPIDO usando window.location.href para /checkout
    */
   const navigateWithUtms = (path: string, options?: { replace?: boolean; state?: unknown }) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useUtmParams.ts:253',message:'navigateWithUtms called',data:{path,options,isAdminRoute,currentPath:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     if (isAdminRoute) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useUtmParams.ts:256',message:'navigate called (admin route)',data:{path},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       navigate(path, options);
       return;
     }
@@ -280,9 +274,6 @@ export function useUtmParams() {
         finalUrl = url.pathname + (existingParams.toString() ? `?${existingParams.toString()}` : '') + hash;
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useUtmParams.ts:277',message:'window.location.href redirect (checkout)',data:{finalUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       // ✅ REDIRECIONAMENTO IMEDIATO: window.location.href é mais rápido que React Router
       window.location.href = finalUrl;
       return;
@@ -291,9 +282,6 @@ export function useUtmParams() {
     // ✅ OTIMIZAÇÃO: Se não há parâmetros de tracking, navegar diretamente (mais rápido)
     const hasTrackingParams = Object.keys(allTrackingParams).length > 0;
     if (!hasTrackingParams) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useUtmParams.ts:285',message:'navigate called (no tracking params)',data:{path},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       navigate(path, options);
       return;
     }
@@ -319,9 +307,6 @@ export function useUtmParams() {
     if (isDev) {
       console.log('🔄 Navegando com parâmetros de tracking:', { path, finalPath, trackingParams: allTrackingParams });
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useUtmParams.ts:309',message:'navigate called (with tracking params)',data:{path,finalPath},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     navigate(finalPath, options);
   };
 

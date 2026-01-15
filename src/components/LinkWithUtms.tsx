@@ -13,14 +13,11 @@ export function LinkWithUtms({ to, ...props }: LinkProps & { to: string }) {
   const linkRef = useRef<HTMLAnchorElement>(null);
   const prefetchedRef = useRef(false);
   
-  // #region agent log
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LinkWithUtms.tsx:10',message:'LinkWithUtms click',data:{to,currentPath:window.location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
     if (props.onClick) {
       props.onClick(e);
     }
   };
-  // #endregion
 
   // ✅ OTIMIZAÇÃO: Prefetch de rotas quando hover
   useEffect(() => {

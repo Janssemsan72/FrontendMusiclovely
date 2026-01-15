@@ -54,7 +54,6 @@ import QuizStep5 from './QuizSteps/QuizStep5';
 // These will be replaced with translated versions in the component
 
 const Quiz = memo(() => {
-  
   const navigate = useNavigate();
   const { t } = useTranslation();
   // Preservar UTMs através do funil
@@ -676,7 +675,6 @@ const Quiz = memo(() => {
   }, [getFieldErrorRaw, t]);
 
   const validateCurrentStep = useCallback(() => {
-    // #endregion
     // Validação completa usando o utilitário centralizado
     switch (step) {
       case 1:

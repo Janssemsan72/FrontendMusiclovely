@@ -71,13 +71,13 @@ export function useAdminAuthGate(params: { navigate: Navigate; pathname: string 
   const navigateToAdminAuth = useCallback(() => {
     if (ensureE2EAdminAuthorized()) return true;
     return navigateToAdminAuthPreservingSearch(navigate);
-  }, [ensureE2EAdminAuthorized, navigate]);
+  }, [ensureE2EAdminAuthorized, navigate, pathname]);
 
   const clearRoleAndNavigateToAdminAuth = useCallback(() => {
     if (ensureE2EAdminAuthorized()) return true;
     clearCachedRole();
     return navigateToAdminAuthPreservingSearch(navigate);
-  }, [ensureE2EAdminAuthorized, navigate]);
+  }, [ensureE2EAdminAuthorized, navigate, pathname]);
 
   const checkAdminAccess = useCallback(async () => {
     try {
@@ -139,7 +139,9 @@ export function useAdminAuthGate(params: { navigate: Navigate; pathname: string 
             setCachedRole(role);
             authorize(role);
           })
-          .catch((err) => console.error('Erro ao verificar role após renovação:', err));
+          .catch((err) => {
+            console.error('Erro ao verificar role após renovação:', err);
+          });
         return;
       }
 
@@ -168,9 +170,13 @@ export function useAdminAuthGate(params: { navigate: Navigate; pathname: string 
 
   useEffect(() => {
     isMountedRef.current = true;
+    // ✅ CORREÇÃO: Resetar flags apenas quando o componente realmente desmonta
+    // Não resetar quando a rota muda dentro da área admin
     return () => {
       isMountedRef.current = false;
-      hasCheckedRef.current = false;
+      // ✅ CORREÇÃO: Não resetar hasCheckedRef no cleanup - isso causa verificações desnecessárias
+      // O hasCheckedRef deve persistir enquanto o componente está montado
+      // hasCheckedRef.current = false; // REMOVIDO - causa verificações desnecessárias
       checkInProgressRef.current = false;
       maxCheckAttemptsRef.current = 0;
       clearMainTimeout();
@@ -180,14 +186,22 @@ export function useAdminAuthGate(params: { navigate: Navigate; pathname: string 
       }
     };
   }, [clearMainTimeout]);
+  
+  // ✅ CORREÇÃO: Resetar hasCheckedRef apenas quando a sessão é perdida ou no logout
+  // Não resetar quando a rota muda dentro da área admin
 
   useEffect(() => {
     try {
-      if (ensureE2EAdminAuthorized()) return;
+      if (ensureE2EAdminAuthorized()) {
+        return;
+      }
     } catch {
       void 0;
     }
 
+    // ✅ CORREÇÃO CRÍTICA: Verificar autenticação apenas UMA VEZ quando o componente monta
+    // NÃO verificar novamente quando a rota muda dentro da área admin
+    // Isso evita redirecionamentos desnecessários para /admin/auth quando navegando entre páginas admin
     if (isMountedRef.current && !hasCheckedRef.current && !checkInProgressRef.current) {
       checkAdminAccess().catch((error) => {
         console.error('Erro não tratado em checkAdminAccess:', error);
@@ -198,6 +212,8 @@ export function useAdminAuthGate(params: { navigate: Navigate; pathname: string 
         }
       });
     }
+    // ✅ CORREÇÃO: Remover pathname das dependências - verificar apenas uma vez ao montar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkAdminAccess, ensureE2EAdminAuthorized]);
 
   const handleLogout = useCallback(async () => {

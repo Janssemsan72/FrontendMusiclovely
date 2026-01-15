@@ -140,9 +140,6 @@ const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/08412bf1-75eb-4fbc-b0f3-f947bf663281',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.tsx:137',message:'AppContent render',data:{pathname:location.pathname,search:location.search,windowPath:typeof window !== 'undefined' ? window.location.pathname : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-  // #endregion
   
   if (isDevVerbose) {
     devLog.debug('[App] AppContent renderizando...', {

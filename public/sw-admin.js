@@ -236,6 +236,13 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // ✅ CORREÇÃO CRÍTICA: Verificar PRIMEIRO se é rota admin ANTES de qualquer processamento
+  // NUNCA interceptar navegações de rotas públicas (quiz, checkout, etc.)
+  // Esta verificação deve ser a PRIMEIRA para evitar qualquer interferência
+  if (!url.pathname.startsWith("/admin")) {
+    return; // Deixar passar sem interceptar - CRÍTICO para rotas públicas
+  }
+
   // Evitar interferir em navegação do DevTools/Vite hot reload
   if (
     url.pathname.startsWith("/_next/") ||
@@ -246,9 +253,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Apenas processar requisições da área admin
-  if (!url.pathname.startsWith("/admin")) {
-    return; // Deixar passar sem interceptar
+  // ✅ CORREÇÃO CRÍTICA: NUNCA interceptar requisições do Supabase (autenticação)
+  // Isso pode causar problemas de autenticação e sessão
+  if (url.hostname.includes("supabase.co") || url.hostname.includes("supabase")) {
+    return; // Deixar passar sem interceptar - CRÍTICO para autenticação
   }
 
   // Interceptar requisições POST/PUT/DELETE para sincronização offline
@@ -316,30 +324,6 @@ self.addEventListener("fetch", (event) => {
 
   // HTML: Network First com fallback para cache e página offline
   if (request.mode === "navigate") {
-    // #region agent log
-    const logData = {
-      location: 'sw-admin.js:318',
-      message: 'SW intercepting navigation',
-      data: {
-        url: request.url,
-        pathname: url.pathname,
-        method: request.method,
-        mode: request.mode,
-        timestamp: Date.now()
-      },
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'F'
-    };
-    // Enviar log via postMessage para a página
-    self.clients.matchAll().then(clients => {
-      clients.forEach(client => {
-        client.postMessage({ type: 'SW_NAV_LOG', data: logData });
-      });
-    });
-    // #endregion
-    
     event.respondWith(
       (async () => {
         // ✅ CORREÇÃO: Para navegações, SEMPRE buscar da rede primeiro e NUNCA usar cache antigo
@@ -355,49 +339,10 @@ self.addEventListener("fetch", (event) => {
           });
           
           if (networkResponse && networkResponse.ok) {
-            // #region agent log
-            const logData2 = {
-              location: 'sw-admin.js:336',
-              message: 'SW navigation network success',
-              data: {
-                url: request.url,
-                status: networkResponse.status,
-                timestamp: Date.now()
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'run1',
-              hypothesisId: 'F'
-            };
-            self.clients.matchAll().then(clients => {
-              clients.forEach(client => {
-                client.postMessage({ type: 'SW_NAV_LOG', data: logData2 });
-              });
-            });
-            // #endregion
             return networkResponse;
           }
         } catch (error) {
-          // #region agent log
-          const logData3 = {
-            location: 'sw-admin.js:355',
-            message: 'SW navigation network failed',
-            data: {
-              url: request.url,
-              error: error.message,
-              timestamp: Date.now()
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            runId: 'run1',
-            hypothesisId: 'F'
-          };
-          self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-              client.postMessage({ type: 'SW_NAV_LOG', data: logData3 });
-            });
-          });
-          // #endregion
+          // Erro na rede - continuar para fallback
         }
         
         // Se rede falhar, retornar página offline (não usar cache antigo)
