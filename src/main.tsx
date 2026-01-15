@@ -4,16 +4,17 @@ import React from "react";
 const isDev = import.meta.env.DEV;
 
 // ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas execuções do módulo
+// ✅ CORREÇÃO CRÍTICA: Remover setar flag no início - isso bloqueia inicialização se script executar múltiplas vezes
+// As flags serão setadas apenas dentro de initializeReact() após verificação adequada
 if (typeof window !== 'undefined') {
-  // Se já existe uma flag de inicialização, não executar novamente
-  if ((window as any).__REACT_INITIALIZING__ || (window as any).__REACT_INITIALIZED__) {
+  // Se já existe uma flag de inicialização E React já foi inicializado, não executar novamente
+  if ((window as any).__REACT_INITIALIZED__) {
     if (isDev) {
-      console.warn('⚠️ [Main] Script já foi executado, ignorando execução duplicada...');
+      console.warn('⚠️ [Main] Script já foi executado e React já foi inicializado, ignorando execução duplicada...');
     }
-    // Não fazer nada - React já está sendo inicializado ou já foi inicializado
-  } else {
-    (window as any).__REACT_INITIALIZING__ = true;
+    // Não fazer nada - React já foi inicializado
   }
+  // ✅ CORREÇÃO: NÃO setar __REACT_INITIALIZING__ aqui - será setado dentro de initializeReact() após verificação
 }
 
 // Debug logs removidos para otimização de performance
@@ -316,15 +317,18 @@ function initializeReact() {
     }
   }
   
-  // ✅ CORREÇÃO MOBILE: Verificar se window já tem flags de inicialização
+  // ✅ CORREÇÃO MOBILE: Verificar se window já tem flag de inicialização COMPLETA
+  // ✅ CORREÇÃO CRÍTICA: Apenas verificar __REACT_INITIALIZED__, não __REACT_INITIALIZING__
+  // __REACT_INITIALIZING__ pode estar true de uma execução anterior que não completou
   if (typeof window !== 'undefined') {
-    if ((window as any).__REACT_INITIALIZED__ || (window as any).__REACT_INITIALIZING__) {
+    if ((window as any).__REACT_INITIALIZED__) {
       if (isDev) {
-        console.warn('⚠️ [Main] React já foi inicializado (flags do window detectadas), ignorando...');
+        console.warn('⚠️ [Main] React já foi inicializado (flag __REACT_INITIALIZED__ detectada), ignorando...');
       }
       hasInitialized = true;
       return;
     }
+    // ✅ CORREÇÃO: Setar flag apenas aqui, após todas as verificações passarem
     (window as any).__REACT_INITIALIZING__ = true;
   }
   
