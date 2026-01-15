@@ -313,12 +313,14 @@ export function useUtmParams() {
             const windowPath = window.location.pathname + window.location.search;
             const expectedPath = path;
             
-            if (windowPath === expectedPath) {
-              // Disparar popstate para forçar React Router a atualizar
-              window.dispatchEvent(new PopStateEvent('popstate', { 
-                state: history.state || {} 
-              }));
-            }
+            // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
+            // O BrowserRouter deve gerenciar popstate automaticamente
+            // Disparar manualmente interfere com navegação do histórico
+            // if (windowPath === expectedPath) {
+            //   window.dispatchEvent(new PopStateEvent('popstate', { 
+            //     state: history.state || {} 
+            //   }));
+            // }
             
             navigationInProgressRef.current = false;
             if (typeof window !== 'undefined') {
@@ -368,15 +370,17 @@ export function useUtmParams() {
           const windowPath = window.location.pathname + window.location.search;
           const expectedPath = finalPath;
           
-          // Se a URL mudou mas React Router não atualizou após 150ms, disparar popstate
+          // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
+          // O BrowserRouter deve gerenciar popstate automaticamente
+          // Verificar apenas se navegação completou, sem forçar eventos
           setTimeout(() => {
-            if (windowPath === expectedPath) {
-              // Disparar popstate para forçar React Router a atualizar
-              const popStateEvent = new PopStateEvent('popstate', { 
-                state: history.state || {} 
-              });
-              window.dispatchEvent(popStateEvent);
-            }
+            // Apenas verificar se navegação completou, sem disparar eventos
+            // if (windowPath === expectedPath) {
+            //   const popStateEvent = new PopStateEvent('popstate', { 
+            //     state: history.state || {} 
+            //   });
+            //   window.dispatchEvent(popStateEvent);
+            // }
             
             // Resetar flag após verificação
             navigationInProgressRef.current = false;
@@ -396,10 +400,18 @@ export function useUtmParams() {
         const windowPath = window.location.pathname + window.location.search;
         const expectedPath = finalPath;
         
-        // Se scripts externos modificaram a URL, ajustar
+        // ✅ CORREÇÃO CRÍTICA: Remover disparo manual de PopStateEvent
+        // Scripts externos não devem forçar eventos de popstate
+        // Se scripts externos modificaram a URL, apenas logar em dev
         if (windowPath !== expectedPath && !windowPath.includes('utm_') && windowPath.startsWith(expectedPath.split('?')[0])) {
-          // URL foi modificada por script externo, forçar popstate
-          window.dispatchEvent(new PopStateEvent('popstate', { state: history.state || {} }));
+          // URL foi modificada por script externo - apenas logar em dev
+          if (isDev) {
+            console.warn('[useUtmParams] URL modificada por script externo:', {
+              expected: expectedPath,
+              actual: windowPath
+            });
+          }
+          // Não forçar popstate - deixar BrowserRouter gerenciar
         }
       }, 200);
       

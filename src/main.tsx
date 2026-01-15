@@ -139,11 +139,15 @@ if (typeof window !== 'undefined') {
     const win = typeof window !== 'undefined' ? window : null;
     if (!win) return;
     
-    // ✅ CORREÇÃO PRODUÇÃO: Não interferir se React Router está navegando
+    // ✅ CORREÇÃO CRÍTICA: Não interferir com navegação do React Router
     // Verificar se há flag global indicando navegação do React Router
     if ((win as any).__REACT_ROUTER_NAVIGATING__) {
       return;
     }
+    
+    // ✅ CORREÇÃO CRÍTICA: Não processar durante eventos de popstate
+    // O BrowserRouter precisa capturar popstate primeiro
+    // Esta função deve apenas monitorar, não interferir
     
     if (!('requestIdleCallback' in win)) {
       // Fallback síncrono se requestIdleCallback não estiver disponível
@@ -266,7 +270,10 @@ if (typeof window !== 'undefined') {
     }
   });
   
-  window.addEventListener('popstate', checkHrefChange);
+  // ✅ CORREÇÃO CRÍTICA: Remover listener de popstate
+  // O BrowserRouter do React Router precisa capturar popstate primeiro
+  // checkHrefChange não deve interferir com navegação do histórico
+  // window.addEventListener('popstate', checkHrefChange); // REMOVIDO
   window.addEventListener('hashchange', checkHrefChange);
 }
 
