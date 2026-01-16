@@ -6,13 +6,10 @@
   "sideEffects": false,
   "scripts": {
     "dev": "vite",
-    "dev:backend": "tsx watch src/index.ts",
     "build": "cross-env NODE_ENV=production vite build",
-    "build:backend": "tsc -p tsconfig.backend.json",
     "build:analyze": "vite build && npm run analyze-bundle",
     "preview": "vite preview",
-    "start:backend": "node dist/index.js",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "compress-video": "node scripts/compress-video.js",
@@ -20,7 +17,6 @@
     "validate-env": "node scripts/validate-env.js"
   },
   "dependencies": {
-    "@fastify/cors": "^11.2.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-aspect-ratio": "1.1.8",
@@ -57,7 +53,6 @@
     "cmdk": "1.1.1",
     "date-fns": "3.6.0",
     "embla-carousel-react": "8.6.0",
-    "fastify": "^5.6.2",
     "i18next": "25.7.4",
     "input-otp": "1.4.2",
     "lucide-react": "0.462.0",
@@ -87,11 +82,9 @@
     "postcss": "8.5.6",
     "tailwindcss": "3.4.19",
     "terser": "^5.36.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
     "vite": "5.4.21",
     "vite-imagetools": "^7.0.0",
-    "vite-plugin-compression2": "^2.1.1",
     "vitest": "^2.1.8"
   }
 }

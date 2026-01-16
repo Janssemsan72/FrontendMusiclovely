@@ -20,7 +20,7 @@ interface AdminUserCardProps {
 
 // Todas as permissões disponíveis
 const ALL_PERMISSIONS = [
-  { key: "dashboard", name: "Dashboard", description: "Visualizar estatísticas e métricas gerais", icon: "📊", default: true },
+  { key: "dashboard", name: "Dashboard", description: "Visualizar estatísticas e métricas gerais", icon: "📊", default: false },
   { key: "orders", name: "Pedidos", description: "Visualizar e gerenciar pedidos de clientes", icon: "🛒", default: true },
   { key: "songs", name: "Músicas", description: "Visualizar e gerenciar músicas geradas", icon: "🎵", default: true },
   { key: "lyrics", name: "Gerenciar Letras", description: "Aprovar, rejeitar e editar letras de músicas", icon: "✏️", default: true },

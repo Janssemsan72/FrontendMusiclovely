@@ -56,13 +56,13 @@ export default function QuizStep2({
       <div className="border-t border-[hsl(var(--quiz-border))] pt-1.5 md:pt-2 mt-2 md:mt-2.5">
         <div>
           <Label className="text-lg md:text-lg font-semibold mb-0.5 md:mb-1 block">
-            {t('quiz.questions.vocalPreference')}
+            {t('quiz.questions.vocalPreference')} *
           </Label>
           <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mb-1.5 md:mb-1.5 leading-snug">
             {t('quiz.questions.vocalDescription')}
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-0.5 md:gap-2">
+        <div className="grid grid-cols-2 gap-0.5 md:gap-2">
           {vocalOptions.map((option) => (
             <button
               key={option.value}

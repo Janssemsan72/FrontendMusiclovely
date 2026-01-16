@@ -43,7 +43,8 @@ export default function AdminDashboardRedirect() {
           if (cachedPermissionsRaw) {
             try {
               const parsed = JSON.parse(cachedPermissionsRaw) as Record<string, boolean>;
-              if (parsed && typeof parsed === 'object' && parsed.dashboard === false) {
+              const hasDashboardFromCache = parsed && typeof parsed === 'object' && parsed.dashboard === true;
+              if (!hasDashboardFromCache) {
                 navigate('/admin/orders', { replace: true });
                 return;
               }
@@ -99,7 +100,7 @@ export default function AdminDashboardRedirect() {
           songs: true,
           lyrics: true,
           releases: true,
-          dashboard: true,
+          dashboard: false,
         };
 
         if (allPermissions) {
@@ -114,7 +115,7 @@ export default function AdminDashboardRedirect() {
 
         localStorage.setItem('user_permissions', JSON.stringify(permissionsMap));
 
-        const hasDashboardPermission = permissionsMap.dashboard !== false;
+        const hasDashboardPermission = permissionsMap.dashboard === true;
 
         if (!hasDashboardPermission) {
           const allowedRoutes = [

@@ -41,6 +41,8 @@ Procfile
 railway.json
 tsconfig.backend.json
 bun.lockb
+src/routes/
+src/index.ts
 
 # Scripts e Ferramentas (NÃO COMMITAR)
 scripts/
@@ -57,6 +59,7 @@ test-results/
 # Documentação Desnecessária (NÃO COMMITAR)
 *.md
 !README.md
+!DEPLOY.md
 # Exceções específicas já cobertas acima
 
 # Diretórios Duplicados e Backups (NÃO COMMITAR)

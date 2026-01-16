@@ -92,6 +92,8 @@
     <link rel="dns-prefetch" href="https://analytics.tiktok.com" />
     <link rel="dns-prefetch" href="https://pay.cakto.com.br" />
     <link rel="dns-prefetch" href="https://randomuser.me" />
+
+    <script src="/utmify-loader.js" async defer></script>
     
     <!-- ✅ OTIMIZAÇÃO: Preload removido temporariamente para evitar bloqueios -->
     <!-- A imagem será carregada normalmente quando o componente HeroSection renderizar -->
@@ -207,68 +209,6 @@
         } catch (e) {
           // Ignorar se sessionStorage não estiver disponível
         }
-      })();
-    </script>
-    
-    <script>
-      (function () {
-        var loaded = false;
-        var longTimeoutMs = 20000;
-
-        function canLoad() {
-          var connection = navigator && navigator.connection;
-          if (connection && connection.saveData) return false;
-          var effectiveType = connection && connection.effectiveType;
-          if (effectiveType && effectiveType !== "4g") return false;
-          return true;
-        }
-
-        function injectScripts() {
-          if (loaded) return;
-          if (!canLoad()) return;
-          loaded = true;
-
-          var utmify = document.createElement("script");
-          utmify.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
-          utmify.setAttribute("data-utmify-prevent-subids", "");
-          utmify.async = true;
-          document.body.appendChild(utmify);
-
-          var utmifyLoader = document.createElement("script");
-          utmifyLoader.src = "/utmify-loader.js";
-          utmifyLoader.async = true;
-          document.body.appendChild(utmifyLoader);
-        }
-
-        function scheduleInject() {
-          if (loaded) return;
-          requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-              if ("requestIdleCallback" in window) {
-                window.requestIdleCallback(injectScripts, { timeout: longTimeoutMs });
-                return;
-              }
-              setTimeout(injectScripts, longTimeoutMs);
-            });
-          });
-        }
-
-        function onFirstInteraction() {
-          scheduleInject();
-        }
-
-        window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-        window.addEventListener("touchstart", onFirstInteraction, { once: true, passive: true });
-        window.addEventListener("keydown", onFirstInteraction, { once: true, passive: true });
-        window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
-
-        window.addEventListener(
-          "load",
-          function () {
-            setTimeout(scheduleInject, longTimeoutMs);
-          },
-          { once: true }
-        );
       })();
     </script>
   </body>

@@ -27,7 +27,7 @@ export default function QuizNavigation({
     e.preventDefault();
     e.stopPropagation();
     if (!loading) {
-      onBack(e);
+      onBack();
     }
   };
 
@@ -35,7 +35,7 @@ export default function QuizNavigation({
     e.preventDefault();
     e.stopPropagation();
     if (!loading) {
-      onNext(e);
+      onNext();
     }
   };
 

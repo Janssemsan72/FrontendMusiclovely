@@ -338,17 +338,78 @@ export default function AdminCollaborators() {
     return { total, withEmail, recent };
   }, [collaborators]);
 
+  const resolveCollaboratorUserIdByEmail = async (emailLower: string) => {
+    const { data: rolesData, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "collaborator")
+      .order("created_at", { ascending: false })
+      .limit(25);
+
+    if (rolesError || !rolesData || rolesData.length === 0) {
+      return null;
+    }
+
+    const userIds = rolesData.map(r => r.user_id);
+    const { data: emailData, error: emailError } = await supabase.functions.invoke('admin-get-collaborator-emails', {
+      body: { user_ids: userIds }
+    });
+
+    if (emailError || !emailData?.emails) {
+      return null;
+    }
+
+    const emailMap = emailData.emails as Record<string, string>;
+    const foundUserId = userIds.find((id) => (emailMap[id] || "").toLowerCase() === emailLower);
+    return foundUserId || null;
+  };
+
+  const applyMinimalCollaboratorPermissions = async (userId: string) => {
+    const minimalPermissions = [
+      { permission_key: "dashboard", granted: false },
+      { permission_key: "orders", granted: true },
+      { permission_key: "songs", granted: true },
+      { permission_key: "lyrics", granted: true },
+      { permission_key: "releases", granted: true },
+      { permission_key: "generate", granted: false },
+      { permission_key: "collaborators", granted: false },
+      { permission_key: "emails", granted: false },
+      { permission_key: "email_logs", granted: false },
+      { permission_key: "whatsapp_templates", granted: false },
+      { permission_key: "media", granted: false },
+      { permission_key: "example_tracks", granted: false },
+      { permission_key: "logs", granted: false },
+      { permission_key: "settings", granted: false },
+    ];
+
+    const { data, error } = await supabase.functions.invoke('admin-update-collaborator-permissions', {
+      body: {
+        user_id: userId,
+        permissions: minimalPermissions
+      }
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (data?.error) {
+      throw new Error(data.error);
+    }
+  };
+
   const addCollaborator = async () => {
     if (!newCollaboratorEmail || !newCollaboratorPassword) {
       toast.error("Email e senha são obrigatórios");
       return;
     }
 
+    const emailLower = newCollaboratorEmail.trim().toLowerCase();
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('admin-create-collaborator', {
         body: {
-          email: newCollaboratorEmail.trim().toLowerCase(),
+          email: emailLower,
           password: newCollaboratorPassword
         }
       });
@@ -364,6 +425,24 @@ export default function AdminCollaborators() {
       if (data?.error) {
         console.error("Erro retornado pela função:", data.error);
         throw new Error(data.error);
+      }
+
+      let createdUserId: string | null =
+        data?.user_id ||
+        data?.userId ||
+        data?.user?.id ||
+        data?.user?.user_id ||
+        data?.id ||
+        null;
+
+      if (!createdUserId) {
+        createdUserId = await resolveCollaboratorUserIdByEmail(emailLower);
+      }
+
+      if (createdUserId) {
+        await applyMinimalCollaboratorPermissions(createdUserId);
+      } else {
+        toast.error("Colaborador criado, mas não foi possível aplicar permissões mínimas automaticamente");
       }
 
       toast.success("Colaborador criado com sucesso!");
@@ -712,7 +791,6 @@ export default function AdminCollaborators() {
                 Permissões do Colaborador
               </p>
               <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Acesso ao Dashboard</li>
                 <li>Visualizar e gerenciar Pedidos</li>
                 <li>Visualizar e gerenciar Músicas</li>
                 <li>Gerenciar Letras (aprovar/rejeitar)</li>

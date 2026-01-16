@@ -1,6 +1,11 @@
 (function(){
-  // Verifica se está em produção (domínio musiclovely.com)
-  var isProd = location.hostname.endsWith('musiclovely.com');
+  var hostname = location.hostname;
+  var isProd =
+    hostname === 'musiclovely.com' ||
+    hostname === 'www.musiclovely.com' ||
+    hostname === 'musiclovely.com.br' ||
+    hostname === 'www.musiclovely.com.br' ||
+    hostname.endsWith('.vercel.app');
   
   // NÃO CARREGAR EM DESENVOLVIMENTO - evita erros no console
   if (!isProd) {
@@ -21,14 +26,17 @@
       // Erro silencioso - não logar
     };
     document.head.appendChild(a);
+
+    var b = document.createElement("script");
+    b.async = true;
+    b.defer = true;
+    b.src = "https://cdn.utmify.com.br/scripts/utms/latest.js";
+    b.setAttribute("data-utmify-prevent-subids", "");
+    b.onerror = function() {
+      // Erro silencioso - não logar
+    };
+    document.head.appendChild(b);
   };
 
-  // Carregar scripts de forma diferida APÓS LCP para não bloquear renderização
-  // Aguardar LCP (geralmente ~2.5s) + margem de segurança
-  if (window.requestIdleCallback) {
-    window.requestIdleCallback(loadScripts, { timeout: 5000 });
-  } else {
-    // Fallback para navegadores sem requestIdleCallback - aguardar mais tempo
-    setTimeout(loadScripts, 4000);
-  }
+  loadScripts();
 })();

@@ -8,7 +8,7 @@ type PermissionRow = { permission_key: string; granted: boolean | null };
 
 // Valores padrão para colaboradores
 const defaultCollaboratorPermissions: Record<string, boolean> = {
-  dashboard: true,
+  dashboard: false,
   orders: true,
   songs: true,
   lyrics: true,

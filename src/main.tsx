@@ -4,17 +4,16 @@ import React from "react";
 const isDev = import.meta.env.DEV;
 
 // ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas execuções do módulo
-// ✅ CORREÇÃO CRÍTICA: Remover setar flag no início - isso bloqueia inicialização se script executar múltiplas vezes
-// As flags serão setadas apenas dentro de initializeReact() após verificação adequada
 if (typeof window !== 'undefined') {
-  // Se já existe uma flag de inicialização E React já foi inicializado, não executar novamente
-  if ((window as any).__REACT_INITIALIZED__) {
+  // Se já existe uma flag de inicialização, não executar novamente
+  if ((window as any).__REACT_INITIALIZING__ || (window as any).__REACT_INITIALIZED__) {
     if (isDev) {
-      console.warn('⚠️ [Main] Script já foi executado e React já foi inicializado, ignorando execução duplicada...');
+      console.warn('⚠️ [Main] Script já foi executado, ignorando execução duplicada...');
     }
-    // Não fazer nada - React já foi inicializado
+    // Não fazer nada - React já está sendo inicializado ou já foi inicializado
+  } else {
+    (window as any).__REACT_INITIALIZING__ = true;
   }
-  // ✅ CORREÇÃO: NÃO setar __REACT_INITIALIZING__ aqui - será setado dentro de initializeReact() após verificação
 }
 
 // Debug logs removidos para otimização de performance
@@ -138,23 +137,11 @@ if (typeof window !== 'undefined') {
   // ✅ OTIMIZAÇÃO: Mover verificação de href para requestIdleCallback para não bloquear thread principal
   const checkHrefChange = () => {
     const win = typeof window !== 'undefined' ? window : null;
-    if (!win) return;
-    
-    // ✅ CORREÇÃO CRÍTICA: Não interferir com navegação do React Router
-    // Verificar se há flag global indicando navegação do React Router
-    if ((win as any).__REACT_ROUTER_NAVIGATING__) {
-      return;
-    }
-    
-    // ✅ CORREÇÃO CRÍTICA: Não processar durante eventos de popstate
-    // O BrowserRouter precisa capturar popstate primeiro
-    // Esta função deve apenas monitorar, não interferir
-    
-    if (!('requestIdleCallback' in win)) {
+    if (!win || !('requestIdleCallback' in win)) {
       // Fallback síncrono se requestIdleCallback não estiver disponível
       const now = Date.now();
       const timeSinceLastChange = now - lastHrefChange;
-
+      
       if (timeSinceLastChange < HREF_CHANGE_COOLDOWN_MS && lastHrefChange > 0) {
         hrefChangeCount++;
         if (isDev) {
@@ -271,10 +258,7 @@ if (typeof window !== 'undefined') {
     }
   });
   
-  // ✅ CORREÇÃO CRÍTICA: Remover listener de popstate
-  // O BrowserRouter do React Router precisa capturar popstate primeiro
-  // checkHrefChange não deve interferir com navegação do histórico
-  // window.addEventListener('popstate', checkHrefChange); // REMOVIDO
+  window.addEventListener('popstate', checkHrefChange);
   window.addEventListener('hashchange', checkHrefChange);
 }
 
@@ -291,55 +275,14 @@ let hasInitialized = false; // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicializaç�
 
 function initializeReact() {
   // ✅ CORREÇÃO PRODUÇÃO: Prevenir inicialização duplicada
-  // ✅ CORREÇÃO MOBILE: Verificação adicional para mobile
   if (isInitializing || hasInitialized) {
     if (isDev) {
-      console.warn('⚠️ [Main] React já está sendo inicializado ou já foi inicializado, ignorando...', {
-        isInitializing,
-        hasInitialized,
-        hasReactRoot: !!reactRoot,
-        hasReactContainer: !!reactContainer,
-        timestamp: Date.now()
-      });
+      console.warn('⚠️ [Main] React já está sendo inicializado ou já foi inicializado, ignorando...');
     }
     return;
   }
   
-  // ✅ CORREÇÃO MOBILE: Verificação adicional - verificar se já existe root montado
-  if (reactRoot && reactContainer) {
-    const existingRoot = document.getElementById('root');
-    if (existingRoot && existingRoot.children.length > 0) {
-      if (isDev) {
-        console.warn('⚠️ [Main] React root já existe e tem conteúdo, ignorando inicialização duplicada');
-      }
-      hasInitialized = true;
-      return;
-    }
-  }
-  
-  // ✅ CORREÇÃO MOBILE: Verificar se window já tem flag de inicialização COMPLETA
-  // ✅ CORREÇÃO CRÍTICA: Apenas verificar __REACT_INITIALIZED__, não __REACT_INITIALIZING__
-  // __REACT_INITIALIZING__ pode estar true de uma execução anterior que não completou
-  if (typeof window !== 'undefined') {
-    if ((window as any).__REACT_INITIALIZED__) {
-      if (isDev) {
-        console.warn('⚠️ [Main] React já foi inicializado (flag __REACT_INITIALIZED__ detectada), ignorando...');
-      }
-      hasInitialized = true;
-      return;
-    }
-    // ✅ CORREÇÃO: Setar flag apenas aqui, após todas as verificações passarem
-    (window as any).__REACT_INITIALIZING__ = true;
-  }
-  
   isInitializing = true;
-  
-  if (isDev) {
-    console.log('[Main] Inicializando React...', {
-      timestamp: Date.now(),
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
-    });
-  }
   try {
     const finalizeBoot = () => {
       requestAnimationFrame(() => {
@@ -364,21 +307,6 @@ function initializeReact() {
       return newRoot;
     })();
 
-    // ✅ CORREÇÃO MOBILE: Verificar se root já tem conteúdo antes de criar novo root
-    if (rootHost.children.length > 0 && reactRoot) {
-      if (isDev) {
-        console.warn('⚠️ [Main] Root já tem conteúdo, desmontando antes de re-renderizar...');
-      }
-      try {
-        reactRoot.unmount();
-      } catch (error) {
-        if (isDev) {
-          console.warn('⚠️ [Main] Erro ao desmontar root existente:', error);
-        }
-      }
-      reactRoot = null;
-    }
-
     if (reactRoot && reactContainer && reactContainer !== rootHost) {
       try {
         reactRoot.unmount();
@@ -388,18 +316,7 @@ function initializeReact() {
     }
 
     reactContainer = rootHost;
-    
-    // ✅ CORREÇÃO MOBILE: Verificar se root já existe antes de criar
-    if (!reactRoot) {
-      reactRoot = createRoot(rootHost);
-      if (isDev) {
-        console.log('[Main] Novo React root criado');
-      }
-    } else {
-      if (isDev) {
-        console.log('[Main] Reutilizando React root existente');
-      }
-    }
+    reactRoot = reactRoot ?? createRoot(rootHost);
 
     let didRender = false;
     try {
@@ -466,21 +383,8 @@ function initializeReact() {
             reactRoot = null;
           }
 
-          // ✅ CORREÇÃO MOBILE: Verificar novamente antes de renderizar no retry
-          if (hasInitialized) {
-            if (isDev) {
-              console.warn('⚠️ [Main] React já foi inicializado durante retry, ignorando...');
-            }
-            return;
-          }
-          
           reactContainer = rootHost;
-          
-          // ✅ CORREÇÃO MOBILE: Verificar se root já existe antes de criar
-          if (!reactRoot) {
-            reactRoot = createRoot(rootHost);
-          }
-          
+          reactRoot = reactRoot ?? createRoot(rootHost);
           reactRoot.render(<App />);
           hasInitialized = true; // ✅ Marcar como inicializado
           if (typeof window !== 'undefined') {
@@ -516,41 +420,16 @@ function initializeReact() {
 // });
 
 // ✅ CORREÇÃO PRODUÇÃO: Prevenir múltiplas inicializações
-// ✅ CORREÇÃO MOBILE: Proteção adicional contra inicialização duplicada
-let initializationScheduled = false;
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    // ✅ CORREÇÃO MOBILE: Verificar múltiplas condições antes de inicializar
-    if (!hasInitialized && !isInitializing && !initializationScheduled) {
-      initializationScheduled = true;
-      if (isDev) {
-        console.log('[Main] DOMContentLoaded - inicializando React');
-      }
+    if (!hasInitialized && !isInitializing) {
       initializeReact();
-    } else if (isDev) {
-      console.warn('[Main] DOMContentLoaded - inicialização já agendada ou em progresso', {
-        hasInitialized,
-        isInitializing,
-        initializationScheduled
-      });
     }
   }, { once: true }); // ✅ Usar once: true para garantir que só executa uma vez
 } else {
   // ✅ CORREÇÃO: Inicializar imediatamente sem setTimeout - React deve renderizar o mais rápido possível
   // O setTimeout estava causando delay desnecessário que poderia fazer o loading ficar preso
-  // ✅ CORREÇÃO MOBILE: Verificar múltiplas condições antes de inicializar
-  if (!hasInitialized && !isInitializing && !initializationScheduled) {
-    initializationScheduled = true;
-    if (isDev) {
-      console.log('[Main] DOM já pronto - inicializando React imediatamente');
-    }
+  if (!hasInitialized && !isInitializing) {
     initializeReact();
-  } else if (isDev) {
-    console.warn('[Main] DOM já pronto - inicialização já agendada ou em progresso', {
-      hasInitialized,
-      isInitializing,
-      initializationScheduled
-    });
   }
 }

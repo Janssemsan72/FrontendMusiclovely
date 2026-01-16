@@ -44,7 +44,7 @@ const adminMenuItems: MenuItem[] = [
 ];
 
 const defaultCollaboratorPermissions: Record<string, boolean> = {
-  dashboard: true,
+  dashboard: false,
   orders: true,
   songs: true,
   lyrics: true,

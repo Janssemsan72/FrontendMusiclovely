@@ -112,11 +112,7 @@ export default defineConfig({
         // experimentalMinChunkSize: 20000, // Comentado - estava impedindo geração de arquivos JS
         // ✅ FASE 4: Melhorar code splitting para reduzir bundle inicial
         manualChunks: (id) => {
-          // ✅ CRÍTICO: Separar código admin PRIMEIRO para evitar dependências circulares
           if (id.includes('src/') && !id.includes('node_modules')) {
-            if (id.includes('src/pages/admin') || id.includes('src/components/admin')) {
-              return "admin"; // Admin carrega sob demanda
-            }
             if (id.includes('src/pages/Quiz') || id.includes('src/pages/QuizSteps')) {
               return "quiz"; // Quiz carrega sob demanda
             }

@@ -111,7 +111,6 @@ const Quiz = memo(() => {
   ] as const;
 
   const VOCAL_OPTIONS = [
-    { value: '', label: t('quiz.vocalOptions.noPreference') },
     { value: 'f', label: t('quiz.vocalOptions.female') },
     { value: 'm', label: t('quiz.vocalOptions.male') }
   ] as const;
@@ -750,6 +749,14 @@ const Quiz = memo(() => {
           // ✅ NOVO: Scroll até primeira opção de estilo
           scrollToElement('button[type="button"]');
           return false;
+        }
+        {
+          const vocal = (formData.vocalGender || '').trim().toLowerCase();
+          if (vocal !== 'f' && vocal !== 'm') {
+            toast.error(t('quiz.validation.selectVocalGender', 'Selecione uma opção de voz'));
+            markFieldTouched('vocal_gender');
+            return false;
+          }
         }
         break;
       case 3:
