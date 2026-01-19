@@ -732,13 +732,13 @@ const Quiz = memo(() => {
       // Modo normal: validar e salvar no localStorage
       // ✅ VALIDAÇÃO COMPLETA: Usar utilitário centralizado
       const quizDataForValidation: QuizData = {
-        relationship: finalRelationship,
-        about_who: formData.aboutWho,
-        style: formData.style,
+        relationship: finalRelationship || '',
+        about_who: formData.aboutWho || '',
+        style: formData.style || '',
         vocal_gender: formData.vocalGender || '',
-        qualities: formData.qualities,
-        memories: formData.memories,
-        message: formData.message || null,
+        qualities: formData.qualities || '',
+        memories: formData.memories || '',
+        message: formData.message || '',
         language: currentLanguage,
       };
 

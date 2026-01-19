@@ -85,14 +85,15 @@ function prepareQuizForZod(quiz: QuizData): Partial<ZodQuizData> {
     vocalGender = ''; // String vazia é valor válido no enum
   }
 
+  // ✅ CORREÇÃO: Garantir que nenhum campo seja null (Zod espera string)
   const prepared: Partial<ZodQuizData> = {
-    about_who: quiz.about_who,
-    style: quiz.style,
+    about_who: quiz.about_who || '',
+    style: quiz.style || '',
     language: quiz.language as 'pt' | 'en' | 'es' | undefined,
     vocal_gender: vocalGender,
-    qualities: quiz.qualities,
-    memories: quiz.memories,
-    message: quiz.message,
+    qualities: quiz.qualities || '',
+    memories: quiz.memories || '',
+    message: quiz.message || '',
   };
 
   // Tratar relationship: se começa com "Outro: ", extrair como customRelationship
