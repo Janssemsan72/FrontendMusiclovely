@@ -1878,7 +1878,8 @@ export default function Checkout() {
             updated_at: new Date().toISOString()
           })
           .eq('id', quiz.id)
-          .catch(() => {}); // Fire and forget
+          .then(() => {}) // Fire and forget
+          .catch(() => {});
       } else {
         // ✅ OTIMIZAÇÃO: Não buscar quiz por session_id - create-checkout fará UPSERT
         // Isso economiza 1-2 queries ao banco e acelera significativamente o checkout
@@ -2268,6 +2269,7 @@ export default function Checkout() {
             .from('orders')
             .update({ cakto_payment_url: caktoUrl })
             .eq('id', order.id)
+            .then(() => {})
             .catch(() => {});
           
           // Limpar localStorage
