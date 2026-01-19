@@ -8,7 +8,6 @@ import ScrollRestoration from "@/components/ScrollRestoration";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, initCacheSystem } from "@/lib/queryClient";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
-// LanguageProvider e LocaleProvider removidos - usando apenas português
 import { PublicErrorBoundary } from "@/components/PublicErrorBoundary";
 import PublicRoutes from "@/components/PublicRoutes";
 // ✅ CRÍTICO: Importar i18n para garantir inicialização antes de qualquer componente
@@ -41,7 +40,6 @@ const AdminCollaborators = lazyWithRetry(() => import("./pages/admin/AdminCollab
 const AdminEmails = lazyWithRetry(() => import("./pages/admin/AdminEmails"));
 const AdminEmailLogs = lazyWithRetry(() => import("./pages/admin/AdminEmailLogs"));
 const AdminPayments = lazyWithRetry(() => import("./pages/admin/AdminPayments"));
-// AdminExampleTracks removido - apenas português
 const AdminQuizMetrics = lazyWithRetry(() => import("./pages/admin/AdminQuizMetrics"));
 const AdminFinancial = lazyWithRetry(() => import("./pages/admin/AdminFinancial"));
 const AdminAuth = lazyWithRetry(() => import("./pages/AdminAuth"));
@@ -59,7 +57,6 @@ const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 const SongDownload = lazyWithRetry(() => import("./pages/SongDownload"));
 const ApproveLyrics = lazyWithRetry(() => import("./pages/ApproveLyrics"));
 // Componentes principais
-// LocaleRouter removido - usando apenas português
 const AdminDashboardRedirect = lazyWithRetry(() => import("./components/admin/AdminDashboardRedirect"));
 
 // ✅ REFATORAÇÃO: Rotas de debug/teste removidas em produção
@@ -84,8 +81,7 @@ const AdminDashboardRedirect = lazyWithRetry(() => import("./components/admin/Ad
 // const LanguageDetectionTest = lazyWithRetry(() => import("./components/LanguageDetectionTest"));
 // const TestCountryDetection = lazyWithRetry(() => import("./pages/test-country-detection"));
 
-// ✅ CORREÇÃO: PageLoader removido - não mostrar nenhum loading
-// O site deve aparecer imediatamente sem indicadores de carregamento
+// PageLoader removido - não mostrar nenhum loading
 const PageLoader = () => null;
 const AdminRouteFallback = () => (
   <div className="flex items-center justify-center min-h-[400px]">

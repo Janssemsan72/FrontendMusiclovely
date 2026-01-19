@@ -3,16 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Musiclovely</title>
-    <!-- ✅ OTIMIZAÇÃO: Preload de recursos críticos para melhorar FCP e LCP -->
-    <!-- Removido preload de main.tsx pois o Vite já gerencia isso automaticamente -->
-    <link rel="preload" href="/src/index.css" as="style" />
-    <!-- Preconnect para recursos externos se necessário -->
-    <!-- <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin /> -->
+    <title>Musiclovely - Crie músicas personalizadas para quem você ama</title>
+    
+    <!-- ✅ Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.musiclovely.com.br/" />
+    <meta property="og:title" content="Musiclovely - Crie músicas personalizadas para quem você ama" />
+    <meta property="og:description" content="Transforme memórias em música! Crie uma música única e personalizada para quem você ama." />
+    <meta property="og:image" content="https://www.musiclovely.com.br/og/musiclovely-og-1200x630.png" />
+    <meta property="og:locale" content="pt_BR" />
+    
+    <!-- ✅ Meta tags adicionais -->
+    <meta name="description" content="Transforme memórias em música! Crie uma música única e personalizada para quem você ama." />
+    <meta name="theme-color" content="#C7916B" />
+    
+    <!-- ✅ Preconnect para recursos críticos -->
+    <link rel="preconnect" href="https://zagkvtxarndluusiluhb.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://pay.cakto.com.br" crossorigin />
+    <link rel="preconnect" href="https://cdn.utmify.com.br" crossorigin />
+
+    <!-- ✅ Script UTMify Pixel -->
+    <script>
+      window.pixelId = "68f98a3f196fbe7f0e5683c7";
+      var a = document.createElement("script");
+      a.setAttribute("async", "");
+      a.setAttribute("defer", "");
+      a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+      document.head.appendChild(a);
+    </script>
+
+    <!-- ✅ Script UTMify UTMs -->
+    <script
+      src="https://cdn.utmify.com.br/scripts/utms/latest.js"
+      data-utmify-prevent-subids
+      async
+      defer
+    ></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

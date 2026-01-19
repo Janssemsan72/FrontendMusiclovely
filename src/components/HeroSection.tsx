@@ -1,10 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star } from "@/utils/iconImports";
-// ✅ OTIMIZAÇÃO: Usar versões otimizadas 96x96 para reduzir tamanho (de 512x512 para 96x96)
-import testimonial1 from "@/assets/testimonial-1-96.webp";
-import testimonial2 from "@/assets/testimonial-2-96.webp";
-import testimonial3 from "@/assets/testimonial-3-96.webp";
+// ✅ DIFERENCIAÇÃO: Usar avatares diferentes da página inicial (não os mesmos das avaliações)
+// Avatares da página inicial vêm de public/testimonials
+const heroAvatar1 = "/testimonials/avatar-1.webp";
+const heroAvatar2 = "/testimonials/avatar-2.webp";
+const heroAvatar3 = "/testimonials/avatar-3.webp";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUtmParams } from "@/hooks/useUtmParams";
 
@@ -119,7 +120,10 @@ export default function HeroSection() {
         </h1>
         
         {/* Copy 2 Versões */}
-        <div className="mb-3 p-2.5 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-lg border border-yellow-500/30 max-w-md mx-auto">
+        <div 
+          className="mb-3 p-2.5 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-lg border border-yellow-500/30 max-w-md mx-auto cursor-pointer hover:opacity-90 transition-all active:scale-95"
+          onClick={handleQuizClick}
+        >
           <div className="flex items-center justify-center gap-2">
             <span className="text-lg sm:text-xl">🎁</span>
             <span className="font-bold text-sm sm:text-base">{t('hero.twoVersionsBenefit')}</span>
@@ -148,13 +152,13 @@ export default function HeroSection() {
         <div className="flex items-center justify-center gap-2 sm:gap-4 px-2">
           <div className="flex -space-x-2 sm:-space-x-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar1} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar2} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full border-2 border-background overflow-hidden shadow-soft">
-              <img src={testimonial3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
+              <img src={heroAvatar3} alt="Cliente satisfeito" className="w-full h-full object-cover" width={48} height={48} loading="lazy" decoding="async" />
             </div>
           </div>
           <div className="text-left">

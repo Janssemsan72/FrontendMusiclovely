@@ -18,13 +18,15 @@ export function getCurrentLocale(pathname: string): Locale | null {
 
 /**
  * Gera um caminho localizado com prefixo de idioma
+ * ✅ CORREÇÃO: Site é apenas português, então sempre retorna caminho sem prefixo
  */
 export function getLocalizedPath(path: string, locale: Locale): string {
   // Remove prefixo de idioma existente se houver
-  const cleanPath = path.replace(/^\/(pt|en|es)/, '');
+  const cleanPath = path.replace(/^\/(pt|en|es)/, '') || '/';
   
-  // Adiciona o novo prefixo
-  return `/${locale}${cleanPath}`;
+  // ✅ CORREÇÃO: Site é apenas português, não adicionar prefixo
+  // Retornar caminho limpo sem prefixo de idioma
+  return cleanPath === '/' ? '/' : cleanPath;
 }
 
 /**
@@ -36,9 +38,11 @@ export function removeLocalePrefix(path: string): string {
 
 /**
  * Troca o idioma na URL atual
+ * ✅ CORREÇÃO: Site é apenas português, então sempre retorna caminho sem prefixo
  */
 export function switchLocale(currentPath: string, newLocale: Locale): string {
   const pathWithoutLocale = removeLocalePrefix(currentPath);
+  // ✅ CORREÇÃO: Site é apenas português, não adicionar prefixo
   return getLocalizedPath(pathWithoutLocale, newLocale);
 }
 

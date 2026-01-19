@@ -1,5 +1,29 @@
 /**
  * Hook para validação em tempo real do quiz
+ * 
+ * Fornece validação reativa, sanitização e gerenciamento de estado de erros
+ * para formulários de quiz. Inclui debounce automático para evitar validações excessivas.
+ * 
+ * @param quiz - Dados do quiz a serem validados
+ * @param options - Opções de configuração do hook
+ * @param options.debounceMs - Tempo de debounce em milissegundos (padrão: 300ms)
+ * @param options.validateOnChange - Se true, valida automaticamente quando quiz muda (padrão: true)
+ * @param options.strict - Se true, usa validação strict (padrão: false)
+ * 
+ * @returns Objeto com funções e estado de validação
+ * 
+ * @example
+ * ```tsx
+ * const { validate, errors, isValid, getFieldError, markFieldTouched } = useQuizValidation(quiz);
+ * 
+ * // Marcar campo como tocado quando usuário interage
+ * <input 
+ *   onBlur={() => markFieldTouched('about_who')}
+ *   error={getFieldError('about_who')}
+ * />
+ * ```
+ * 
+ * @module hooks/useQuizValidation
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react';

@@ -3,25 +3,33 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, ChevronLeft, ChevronRight, Quote } from '@/utils/iconImports';
 import { useTranslation } from '@/hooks/useTranslation';
-// ✅ OTIMIZAÇÃO: Usar versões menores (96x96) em vez de 512x512 para reduzir tamanho
-import avatar1 from '@/assets/testimonial-1-96.webp';
-import avatar2 from '@/assets/testimonial-2-96.webp';
-import avatar3 from '@/assets/testimonial-3-96.webp';
+// ✅ CORREÇÃO: Usar avatares de public/testimonials para garantir consistência entre dev e produção
+// Os mesmos avatares usados no HeroSection, garantindo que sejam idênticos em ambos os ambientes
+const testimonialAvatar1 = "/testimonials/avatar-1.webp";
+const testimonialAvatar2 = "/testimonials/avatar-2.webp";
+const testimonialAvatar3 = "/testimonials/avatar-3.webp";
 
 // ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
-const getImageUrl = (url: string | undefined): string | undefined => {
+const getImageUrl = (url: string | undefined | null): string | undefined => {
   if (!url) return undefined;
-  // Se já é uma URL completa, retornar como está
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
-    return url;
+  
+  // Converter para string se necessário
+  const urlString = String(url).trim();
+  if (!urlString) return undefined;
+  
+  // Se já é uma URL completa (http/https/data), retornar como está
+  if (urlString.startsWith('http://') || urlString.startsWith('https://') || urlString.startsWith('data:')) {
+    return urlString;
   }
-  // Se começa com /, retornar como está (caminho absoluto)
-  if (url.startsWith('/')) {
-    return url;
+  
+  // ✅ CORREÇÃO: Caminhos absolutos (começando com /) funcionam igual em dev e produção
+  // Arquivos em public/ são servidos na raiz em ambos os ambientes
+  if (urlString.startsWith('/')) {
+    return urlString;
   }
-  // Para imports do Vite, garantir que seja tratado como caminho absoluto
-  // O Vite já processa os imports e retorna URLs corretas
-  return url;
+  
+  // Se não começar com /, adicionar / no início para tornar absoluto
+  return '/' + urlString;
 };
 
 interface Testimonial {
@@ -81,7 +89,8 @@ export default function Testimonials() {
       content: 'Encomendei uma música para meu casamento e foi simplesmente perfeita! Todos os convidados choraram. A qualidade de produção é incrível, parece música de rádio!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar1,
+      // ✅ CORREÇÃO: Usar caminho estático de public/ para garantir consistência entre dev e produção
+      avatar_url: testimonialAvatar1,
       rating: 5
     },
     {
@@ -95,7 +104,8 @@ export default function Testimonials() {
       content: 'Criei um jingle para minha empresa e o resultado superou todas as expectativas. Profissionalismo e qualidade de estúdio, recomendo muito!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar2,
+      // ✅ CORREÇÃO: Usar caminho estático de public/ para garantir consistência entre dev e produção
+      avatar_url: testimonialAvatar2,
       rating: 5
     },
     {
@@ -109,7 +119,8 @@ export default function Testimonials() {
       content: 'Fiz uma homenagem para meu pai no aniversário de 60 anos dele. Ele ficou emocionado e não para de ouvir. Valeu cada centavo!',
       content_en: null,
       content_es: null,
-      avatar_url: avatar3,
+      // ✅ CORREÇÃO: Usar caminho estático de public/ para garantir consistência entre dev e produção
+      avatar_url: testimonialAvatar3,
       rating: 5
     }
   ];
@@ -141,12 +152,22 @@ export default function Testimonials() {
           
           if (!allError && allData && allData.length > 0) {
             // Se houver depoimentos mas nenhum ativo, usar os primeiros 3
-            setTestimonials(allData.slice(0, 3));
+            // ✅ CORREÇÃO: Garantir que avatares sejam strings válidas
+            const processedData = allData.slice(0, 3).map(t => ({
+              ...t,
+              avatar_url: t.avatar_url || null
+            }));
+            setTestimonials(processedData);
           } else {
             setTestimonials(MOCK_TESTIMONIALS);
           }
         } else if (data && data.length > 0) {
-          setTestimonials(data);
+          // ✅ CORREÇÃO: Garantir que avatares sejam strings válidas
+          const processedData = data.map(t => ({
+            ...t,
+            avatar_url: t.avatar_url || null
+          }));
+          setTestimonials(processedData);
         } else {
           setTestimonials(MOCK_TESTIMONIALS);
         }
@@ -354,36 +375,40 @@ export default function Testimonials() {
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                  {displayTestimonial.avatar_url && (
+                  {displayTestimonial.avatar_url ? (
                     <img 
-                      src={getImageUrl(displayTestimonial.avatar_url)} 
+                      src={getImageUrl(displayTestimonial.avatar_url) || undefined} 
                       alt={displayTestimonial.name}
-                      className="w-full h-full object-cover absolute inset-0"
-                      width={40}
-                      height={40}
+                      className="w-full h-full object-cover absolute inset-0 z-10"
+                      width={48}
+                      height={48}
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        // Fallback para avatar padrão se a imagem não carregar
+                        console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.avatar_url);
                         const target = e.currentTarget;
                         target.style.display = 'none';
+                        target.style.visibility = 'hidden';
                         const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
                         if (fallback) {
                           fallback.style.display = 'flex';
+                          fallback.style.zIndex = '10';
                         }
                       }}
                       onLoad={(e) => {
                         // Garantir que a imagem seja exibida quando carregar
                         const target = e.currentTarget;
                         target.style.display = 'block';
+                        target.style.visibility = 'visible';
+                        target.style.opacity = '1';
                         const fallback = target.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
                         if (fallback) {
                           fallback.style.display = 'none';
                         }
                       }}
                     />
-                  )}
-                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                  ) : null}
+                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0 z-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -455,35 +480,40 @@ export default function Testimonials() {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                      {translatedTestimonial.avatar_url && (
+                      {translatedTestimonial.avatar_url ? (
                         <img 
-                          src={getImageUrl(translatedTestimonial.avatar_url)} 
+                          src={getImageUrl(translatedTestimonial.avatar_url) || undefined} 
                           alt={translatedTestimonial.name}
-                          className="w-full h-full object-cover absolute inset-0"
+                          className="w-full h-full object-cover absolute inset-0 z-10"
                           width={40}
                           height={40}
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
+                            console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url);
                             const target = e.currentTarget;
                             target.style.display = 'none';
+                            target.style.visibility = 'hidden';
                             const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
                             if (fallback) {
                               fallback.style.display = 'flex';
+                              fallback.style.zIndex = '10';
                             }
                           }}
                           onLoad={(e) => {
                             // Garantir que a imagem seja exibida quando carregar
                             const target = e.currentTarget;
                             target.style.display = 'block';
+                            target.style.visibility = 'visible';
+                            target.style.opacity = '1';
                             const fallback = target.parentElement?.querySelector('.avatar-fallback-grid') as HTMLElement;
                             if (fallback) {
                               fallback.style.display = 'none';
                             }
                           }}
                         />
-                      )}
-                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                      ) : null}
+                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0 z-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>

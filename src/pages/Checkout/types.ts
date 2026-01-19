@@ -28,6 +28,7 @@ export interface QuizData {
   answers?: Record<string, unknown>;
   timestamp?: string;
   whatsapp?: string;
+  session_id?: string;
 }
 
 export interface CheckoutDraft {
@@ -39,14 +40,15 @@ export interface CheckoutDraft {
   timestamp: number;
 }
 
+export type PlanId = 'standard' | 'express';
+
 export interface Plan {
-  id: string;
+  id: PlanId;
   name: string;
   price: number;
-  currency: string;
+  currency: 'BRL';
   delivery: string;
+  featured: boolean;
+  badge?: string;
   features: string[];
-  featured?: boolean;
-  priceId?: string;
 }
-

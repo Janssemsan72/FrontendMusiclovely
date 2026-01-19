@@ -656,6 +656,7 @@
       "enterName": "Digite o nome",
       "nameTooLong": "Nome muito longo (máximo 100 caracteres)",
       "selectStyle": "Selecione um estilo musical",
+      "selectVoice": "Selecione a preferência de voz",
       "describeQualities": "Descreva as qualidades",
       "maxCharacters": "Máximo 500 caracteres",
       "shareMemories": "Compartilhe suas memórias",
@@ -736,6 +737,44 @@
         "content": "Para questões sobre estes Termos de Serviço, entre em contato através de nossa página de contato."
       }
     }
+  },
+  "songDownload": {
+    "download": {
+      "success": "Download efetuado com sucesso!",
+      "instructions": "O arquivo foi baixado com sucesso!",
+      "tip": "Se não encontrar o arquivo, verifique a pasta de Downloads do seu dispositivo ou procure pelo nome do arquivo na busca do sistema."
+    },
+    "downloadAgain": "Baixar Novamente",
+    "downloading": "Baixando...",
+    "copyLink": "Copiar link desta página",
+    "linkCopied": "Link copiado!",
+    "backHome": "Voltar para Home",
+    "share": {
+      "title": "Minha Música Personalizada",
+      "text": "Ouça minha música personalizada criada pela MusicLovely!",
+      "copied": "Link copiado para área de transferência!",
+      "copyError": "Erro ao copiar link"
+    },
+    "errors": {
+      "missingId": "ID da música não fornecido",
+      "networkError": "Erro de conexão. Verifique sua internet e tente novamente.",
+      "notFound": "Música não encontrada",
+      "invalidToken": "Link de download inválido ou expirado",
+      "downloadError": "Erro ao fazer download"
+    },
+    "notFound": {
+      "title": "Música não encontrada",
+      "description": "A música que você está procurando não foi encontrada ou não está disponível.",
+      "tokenHint": "Verifique se o link de download está correto ou se ainda é válido.",
+      "backHome": "Voltar para Home",
+      "goBack": "Voltar"
+    }
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "A página que você está procurando não existe ou foi movida.",
+    "backHome": "Voltar para Home",
+    "goBack": "Voltar"
   },
   "privacy": {
     "title": "Política de Privacidade",

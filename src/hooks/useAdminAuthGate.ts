@@ -1,3 +1,13 @@
+/**
+ * Hook para controle de acesso de administradores
+ * 
+ * Gerencia autenticação e autorização de usuários admin/collaborator,
+ * incluindo verificação de roles, cache de permissões e redirecionamento
+ * automático para página de login quando não autorizado.
+ * 
+ * @module hooks/useAdminAuthGate
+ */
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +26,30 @@ import {
 
 type Navigate = (to: string, options?: any) => void;
 
+/**
+ * Hook para controle de acesso de administradores
+ * 
+ * Verifica se o usuário atual tem permissão de admin ou collaborator,
+ * gerencia estado de autenticação e fornece função de logout.
+ * 
+ * @param params - Parâmetros de configuração
+ * @param params.navigate - Função de navegação do React Router
+ * @param params.pathname - Caminho atual da rota
+ * @returns Objeto com estado de autenticação e função de logout
+ * 
+ * @example
+ * ```tsx
+ * const { isCheckingAuth, isAuthorized, userRole, handleLogout } = useAdminAuthGate({
+ *   navigate,
+ *   pathname: location.pathname
+ * });
+ * 
+ * if (isCheckingAuth) return <Loading />;
+ * if (!isAuthorized) return <RedirectToLogin />;
+ * 
+ * return <AdminDashboard />;
+ * ```
+ */
 export function useAdminAuthGate(params: { navigate: Navigate; pathname: string }) {
   const { navigate, pathname } = params;
 

@@ -326,7 +326,7 @@ export default function AdminDashboard() {
   const retryJob = async (jobId: string) => {
     try {
       setRetryingJob(jobId);
-      toast.info("Retentando job...");
+      // Processando em background silenciosamente
 
       // ✅ CORREÇÃO: Usar generate-lyrics-internal (Anthropic Claude) em vez de generate-lyrics (Lovable)
       const { error } = await supabase.functions.invoke("generate-lyrics-internal", {

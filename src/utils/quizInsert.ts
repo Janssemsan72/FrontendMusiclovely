@@ -168,54 +168,105 @@ async function performInsert(
 
         // ✅ UPSERT: Usar upsert se tiver session_id para garantir idempotência
         // ✅ CORREÇÃO: Verificar se quiz já está associado a pedido antes de fazer UPSERT
-        let query = supabase.from('quizzes');
+        let result: { data: any; error: any };
         
         if (quizPayload.session_id) {
           // Verificar se já existe quiz com este session_id e se está associado a um pedido
-          const { data: existingQuiz } = await supabase
+          const { data: existingQuiz, error: existingError } = await supabase
             .from('quizzes')
             .select('id')
             .eq('session_id', quizPayload.session_id)
-            .single();
+            .maybeSingle();
+          
+          if (existingError && existingError.code !== 'PGRST116') {
+            // Erro ao buscar (exceto "not found")
+            console.warn(`[QuizInsert] Erro ao verificar quiz existente:`, existingError);
+          }
           
           if (existingQuiz) {
             // Verificar se quiz já está associado a algum pedido
-            const { data: existingOrder } = await supabase
+            const { data: existingOrder, error: orderError } = await supabase
               .from('orders')
               .select('id, status')
               .eq('quiz_id', existingQuiz.id)
               .maybeSingle();
+            
+            if (orderError && orderError.code !== 'PGRST116') {
+              console.warn(`[QuizInsert] Erro ao verificar pedido existente:`, orderError);
+            }
             
             if (existingOrder) {
               // Quiz já está associado a um pedido - criar novo quiz em vez de atualizar
               // ✅ CORREÇÃO: Não usar session_id para novo quiz (evitar conflito de constraint unique)
               console.log(`[QuizInsert] Quiz com session_id ${quizPayload.session_id} já está associado a pedido ${existingOrder.id}, criando novo quiz sem session_id`);
               const newQuizPayload = { ...quizPayload, session_id: undefined };
-              query = query.insert(newQuizPayload);
+              result = await supabase
+                .from('quizzes')
+                .insert(newQuizPayload)
+                .select()
+                .single();
             } else {
               // Quiz existe mas não está associado a pedido - pode atualizar
-              query = query.upsert(quizPayload, {
-                onConflict: 'session_id',
-                ignoreDuplicates: false // Atualiza se já existe
-              });
+              // ✅ CORREÇÃO: Usar update em vez de upsert quando já sabemos que existe
+              result = await supabase
+                .from('quizzes')
+                .update(quizPayload)
+                .eq('session_id', quizPayload.session_id)
+                .select()
+                .single();
+              
+              // ✅ CORREÇÃO: Se update não retornou dados, pode ser que a linha não exista mais
+              // Nesse caso, fazer insert
+              if (!result.error && !result.data) {
+                console.warn(`[QuizInsert] Update não retornou dados, fazendo insert:`, {
+                  session_id: quizPayload.session_id,
+                  existingQuizId: existingQuiz.id
+                });
+                result = await supabase
+                  .from('quizzes')
+                  .insert(quizPayload)
+                  .select()
+                  .single();
+              }
             }
           } else {
             // Quiz não existe - pode fazer upsert normalmente
-            query = query.upsert(quizPayload, {
-              onConflict: 'session_id',
-              ignoreDuplicates: false // Atualiza se já existe
-            });
+            // ✅ CORREÇÃO: Usar insert quando não existe (mais confiável que upsert)
+            result = await supabase
+              .from('quizzes')
+              .insert(quizPayload)
+              .select()
+              .single();
           }
         } else {
           // Fallback para insert se não tiver session_id
-          query = query.insert(quizPayload);
+          result = await supabase
+            .from('quizzes')
+            .insert(quizPayload)
+            .select()
+            .single();
         }
         
-        const { data, error } = await query
-          .select()
-          .single();
-
+        const { data, error } = result;
+        
         const attemptDuration = Date.now() - attemptStartTime;
+        
+        // ✅ DIAGNÓSTICO: Log detalhado da resposta (ANTES de verificar erro)
+        console.log(`[QuizInsert] Resposta da inserção (tentativa ${attempts}):`, {
+          hasError: !!error,
+          errorCode: error?.code,
+          errorMessage: error?.message,
+          errorDetails: error?.details,
+          errorHint: error?.hint,
+          hasData: !!data,
+          dataType: Array.isArray(data) ? 'array' : typeof data,
+          dataLength: Array.isArray(data) ? data.length : 'N/A',
+          hasId: !!data?.id,
+          dataKeys: data ? Object.keys(data) : [],
+          dataValue: data,
+          fullResult: JSON.stringify(result, null, 2).substring(0, 500), // Limitar tamanho
+          duration_ms: attemptDuration
+        });
 
         if (error) {
           console.warn(`[QuizInsert] Tentativa ${attempts} falhou`, {
@@ -228,18 +279,39 @@ async function performInsert(
           throw error;
         }
 
-        if (!data || !data.id) {
+        // ✅ CORREÇÃO: Verificar se data é um array e pegar o primeiro elemento
+        let quizData = data;
+        if (Array.isArray(data) && data.length > 0) {
+          quizData = data[0];
+          console.log(`[QuizInsert] Data é array, usando primeiro elemento:`, {
+            arrayLength: data.length,
+            firstElement: quizData
+          });
+        }
+        
+        if (!quizData || !quizData.id) {
           const missingDataError = new Error('Quiz data ou ID ausente após inserção');
           console.error(`[QuizInsert] Tentativa ${attempts} retornou dados inválidos`, {
             has_data: !!data,
-            has_id: !!data?.id,
+            has_quizData: !!quizData,
+            has_id: !!quizData?.id,
+            dataType: Array.isArray(data) ? 'array' : typeof data,
+            dataValue: JSON.stringify(data, null, 2),
+            quizDataValue: JSON.stringify(quizData, null, 2),
             duration_ms: attemptDuration,
+            error: error ? {
+              code: error.code,
+              message: error.message,
+              details: error.details,
+              hint: error.hint
+            } : null,
+            resultObject: JSON.stringify(result, null, 2).substring(0, 1000)
           });
           throw missingDataError;
         }
 
         console.log(`[QuizInsert] Tentativa ${attempts} bem-sucedida`, {
-          quiz_id: data.id,
+          quiz_id: quizData.id,
           duration_ms: attemptDuration,
         });
 
@@ -250,7 +322,7 @@ async function performInsert(
           console.log('[QuizInsert] Circuit breaker resetado após sucesso');
         }
 
-        return data;
+        return quizData;
       },
       retryOptions
     );
@@ -316,7 +388,8 @@ export async function enqueueQuizToServer(quizPayload: QuizPayload, error?: any)
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       // Inserir diretamente na tabela quiz_retry_queue
-      const { data, error: insertError } = await supabase
+      // ✅ CORREÇÃO: Usar insert com select() para retornar dados inseridos
+      const insertResult = await supabase
         .from('quiz_retry_queue')
         .insert({
           session_id: quizPayload.session_id || null,
@@ -327,8 +400,31 @@ export async function enqueueQuizToServer(quizPayload: QuizPayload, error?: any)
           status: 'pending',
           next_retry_at: new Date().toISOString() // Tentar imediatamente
         })
-        .select('id')
+        .select()
         .single();
+      
+      let data: any = null;
+      let insertError: any = insertResult.error;
+      
+      // Se insert funcionou, usar dados retornados
+      if (!insertError && insertResult.data) {
+        data = insertResult.data;
+      } else if (!insertError) {
+        // Se não retornou dados mas não teve erro, buscar pelo session_id (fallback)
+        const { data: insertedData, error: selectError } = await supabase
+          .from('quiz_retry_queue')
+          .select('id')
+          .eq('session_id', quizPayload.session_id || null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (selectError) {
+          insertError = selectError;
+        } else {
+          data = insertedData;
+        }
+      }
 
       if (insertError) {
         // Se é erro de duplicado (session_id já existe), considerar sucesso

@@ -464,6 +464,7 @@
       "enterName": "Digite o nome",
       "nameTooLong": "Nome muito longo (máximo 100 caracteres)",
       "selectStyle": "Selecione um estilo musical",
+      "selectVoice": "Selecione a preferência de voz",
       "describeQualities": "Descreva as qualidades (mínimo 10 caracteres)",
       "maxCharacters": "Máximo 500 caracteres",
       "shareMemories": "Compartilhe suas memórias (mínimo 10 caracteres)",

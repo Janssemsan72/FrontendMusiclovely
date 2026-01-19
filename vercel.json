@@ -14,11 +14,20 @@
   ],
   "headers": [
     {
+      "source": "/utmify-loader.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: wss://*.supabase.co https://*.supabase.co https://api.openai.com https://js.stripe.com https://*.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://business-api.tiktok.com; img-src 'self' data: https: blob:; media-src 'self' https: blob: data: https://*.supabase.co; font-src 'self' data: https:; child-src 'self' blob: data: https:; frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://safeframe.googlesyndication.com https://*.similarweb.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdn.utmify.com.br https://connect.facebook.net https://*.facebook.net https://static.hotjar.com https://*.hotjar.com https://*.similarweb.com https://cdn.similarweb.com https://analytics.tiktok.com https://static.cloudflareinsights.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https: wss://*.supabase.co https://*.supabase.co https://api.openai.com https://js.stripe.com https://*.utmify.com.br https://connect.facebook.net https://*.facebook.net https://analytics.tiktok.com https://business-api.tiktok.com; img-src 'self' data: https: blob:; media-src 'self' https: blob: data: https://*.supabase.co; font-src 'self' data: https:; child-src 'self' blob: data: https:; frame-src 'self' blob: data: https://js.stripe.com https://connect.facebook.net https://*.facebook.net https://safeframe.googlesyndication.com https://*.similarweb.com;"
         },
         {
           "key": "X-Content-Type-Options",
@@ -31,6 +40,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "on"
         }
       ]
     },
@@ -53,11 +66,248 @@
       ]
     },
     {
+      "source": "/og/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Content-Type",
+          "value": "image/png"
+        }
+      ]
+    },
+    {
+      "source": "/testimonials/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/video/:path*",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/audio/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/assets/js/index-:path*",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
+        }
+      ]
+    },
+    {
+      "source": "/assets/js/:path*",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.js",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.mjs",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.webp",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.mp4",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/:path*.woff2",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/about",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/how-it-works",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/pricing",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/terms",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=7200, s-maxage=7200, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/privacy",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=7200, s-maxage=7200, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/quiz",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/checkout",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }

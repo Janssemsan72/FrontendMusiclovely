@@ -28,39 +28,29 @@ const SUPABASE_URL_FALLBACK = 'https://zagkvtxarndluusiluhb.supabase.co';
 let finalUrl = SUPABASE_URL || SUPABASE_URL_FALLBACK;
 const finalKey = SUPABASE_ANON_KEY;
 
-// ✅ DIAGNÓSTICO (dev): detectar mismatch entre project ref da URL e ref embutido na anon key
-function getProjectRefFromSupabaseUrl(url: string): string | null {
+/**
+ * Verifica se há token de autenticação no localStorage
+ * @returns true se houver token de autenticação
+ */
+function hasAuthToken(): boolean {
+  if (typeof window === 'undefined') return false;
+  
   try {
-    const u = new URL(url);
-    // Ex: https://zagkvtxarndluusiluhb.supabase.co -> projectRef = zagkvtxarndluusiluhb
-    const host = u.hostname;
-    const parts = host.split('.');
-    return parts.length > 0 ? parts[0] : null;
+    const projectRef = finalUrl.split('//')[1]?.split('.')[0] || 'zagkvtxarndluusiluhb';
+    const specificKey = `sb-${projectRef}-auth-token`;
+    
+    // Verificar chave específica do Supabase
+    if (localStorage.getItem(specificKey) !== null) return true;
+    
+    // Verificar padrões alternativos
+    return Object.keys(localStorage).some(key => {
+      const lowerKey = key.toLowerCase();
+      return (lowerKey.includes('supabase') && (lowerKey.includes('auth-token') || lowerKey.includes('session'))) ||
+             (lowerKey.startsWith('sb-') && lowerKey.includes('auth'));
+    });
   } catch {
-    return null;
+    return false;
   }
-}
-
-function decodeJwtPayload(token: string): Record<string, any> | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-    const json = atob(padded);
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-if (typeof window !== 'undefined' && isDev && finalUrl && finalKey) {
-  const urlRef = getProjectRefFromSupabaseUrl(finalUrl);
-  const payload = decodeJwtPayload(finalKey);
-  const keyRef = payload?.ref;
-  const role = payload?.role;
-
-  // Logs removidos
 }
 
 // ✅ CORREÇÃO CRÍTICA: Se detectar localhost, forçar uso da URL remota
@@ -75,8 +65,11 @@ let supabase: any = null;
 // ✅ FASE 3: Função para criar cliente com fallback robusto
 function createSupabaseClient(): any {
   try {
+    // Verificar se variáveis de ambiente estão configuradas
     if (!finalUrl || !finalKey) {
-      // ✅ FASE 3: Retornar cliente dummy para evitar erros
+      if (isDev) {
+        console.warn('[Supabase Client] Variáveis de ambiente não configuradas');
+      }
       return createDummyClient();
     }
     
@@ -91,6 +84,9 @@ function createSupabaseClient(): any {
         headers: {
           'X-Client-Info': 'musiclovely-web'
         }
+      },
+      db: {
+        schema: 'public'
       },
       // ✅ CORREÇÃO ERRO 401 REALTIME: Desabilitar Realtime automático para evitar conexões não autenticadas
       // O Realtime só será usado explicitamente quando necessário (ex: AdminDashboard)
@@ -131,74 +127,23 @@ function createSupabaseClient(): any {
       
       // Wrapper que verifica autenticação antes de criar channel
       client.realtime.channel = function(channelName: string, params?: any) {
-        // Verificar autenticação de forma síncrona (usando localStorage como indicador rápido)
-        // Se não houver sessão, retornar um channel dummy que não conecta
-        if (typeof window !== 'undefined') {
-          try {
-            // ✅ MELHORIA: Verificar chave específica do Supabase primeiro
-            // O Supabase armazena a sessão em localStorage com padrão: sb-{project-ref}-auth-token
-            const projectRef = finalUrl.split('//')[1]?.split('.')[0] || 'zagkvtxarndluusiluhb';
-            const specificKey = `sb-${projectRef}-auth-token`;
-            const hasSpecificKey = localStorage.getItem(specificKey) !== null;
-            
-            // Verificar também por padrões comuns de chave do Supabase
-            const supabaseStorageKey = Object.keys(localStorage).find(key => 
-              key.includes('supabase') && (key.includes('auth-token') || key.includes('session'))
-            );
-            
-            // Verificar também por padrões alternativos
-            const hasAuthToken = hasSpecificKey || supabaseStorageKey || 
-              Object.keys(localStorage).some(key => {
-                const lowerKey = key.toLowerCase();
-                return (lowerKey.includes('auth') && lowerKey.includes('token')) ||
-                       (lowerKey.includes('supabase') && lowerKey.includes('session')) ||
-                       (lowerKey.startsWith('sb-') && lowerKey.includes('auth'));
-              });
-            
-            // Se não houver token, retornar channel dummy para evitar erro 401
-            if (!hasAuthToken) {
-              return createDummyChannel(channelName);
-            }
-          } catch (error) {
-            // Em caso de erro ao verificar, retornar channel dummy para segurança
-            // Isso previne erros 401 quando há problemas ao acessar localStorage
-            return createDummyChannel(channelName);
-          }
+        // Verificar autenticação antes de criar channel real
+        if (!hasAuthToken()) {
+          return createDummyChannel(channelName);
         }
         
-        // Se passou na verificação, criar channel real
-        // Nota: A verificação assíncrona completa (getSession) ainda é feita nos componentes
-        // Esta é apenas uma verificação rápida para evitar conexões óbvias sem autenticação
         const channel = originalChannel(channelName, params);
         
-        // ✅ NOVO: Interceptar subscribe do channel para garantir autenticação antes de conectar
+        // Interceptar subscribe para garantir autenticação antes de conectar
         if (channel && typeof channel.subscribe === 'function') {
           const originalSubscribe = channel.subscribe.bind(channel);
           channel.subscribe = function(callback?: (status: string) => void) {
-            // Verificar autenticação novamente antes de subscribe
-            if (typeof window !== 'undefined') {
-              try {
-                const projectRef = finalUrl.split('//')[1]?.split('.')[0] || 'zagkvtxarndluusiluhb';
-                const specificKey = `sb-${projectRef}-auth-token`;
-                const hasAuth = localStorage.getItem(specificKey) !== null ||
-                  Object.keys(localStorage).some(key => 
-                    key.toLowerCase().includes('auth') && key.toLowerCase().includes('token')
-                  );
-                
-                if (!hasAuth) {
-                  if (callback && typeof callback === 'function') {
-                    setTimeout(() => callback('CHANNEL_ERROR'), 0);
-                  }
-                  return { unsubscribe: () => {} };
-                }
-              } catch (error) {
-                if (callback && typeof callback === 'function') {
-                  setTimeout(() => callback('CHANNEL_ERROR'), 0);
-                }
-                return { unsubscribe: () => {} };
+            if (!hasAuthToken()) {
+              if (callback && typeof callback === 'function') {
+                setTimeout(() => callback('CHANNEL_ERROR'), 0);
               }
+              return { unsubscribe: () => {} };
             }
-            
             return originalSubscribe(callback);
           };
         }
@@ -212,43 +157,43 @@ function createSupabaseClient(): any {
       }
     }
     
-    // ✅ CORREÇÃO CRÍTICA: Verificar e corrigir URL interna do cliente para Edge Functions
-    // O cliente Supabase JS usa a URL base para construir a URL das Edge Functions
-    // Se a URL for localhost, as Edge Functions também tentarão usar localhost
-    if (client && typeof client === 'object') {
-      // Verificar se há uma propriedade interna que precisa ser corrigida
-      const internalUrl = (client as any).supabaseUrl || (client as any).rest?.url;
-      if (internalUrl && (internalUrl.includes('localhost') || internalUrl.includes('127.0.0.1'))) {
-        // Tentar sobrescrever a URL interna (pode não funcionar, mas tentamos)
-        if ((client as any).supabaseUrl) {
-          (client as any).supabaseUrl = SUPABASE_URL_FALLBACK;
-        }
-        if ((client as any).rest?.url) {
-          (client as any).rest.url = SUPABASE_URL_FALLBACK;
-        }
-      }
-    }
-    
-    // ✅ CORREÇÃO: Verificar se está usando URL remota
+    // Se detectar localhost, recriar cliente com URL remota
     if (finalUrl.includes('localhost') || finalUrl.includes('127.0.0.1')) {
-      // Recriar cliente com URL remota
       return createClient<Database>(SUPABASE_URL_FALLBACK, finalKey, {
         auth: {
           storage: typeof window !== 'undefined' ? localStorage : undefined,
           persistSession: true,
           autoRefreshToken: true,
+        },
+        global: {
+          headers: {
+            'X-Client-Info': 'musiclovely-web'
+          }
+        },
+        realtime: {
+          params: {
+            eventsPerSecond: 10
+          },
+          log_level: 'error' as const,
+          heartbeatIntervalMs: 60000,
+          reconnectAfterMs: (tries: number) => Math.min(tries * 2000, 60000),
         }
       });
     }
     
     return client;
   } catch (error) {
-    // ✅ FASE 3: Retornar cliente dummy em caso de erro
+    if (isDev) {
+      console.error('[Supabase Client] Erro ao criar cliente:', error);
+    }
     return createDummyClient();
   }
 }
 
-// ✅ CORREÇÃO ERRO 401: Criar channel dummy que não conecta ao WebSocket
+/**
+ * Cria um channel dummy que não conecta ao WebSocket
+ * Usado quando não há autenticação para evitar erros 401
+ */
 function createDummyChannel(channelName: string): any {
   return {
     channelName,
@@ -269,10 +214,82 @@ function createDummyChannel(channelName: string): any {
   };
 }
 
-// ✅ FASE 3: Cliente dummy para evitar erros quando inicialização falha
+/**
+ * Cria um cliente dummy para evitar erros quando inicialização falha
+ * Retorna um cliente mock que não faz chamadas reais ao Supabase
+ */
 function createDummyClient(): any {
-  // ✅ FASE 3: Cliente dummy mais completo para evitar erros
   const dummyError = { message: 'Cliente não inicializado', code: 'CLIENT_NOT_INITIALIZED' };
+  
+  // ✅ CORREÇÃO: Criar builder completo que suporta todos os métodos do Supabase
+  const createQueryBuilder = () => {
+    const builder: any = {
+      eq: (column: string, value: any) => builder,
+      neq: (column: string, value: any) => builder,
+      gt: (column: string, value: any) => builder,
+      gte: (column: string, value: any) => builder,
+      lt: (column: string, value: any) => builder,
+      lte: (column: string, value: any) => builder,
+      like: (column: string, pattern: string) => builder,
+      ilike: (column: string, pattern: string) => builder,
+      is: (column: string, value: any) => builder,
+      in: (column: string, values: any[]) => builder,
+      contains: (column: string, value: any) => builder,
+      containedBy: (column: string, value: any) => builder,
+      rangeGt: (column: string, value: any) => builder,
+      rangeGte: (column: string, value: any) => builder,
+      rangeLt: (column: string, value: any) => builder,
+      rangeLte: (column: string, value: any) => builder,
+      rangeAdjacent: (column: string, value: any) => builder,
+      overlaps: (column: string, value: any) => builder,
+      textSearch: (column: string, query: string, options?: any) => builder,
+      match: (query: Record<string, any>) => builder,
+      not: (column: string, operator: string, value: any) => builder,
+      or: (filters: string) => builder,
+      order: (column: string, options?: { ascending?: boolean }) => builder,
+      limit: (count: number) => builder,
+      range: (from: number, to: number) => builder,
+      abortSignal: (signal: AbortSignal) => builder,
+      single: async () => ({ data: null, error: null }),
+      maybeSingle: async () => ({ data: null, error: null }),
+      select: (columns?: string) => builder,
+    };
+    
+    // Tornar o builder uma Promise para funcionar com await
+    return Object.assign(builder, {
+      then: (resolve: any) => Promise.resolve({ data: null, error: null }).then(resolve),
+      catch: (reject: any) => Promise.resolve({ data: null, error: null }).catch(reject),
+    });
+  };
+
+  // ✅ CORREÇÃO: Criar builder para insert/update/upsert/delete que suporta encadeamento
+  const createMutationBuilder = () => {
+    const builder: any = {
+      select: (columns?: string) => {
+        // ✅ CORREÇÃO: select() deve retornar um builder que pode ser encadeado com single()
+        const selectBuilder: any = {
+          single: async () => ({ data: null, error: null }),
+          maybeSingle: async () => ({ data: null, error: null }),
+        };
+        // Tornar o selectBuilder uma Promise
+        return Object.assign(selectBuilder, {
+          then: (resolve: any) => Promise.resolve({ data: null, error: null }).then(resolve),
+          catch: (reject: any) => Promise.resolve({ data: null, error: null }).catch(reject),
+        });
+      },
+      single: async () => ({ data: null, error: null }),
+      maybeSingle: async () => ({ data: null, error: null }),
+      eq: (column: string, value: any) => builder,
+      neq: (column: string, value: any) => builder,
+      in: (column: string, values: any[]) => builder,
+    };
+    
+    // Tornar o builder uma Promise para funcionar com await
+    return Object.assign(builder, {
+      then: (resolve: any) => Promise.resolve({ data: null, error: null }).then(resolve),
+      catch: (reject: any) => Promise.resolve({ data: null, error: null }).catch(reject),
+    });
+  };
   
   return {
     auth: {
@@ -286,34 +303,17 @@ function createDummyClient(): any {
       onAuthStateChange: () => ({ data: { subscription: null }, error: null }),
     },
     from: (table: string) => {
-      // Criar um builder que suporta encadeamento de métodos
-      const createQueryBuilder = () => {
-        const builder: any = {
-          eq: (column: string, value: any) => {
-            // Retornar o mesmo builder para permitir múltiplas chamadas
-            return builder;
-          },
-          order: (column: string, options?: { ascending?: boolean }) => {
-            return builder;
-          },
-          limit: (count: number) => {
-            return builder;
-          },
-          single: async () => ({ data: null, error: null }),
-          maybeSingle: async () => ({ data: null, error: null }),
-        };
-        // Tornar o builder uma Promise para funcionar com await
-        return Object.assign(builder, {
-          then: (resolve: any) => Promise.resolve({ data: null, error: null }).then(resolve),
-          catch: (reject: any) => Promise.resolve({ data: null, error: null }).catch(reject),
-        });
-      };
-
       return {
+        // ✅ CORREÇÃO: select retorna builder que suporta encadeamento
         select: (columns?: string) => createQueryBuilder(),
-        insert: async () => ({ data: null, error: null }),
-        update: async () => ({ data: null, error: null }),
-        delete: async () => ({ data: null, error: null }),
+        // ✅ CORREÇÃO: insert retorna builder que suporta .select()
+        insert: (values: any) => createMutationBuilder(),
+        // ✅ CORREÇÃO: upsert retorna builder que suporta .select()
+        upsert: (values: any, options?: any) => createMutationBuilder(),
+        // ✅ CORREÇÃO: update retorna builder que suporta encadeamento
+        update: (values: any) => createMutationBuilder(),
+        // ✅ CORREÇÃO: delete retorna builder que suporta encadeamento
+        delete: () => createMutationBuilder(),
       };
     },
     functions: {
@@ -346,38 +346,29 @@ function createDummyClient(): any {
   };
 }
 
-// ✅ CORREÇÃO: Inicializar apenas uma vez usando variável global
+// Inicializar cliente usando singleton pattern para evitar loops de HMR
 if (typeof window !== 'undefined') {
   if (!window.__SUPABASE_CLIENT_INSTANCE__) {
     try {
       window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
       supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-      
-      // ✅ FASE 3: Validar que o cliente foi criado corretamente
-      if (!supabase || !supabase.auth) {
-        window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
-        supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-      }
     } catch (error) {
+      if (isDev) {
+        console.error('[Supabase Client] Erro ao criar cliente:', error);
+      }
       window.__SUPABASE_CLIENT_INSTANCE__ = createDummyClient();
       supabase = window.__SUPABASE_CLIENT_INSTANCE__;
     }
   } else {
-    // ✅ CORREÇÃO: SEMPRE reutilizar instância existente (mesmo com HMR)
+    // Reutilizar instância existente (evita recriação com HMR)
     supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-    
-    // ✅ FASE 3: Validar instância existente
-    if (!supabase || !supabase.auth) {
-      window.__SUPABASE_CLIENT_INSTANCE__ = createSupabaseClient();
-      supabase = window.__SUPABASE_CLIENT_INSTANCE__;
-    }
   }
 } else {
-  // Fallback para SSR - criar instância local
+  // Fallback para SSR
   supabase = createSupabaseClient();
 }
 
-// ✅ FASE 3: Garantir que supabase nunca seja null ou undefined
+// Garantir que supabase nunca seja null ou undefined
 if (!supabase) {
   supabase = createDummyClient();
 }

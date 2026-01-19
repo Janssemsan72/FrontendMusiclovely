@@ -1,4 +1,15 @@
-// ✅ SEGURANÇA: Headers de segurança para backend
+/**
+ * Headers de segurança para backend
+ * 
+ * Define headers HTTP de segurança para proteção contra ataques comuns:
+ * - X-Content-Type-Options: Previne MIME type sniffing
+ * - X-Frame-Options: Previne clickjacking
+ * - X-XSS-Protection: Proteção XSS básica
+ * - Referrer-Policy: Controla informações de referrer
+ * - Content-Security-Policy: Política de segurança de conteúdo
+ * 
+ * @module utils/security
+ */
 export const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
@@ -19,6 +30,21 @@ export const ALLOWED_ORIGINS = [
   'http://127.0.0.1:8089'
 ];
 
+/**
+ * Gera headers CORS baseados na origin da requisição
+ * 
+ * Permite requisições de origens permitidas ou localhost durante desenvolvimento.
+ * Em produção, apenas origens da lista ALLOWED_ORIGINS são permitidas.
+ * 
+ * @param origin - Origin da requisição HTTP
+ * @returns Headers CORS configurados
+ * 
+ * @example
+ * ```ts
+ * const headers = getCorsHeaders(request.headers.origin);
+ * reply.headers(headers);
+ * ```
+ */
 export const getCorsHeaders = (origin: string | null) => {
   // ✅ CORREÇÃO: Permitir qualquer localhost durante desenvolvimento
   const isLocalhost = origin && (
@@ -38,7 +64,23 @@ export const getCorsHeaders = (origin: string | null) => {
   };
 };
 
-// ✅ SEGURANÇA: Headers combinados (CORS + Security)
+/**
+ * Gera headers combinados de segurança e CORS
+ * 
+ * Combina headers de segurança (securityHeaders) com headers CORS.
+ * Esta é a função principal a ser usada em rotas do backend.
+ * 
+ * @param origin - Origin da requisição HTTP
+ * @returns Headers completos de segurança e CORS
+ * 
+ * @example
+ * ```ts
+ * app.post('/api/webhook', async (request, reply) => {
+ *   const headers = getSecureHeaders(request.headers.origin);
+ *   return reply.headers(headers).send(data);
+ * });
+ * ```
+ */
 export const getSecureHeaders = (origin: string | null) => {
   return {
     ...getCorsHeaders(origin),

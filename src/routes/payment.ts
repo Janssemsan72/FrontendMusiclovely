@@ -1,13 +1,66 @@
+/**
+ * Rotas de pagamento e webhooks
+ * 
+ * Este módulo gerencia:
+ * - Webhooks do Cakto para processar pagamentos
+ * - Criação de checkout e pedidos
+ * 
+ * @module routes/payment
+ */
+
 import { FastifyInstance } from 'fastify';
 import { createClient } from '@supabase/supabase-js';
 import { getSecureHeaders } from '../utils/security.js';
 import { isValidUUID } from '../utils/error-handler.js';
 
+/**
+ * Registra rotas de pagamento no servidor Fastify
+ * 
+ * Rotas disponíveis:
+ * - POST /api/cakto/webhook - Processa webhooks do Cakto
+ * - POST /api/checkout/create - Cria novo checkout/pedido
+ * 
+ * @param app - Instância do Fastify
+ * 
+ * @example
+ * ```ts
+ * import { paymentRoutes } from './routes/payment';
+ * await paymentRoutes(app);
+ * ```
+ */
 export async function paymentRoutes(app: FastifyInstance) {
   const supabaseUrl = process.env.SUPABASE_URL || '';
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-  // POST /api/cakto/webhook
+  /**
+   * POST /api/cakto/webhook
+   * 
+   * Processa webhooks do Cakto para atualizar status de pagamentos.
+   * 
+   * Fluxo:
+   * 1. Valida assinatura do webhook
+   * 2. Busca pedido usando múltiplas estratégias (order_id, transaction_id, email, telefone)
+   * 3. Atualiza status do pedido para 'paid'
+   * 4. Envia email de confirmação (com verificação de idempotência)
+   * 5. Gera letra automaticamente
+   * 
+   * @route POST /api/cakto/webhook
+   * @param request.body - Payload do webhook do Cakto
+   * @param request.headers['x-cakto-signature'] - Assinatura do webhook
+   * @returns Resposta com status do processamento
+   * 
+   * @example
+   * ```json
+   * {
+   *   "event": "purchase_approved",
+   *   "data": {
+   *     "id": "transaction_123",
+   *     "order_id": "uuid-do-pedido",
+   *     "customer": { "email": "cliente@email.com" }
+   *   }
+   * }
+   * ```
+   */
   app.post('/api/cakto/webhook', async (request, reply) => {
     const origin = request.headers.origin || null;
     const secureHeaders = getSecureHeaders(origin);
@@ -358,11 +411,73 @@ export async function paymentRoutes(app: FastifyInstance) {
       // 2. Verificar email_logs ANTES de qualquer processamento
       // 3. Verificar novamente APÓS um pequeno delay (para evitar race conditions)
       // 4. Usar verificação atômica para garantir que apenas um processo envia o email
+      // 5. Lock distribuído usando email_logs com status 'pending' como semáforo
       
       console.log('📧 [Cakto Webhook] Verificando idempotência de email de confirmação...', {
         order_id: order.id,
         timestamp: new Date().toISOString()
       });
+      
+      // ✅ VERIFICAÇÃO 0: Verificação imediata de email_logs (mais rápida)
+      const { data: quickEmailCheck, error: quickEmailError } = await supabaseClient
+        .from('email_logs')
+        .select('id, email_type, status, sent_at, recipient_email, created_at')
+        .eq('order_id', order.id)
+        .eq('email_type', 'order_paid')
+        .in('status', ['sent', 'delivered', 'pending'])
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (quickEmailCheck && quickEmailCheck.length > 0) {
+        const emailLog = quickEmailCheck[0];
+        const emailAge = Date.now() - new Date(emailLog.created_at).getTime();
+        
+        // Se email foi enviado há mais de 1 segundo OU está em pending há mais de 10 segundos, considerar como enviado
+        if (emailLog.status === 'sent' || emailLog.status === 'delivered' || 
+            (emailLog.status === 'pending' && emailAge > 10000)) {
+          console.log('✅ [Cakto Webhook] Email de confirmação já existe (verificação rápida) - pulando envio duplicado', {
+            order_id: order.id,
+            email_log_id: emailLog.id,
+            email_type: emailLog.email_type,
+            status: emailLog.status,
+            sent_at: emailLog.sent_at,
+            recipient_email: emailLog.recipient_email,
+            email_age_ms: emailAge,
+            timestamp: new Date().toISOString()
+          });
+          // Pular todo o processamento de email
+        } else if (emailLog.status === 'pending' && emailAge <= 10000) {
+          // Email está em processamento recente (últimos 10 segundos), aguardar um pouco e verificar novamente
+          console.log('⏳ [Cakto Webhook] Email em processamento recente - aguardando...', {
+            order_id: order.id,
+            email_log_id: emailLog.id,
+            email_age_ms: emailAge,
+            timestamp: new Date().toISOString()
+          });
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Verificar novamente após aguardar
+          const { data: recheckEmail } = await supabaseClient
+            .from('email_logs')
+            .select('id, email_type, status, sent_at')
+            .eq('order_id', order.id)
+            .eq('email_type', 'order_paid')
+            .in('status', ['sent', 'delivered', 'pending'])
+            .order('created_at', { ascending: false })
+            .limit(1);
+          
+          if (recheckEmail && recheckEmail.length > 0 && 
+              (recheckEmail[0].status === 'sent' || recheckEmail[0].status === 'delivered')) {
+            console.log('✅ [Cakto Webhook] Email confirmado como enviado após aguardar - pulando envio duplicado', {
+              order_id: order.id,
+              email_log_id: recheckEmail[0].id,
+              status: recheckEmail[0].status,
+              timestamp: new Date().toISOString()
+            });
+            // Pular todo o processamento de email
+          }
+        }
+      }
       
       // ✅ VERIFICAÇÃO 1: Verificar se há outros webhooks sendo processados para o mesmo pedido nos últimos 30 segundos
       const recentWebhookCheck = await supabaseClient
@@ -398,147 +513,163 @@ export async function paymentRoutes(app: FastifyInstance) {
         }
       }
       
-      // Primeira verificação: email_logs (só se não estiver pulando devido a múltiplos webhooks)
-      const { data: existingEmailLogs1, error: emailLogsError1 } = await supabaseClient
-        .from('email_logs')
-        .select('id, email_type, status, sent_at, recipient_email')
-        .eq('order_id', order.id)
-        .eq('email_type', 'order_paid')
-        .in('status', ['sent', 'delivered', 'pending'])
-        .order('sent_at', { ascending: false })
-        .limit(5);
-      
-      if (emailLogsError1) {
-        console.error('❌ [Cakto Webhook] Erro ao verificar email_logs (primeira verificação):', emailLogsError1);
-      }
-      
-      // Verificar se já existe email enviado ou em processamento
-      const hasEmailSent1 = existingEmailLogs1 && existingEmailLogs1.length > 0;
-      
-      // Se deve pular devido a múltiplos webhooks, pular imediatamente
-      if (shouldSkipDueToMultipleWebhooks) {
-        console.log('⏭️ [Cakto Webhook] Processamento de email pulado - múltiplos webhooks detectados', {
-          order_id: order.id,
-          timestamp: new Date().toISOString()
-        });
-        // Pular todo o processamento de email
-      } else if (hasEmailSent1) {
-        const emailLog = existingEmailLogs1[0];
-        console.log('✅ [Cakto Webhook] Email de confirmação já existe - pulando envio duplicado', {
-          order_id: order.id,
-          email_log_id: emailLog.id,
-          email_type: emailLog.email_type,
-          status: emailLog.status,
-          sent_at: emailLog.sent_at,
-          recipient_email: emailLog.recipient_email,
-          total_logs: existingEmailLogs1.length,
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        // Aguardar 500ms para evitar race conditions (se dois webhooks chegarem simultaneamente)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Segunda verificação após delay (para pegar emails que podem ter sido enviados durante o delay)
-        const { data: existingEmailLogs2, error: emailLogsError2 } = await supabaseClient
+      // Primeira verificação completa: email_logs (só se não estiver pulando devido a múltiplos webhooks)
+      if (!shouldSkipDueToMultipleWebhooks) {
+        const { data: existingEmailLogs1, error: emailLogsError1 } = await supabaseClient
           .from('email_logs')
-          .select('id, email_type, status, sent_at, recipient_email')
+          .select('id, email_type, status, sent_at, recipient_email, created_at')
           .eq('order_id', order.id)
           .eq('email_type', 'order_paid')
           .in('status', ['sent', 'delivered', 'pending'])
-          .order('sent_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(5);
         
-        if (emailLogsError2) {
-          console.error('❌ [Cakto Webhook] Erro ao verificar email_logs (segunda verificação):', emailLogsError2);
+        if (emailLogsError1) {
+          console.error('❌ [Cakto Webhook] Erro ao verificar email_logs (primeira verificação):', emailLogsError1);
         }
         
-        const hasEmailSent2 = existingEmailLogs2 && existingEmailLogs2.length > 0;
+        // Verificar se já existe email enviado ou em processamento
+        const hasEmailSent1 = existingEmailLogs1 && existingEmailLogs1.length > 0;
+        const hasRecentPending = existingEmailLogs1 && existingEmailLogs1.some(log => {
+          if (log.status === 'pending') {
+            const age = Date.now() - new Date(log.created_at).getTime();
+            return age <= 10000; // Últimos 10 segundos
+          }
+          return false;
+        });
         
-        if (hasEmailSent2) {
-          const emailLog = existingEmailLogs2[0];
-          console.log('✅ [Cakto Webhook] Email de confirmação encontrado após delay - pulando envio duplicado', {
+        if (hasEmailSent1 && !hasRecentPending) {
+          const emailLog = existingEmailLogs1[0];
+          console.log('✅ [Cakto Webhook] Email de confirmação já existe - pulando envio duplicado', {
             order_id: order.id,
             email_log_id: emailLog.id,
             email_type: emailLog.email_type,
             status: emailLog.status,
             sent_at: emailLog.sent_at,
             recipient_email: emailLog.recipient_email,
-            total_logs: existingEmailLogs2.length,
+            total_logs: existingEmailLogs1.length,
             timestamp: new Date().toISOString()
           });
-        } else {
-          console.log('📧 [Cakto Webhook] Nenhum email de confirmação encontrado - enviando email...', {
-            order_id: order.id,
-            verificacoes_realizadas: 2,
-            timestamp: new Date().toISOString()
+          // Pular todo o processamento de email
+        } else if (!hasEmailSent1 || !hasRecentPending) {
+          // Aguardar 500ms para evitar race conditions (se dois webhooks chegarem simultaneamente)
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Segunda verificação após delay (para pegar emails que podem ter sido enviados durante o delay)
+          const { data: existingEmailLogs2, error: emailLogsError2 } = await supabaseClient
+            .from('email_logs')
+            .select('id, email_type, status, sent_at, recipient_email, created_at')
+            .eq('order_id', order.id)
+            .eq('email_type', 'order_paid')
+            .in('status', ['sent', 'delivered', 'pending'])
+            .order('created_at', { ascending: false })
+            .limit(5);
+          
+          if (emailLogsError2) {
+            console.error('❌ [Cakto Webhook] Erro ao verificar email_logs (segunda verificação):', emailLogsError2);
+          }
+          
+          const hasEmailSent2 = existingEmailLogs2 && existingEmailLogs2.length > 0;
+          const hasRecentPending2 = existingEmailLogs2 && existingEmailLogs2.some(log => {
+            if (log.status === 'pending') {
+              const age = Date.now() - new Date(log.created_at).getTime();
+              return age <= 10000;
+            }
+            return false;
           });
           
-          // Chamar função para notificar pagamento (via Supabase Edge Function ou diretamente)
-          try {
-            const notifyStartTime = Date.now();
-            console.log('📧 [Cakto Webhook] Chamando notify-payment-webhook...', {
+          if (hasEmailSent2 && !hasRecentPending2) {
+            const emailLog = existingEmailLogs2[0];
+            console.log('✅ [Cakto Webhook] Email de confirmação encontrado após delay - pulando envio duplicado', {
               order_id: order.id,
+              email_log_id: emailLog.id,
+              email_type: emailLog.email_type,
+              status: emailLog.status,
+              sent_at: emailLog.sent_at,
+              recipient_email: emailLog.recipient_email,
+              total_logs: existingEmailLogs2.length,
+              timestamp: new Date().toISOString()
+            });
+            // Pular todo o processamento de email
+          } else if (!hasEmailSent2 || !hasRecentPending2) {
+            console.log('📧 [Cakto Webhook] Nenhum email de confirmação encontrado - enviando email...', {
+              order_id: order.id,
+              verificacoes_realizadas: 3,
               timestamp: new Date().toISOString()
             });
             
-            const { data: notifyData, error: notifyError } = await supabaseClient.functions.invoke(
-              'notify-payment-webhook',
-              {
-                body: { order_id: order.id }
-              }
-            );
-            
-            const notifyDuration = Date.now() - notifyStartTime;
-            
-            if (notifyError) {
-              console.error('❌ [Cakto Webhook] Erro ao chamar notify-payment-webhook:', {
+            // Chamar função para notificar pagamento (via Supabase Edge Function ou diretamente)
+            try {
+              const notifyStartTime = Date.now();
+              console.log('📧 [Cakto Webhook] Chamando notify-payment-webhook...', {
                 order_id: order.id,
-                error: notifyError,
-                duration_ms: notifyDuration,
-                timestamp: new Date().toISOString()
-              });
-            } else {
-              console.log('✅ [Cakto Webhook] notify-payment-webhook chamado com sucesso', {
-                order_id: order.id,
-                response: notifyData,
-                duration_ms: notifyDuration,
                 timestamp: new Date().toISOString()
               });
               
-              // Verificação final: confirmar que o email foi registrado
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              const { data: notifyData, error: notifyError } = await supabaseClient.functions.invoke(
+                'notify-payment-webhook',
+                {
+                  body: { order_id: order.id }
+                }
+              );
               
-              const { data: finalEmailLogs } = await supabaseClient
-                .from('email_logs')
-                .select('id, email_type, status, sent_at')
-                .eq('order_id', order.id)
-                .eq('email_type', 'order_paid')
-                .order('sent_at', { ascending: false })
-                .limit(1);
+              const notifyDuration = Date.now() - notifyStartTime;
               
-              if (finalEmailLogs && finalEmailLogs.length > 0) {
-                console.log('✅ [Cakto Webhook] Email confirmado como registrado após envio', {
+              if (notifyError) {
+                console.error('❌ [Cakto Webhook] Erro ao chamar notify-payment-webhook:', {
                   order_id: order.id,
-                  email_log_id: finalEmailLogs[0].id,
-                  status: finalEmailLogs[0].status,
+                  error: notifyError,
+                  duration_ms: notifyDuration,
                   timestamp: new Date().toISOString()
                 });
               } else {
-                console.warn('⚠️ [Cakto Webhook] Email não encontrado em email_logs após envio (pode ter falhado)', {
+                console.log('✅ [Cakto Webhook] notify-payment-webhook chamado com sucesso', {
                   order_id: order.id,
+                  response: notifyData,
+                  duration_ms: notifyDuration,
                   timestamp: new Date().toISOString()
                 });
+                
+                // Verificação final: confirmar que o email foi registrado
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const { data: finalEmailLogs } = await supabaseClient
+                  .from('email_logs')
+                  .select('id, email_type, status, sent_at')
+                  .eq('order_id', order.id)
+                  .eq('email_type', 'order_paid')
+                  .order('sent_at', { ascending: false })
+                  .limit(1);
+                
+                if (finalEmailLogs && finalEmailLogs.length > 0) {
+                  console.log('✅ [Cakto Webhook] Email confirmado como registrado após envio', {
+                    order_id: order.id,
+                    email_log_id: finalEmailLogs[0].id,
+                    status: finalEmailLogs[0].status,
+                    timestamp: new Date().toISOString()
+                  });
+                } else {
+                  console.warn('⚠️ [Cakto Webhook] Email não encontrado em email_logs após envio (pode ter falhado)', {
+                    order_id: order.id,
+                    timestamp: new Date().toISOString()
+                  });
+                }
               }
+            } catch (notifyException: any) {
+              console.error('❌ [Cakto Webhook] Exceção ao chamar notify-payment-webhook:', {
+                order_id: order.id,
+                exception: notifyException,
+                message: notifyException?.message,
+                timestamp: new Date().toISOString()
+              });
             }
-          } catch (notifyException: any) {
-            console.error('❌ [Cakto Webhook] Exceção ao chamar notify-payment-webhook:', {
-              order_id: order.id,
-              exception: notifyException,
-              message: notifyException?.message,
-              timestamp: new Date().toISOString()
-            });
           }
         }
+      } else {
+        console.log('⏭️ [Cakto Webhook] Processamento de email pulado - múltiplos webhooks detectados', {
+          order_id: order.id,
+          timestamp: new Date().toISOString()
+        });
       }
       
       // Gerar letra automaticamente
@@ -590,7 +721,38 @@ export async function paymentRoutes(app: FastifyInstance) {
     }
   });
 
-  // POST /api/checkout/create
+  /**
+   * POST /api/checkout/create
+   * 
+   * Cria um novo pedido (checkout) no sistema.
+   * 
+   * Valida todos os dados de entrada e cria o pedido de forma atômica
+   * usando a função RPC `create_order_atomic` do Supabase.
+   * 
+   * @route POST /api/checkout/create
+   * @param request.body.session_id - UUID da sessão do navegador (obrigatório)
+   * @param request.body.quiz - Dados do quiz (obrigatório)
+   * @param request.body.customer_email - Email do cliente (obrigatório)
+   * @param request.body.customer_whatsapp - WhatsApp do cliente (obrigatório)
+   * @param request.body.plan - Plano escolhido: 'standard' ou 'express' (obrigatório)
+   * @param request.body.amount_cents - Valor em centavos (obrigatório, > 0)
+   * @param request.body.provider - Provider de pagamento: 'cakto' (obrigatório)
+   * @param request.body.transaction_id - ID da transação (opcional)
+   * @returns Resposta com quiz_id, order_id e log_id em caso de sucesso
+   * 
+   * @example
+   * ```json
+   * {
+   *   "session_id": "uuid-da-sessao",
+   *   "quiz": { "about_who": "João", "style": "Romântico", ... },
+   *   "customer_email": "cliente@email.com",
+   *   "customer_whatsapp": "(11) 99999-9999",
+   *   "plan": "standard",
+   *   "amount_cents": 4790,
+   *   "provider": "cakto"
+   * }
+   * ```
+   */
   app.post('/api/checkout/create', async (request, reply) => {
     const origin = request.headers.origin || null;
     const secureHeaders = getSecureHeaders(origin);

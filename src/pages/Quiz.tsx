@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, AlertTriangle } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -70,7 +70,6 @@ const Quiz = memo(() => {
   ] as const;
 
   const VOCAL_OPTIONS = [
-    { value: '', label: t('quiz.vocalOptions.noPreference') },
     { value: 'f', label: t('quiz.vocalOptions.female') },
     { value: 'm', label: t('quiz.vocalOptions.male') }
   ] as const;
@@ -427,7 +426,7 @@ const Quiz = memo(() => {
       relationship: finalRelationship,
       about_who: formData.aboutWho,
       style: formData.style,
-      vocal_gender: formData.vocalGender || null,
+      vocal_gender: formData.vocalGender || '',
       qualities: formData.qualities,
       memories: formData.memories,
       message: formData.message,
@@ -526,6 +525,12 @@ const Quiz = memo(() => {
           markFieldTouched('style');
           // ✅ NOVO: Scroll até primeira opção de estilo
           scrollToElement('button[type="button"]');
+          return false;
+        }
+        // ✅ Validação obrigatória: Preferência de voz
+        if (!formData.vocalGender || !formData.vocalGender.trim()) {
+          toast.error(t('quiz.validation.selectVoice', 'Selecione a preferência de voz'));
+          markFieldTouched('vocal_gender');
           return false;
         }
         break;
@@ -671,7 +676,7 @@ const Quiz = memo(() => {
           relationship: finalRelationship,
           about_who: formData.aboutWho,
           style: formData.style,
-          vocal_gender: formData.vocalGender || null,
+          vocal_gender: formData.vocalGender || '',
           qualities: formData.qualities,
           memories: formData.memories,
           message: formData.message || null,
@@ -709,16 +714,8 @@ const Quiz = memo(() => {
         // ✅ CORREÇÃO: Após atualizar o quiz, navegar para checkout normalmente
         // O usuário clicou em "Continuar para o Pagamento", então deve ir para o checkout
         // Não mostrar mensagem "Quiz atualizado" - apenas navegar diretamente
-        const currentPath = window.location.pathname;
-        let checkoutPath = '/pt/checkout'; // fallback para português
-        
-        if (currentPath.startsWith('/en')) {
-          checkoutPath = '/en/checkout';
-        } else if (currentPath.startsWith('/es')) {
-          checkoutPath = '/es/checkout';
-        } else if (currentPath.startsWith('/pt')) {
-          checkoutPath = '/pt/checkout';
-        }
+        // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+        const checkoutPath = '/checkout';
         
         console.log('🔄 [Quiz] Navegando para checkout após atualização:', checkoutPath);
         
@@ -736,7 +733,7 @@ const Quiz = memo(() => {
         relationship: finalRelationship,
         about_who: formData.aboutWho,
         style: formData.style,
-        vocal_gender: formData.vocalGender || null,
+        vocal_gender: formData.vocalGender || '',
         qualities: formData.qualities,
         memories: formData.memories,
         message: formData.message || null,
@@ -926,8 +923,7 @@ const Quiz = memo(() => {
           return; // NÃO navegar - proteger as respostas do usuário
         }
 
-        // Se chegou aqui, foi para fila ou localStorage - mostrar mensagem não bloqueante
-        toast.info('Tivemos uma oscilação na conexão, estamos tentando de novo em segundo plano. Você pode continuar normalmente.');
+        // Se chegou aqui, foi para fila ou localStorage - processar em background silenciosamente
       }
 
       // ✅ VALIDAÇÃO FINAL: Só navegar se quiz foi salvo ou foi para fila
@@ -968,16 +964,8 @@ const Quiz = memo(() => {
       });
       
       // ✅ Só navegar se chegou até aqui (quiz foi salvo ou foi para fila)
-      const currentPath = window.location.pathname;
-      let checkoutPath = '/pt/checkout'; // fallback para português
-      
-      if (currentPath.startsWith('/en')) {
-        checkoutPath = '/en/checkout';
-      } else if (currentPath.startsWith('/es')) {
-        checkoutPath = '/es/checkout';
-      } else if (currentPath.startsWith('/pt')) {
-        checkoutPath = '/pt/checkout';
-      }
+      // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+      const checkoutPath = '/checkout';
       
       console.log('🔄 [Quiz] Navegando para checkout (quiz protegido):', checkoutPath);
       navigateWithUtms(checkoutPath);
@@ -1091,18 +1079,18 @@ const Quiz = memo(() => {
 
             <div className="border-t border-[hsl(var(--quiz-border))] pt-1.5 md:pt-2 mt-2 md:mt-2.5">
               <div>
-                <Label className="text-lg md:text-lg font-semibold mb-0.5 md:mb-1 block">{t('quiz.questions.vocalPreference')}</Label>
+                <Label className="text-lg md:text-lg font-semibold mb-0.5 md:mb-1 block">{t('quiz.questions.vocalPreference')} *</Label>
                 <p className="text-base md:text-sm text-[hsl(var(--quiz-text-muted))] mb-1.5 md:mb-1.5 leading-snug">
                   {t('quiz.questions.vocalDescription')}
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-0.5 md:gap-2">
+              <div className="grid grid-cols-2 gap-1.5 md:gap-2">
                 {VOCAL_OPTIONS.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => updateField('vocalGender', option.value)}
-                    className={`px-1 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-xs md:text-sm whitespace-nowrap ${
+                    className={`px-3 py-2 md:px-4 md:py-2 rounded-full border-2 transition-all font-medium text-sm md:text-sm ${
                       formData.vocalGender === option.value
                         ? 'border-[hsl(var(--quiz-primary))] bg-[hsl(var(--quiz-primary))] text-white shadow-md'
                         : 'border-[hsl(var(--quiz-border))] bg-white text-gray-700 hover:border-[hsl(var(--quiz-primary))]'
@@ -1112,6 +1100,15 @@ const Quiz = memo(() => {
                   </button>
                 ))}
               </div>
+              {/* Banner de aviso se não escolheu preferência de voz */}
+              {!formData.vocalGender && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                  <p className="text-sm text-amber-700 font-medium">
+                    {t('quiz.validation.selectVoice', 'Selecione a preferência de voz para continuar')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         );

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Clock, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, Loader2 } from '@/utils/iconImports';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUtmParams } from '@/hooks/useUtmParams';
@@ -35,19 +35,10 @@ export default function CaktoReturn() {
       console.error('❌ [CaktoReturn] Order ID não encontrado');
       toast.error('ID do pedido não encontrado');
       
-      // Detectar idioma atual da URL e redirecionar para checkout no idioma correto
-      const currentPath = window.location.pathname;
-      let checkoutPath = '/pt/checkout?error=missing_order_id'; // fallback para português
+      // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+      const checkoutPath = '/checkout?error=missing_order_id';
       
-      if (currentPath.startsWith('/en')) {
-        checkoutPath = '/en/checkout?error=missing_order_id';
-      } else if (currentPath.startsWith('/es')) {
-        checkoutPath = '/es/checkout?error=missing_order_id';
-      } else if (currentPath.startsWith('/pt')) {
-        checkoutPath = '/pt/checkout?error=missing_order_id';
-      }
-      
-      console.log('🔄 [CaktoReturn] Redirecionando para checkout no idioma:', checkoutPath);
+      console.log('🔄 [CaktoReturn] Redirecionando para checkout:', checkoutPath);
       navigateWithUtms(checkoutPath);
       return;
     }
@@ -99,12 +90,13 @@ export default function CaktoReturn() {
       checkOrderStatus(orderIdParam);
     } else if (statusParam === 'cancelled' || statusParam === 'failed') {
       setStatus('failed');
+      // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
       // Redirecionar para checkout com erro usando requestAnimationFrame
       const startCountdown = () => {
         const countdown = () => {
           setCountdown(prev => {
             if (prev <= 1) {
-              navigateWithUtms('/pt/checkout?error=payment_failed');
+              navigateWithUtms('/checkout?error=payment_failed');
               return 0;
             }
             requestAnimationFrame(countdown);
@@ -243,7 +235,8 @@ export default function CaktoReturn() {
   };
 
   const handleRetry = () => {
-    navigateWithUtms('/pt/checkout');
+    // ✅ CORREÇÃO: Remover sistema de rotas com prefixo de idioma
+    navigateWithUtms('/checkout');
   };
 
   const handleGoHome = () => {

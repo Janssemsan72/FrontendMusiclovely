@@ -6,7 +6,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Check, Gift, Music, Edit, Play, Pause, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import { Loader2, Check, Gift, Music, Edit, Play, Pause, CheckCircle2, AlertTriangle, X } from '@/utils/iconImports';
 import { Badge } from '@/components/ui/badge';
 
 // ✅ OTIMIZAÇÃO: Usar URLs estáticas em vez de imports (evita incluir no bundle)
@@ -88,6 +88,9 @@ const getCaktoConfig = () => {
     price_display: 4790
   };
 };
+
+// ✅ Alias para getCaktoConfig (compatibilidade)
+const getCaktoConfigByDomain = () => getCaktoConfig();
 
 export default function Checkout() {
   logger.debug('Checkout component mounted');
@@ -296,19 +299,44 @@ export default function Checkout() {
         logger.debug('redirectToCakto: Usando URL da Cakto salva');
       }
       
+      // ✅ CORREÇÃO: Validar URL antes de redirecionar
+      if (!caktoUrl || !caktoUrl.startsWith('http')) {
+        logger.error('redirectToCakto: URL inválida', { caktoUrl });
+        return false;
+      }
+
+      // ✅ CORREÇÃO: Verificar se não estamos já na Cakto
+      if (window.location.hostname === 'pay.cakto.com.br') {
+        logger.debug('redirectToCakto: Já estamos na Cakto, não redirecionar novamente');
+        return true;
+      }
+
       logger.debug('redirectToCakto: Redirecionando para Cakto', {
         orderId: orderData.id,
         email: orderData.customer_email,
         whatsapp: orderData.customer_whatsapp,
         urlLength: caktoUrl.length,
-        urlPreview: caktoUrl.substring(0, 100) + '...'
+        urlPreview: caktoUrl.substring(0, 100) + '...',
+        hostname: window.location.hostname
       });
 
-      // Redirecionar
-      setTimeout(() => {
-        logger.debug('redirectToCakto: Executando redirecionamento agora');
-        window.location.href = caktoUrl;
-      }, 100);
+      // ✅ CORREÇÃO: Redirecionamento imediato sem setTimeout
+      // Usar window.location.replace() para evitar que React Router intercepte
+      logger.debug('redirectToCakto: Executando redirecionamento imediato com window.location.replace()');
+      try {
+        window.location.replace(caktoUrl);
+        logger.debug('redirectToCakto: window.location.replace() executado com sucesso');
+      } catch (error) {
+        logger.error('redirectToCakto: Erro ao executar window.location.replace()', error);
+        // Fallback: tentar com href
+        try {
+          window.location.href = caktoUrl;
+          logger.debug('redirectToCakto: Fallback para window.location.href executado');
+        } catch (hrefError) {
+          logger.error('redirectToCakto: Erro também no fallback href', hrefError);
+          return false;
+        }
+      }
       
       return true;
     } catch (error) {
@@ -1160,11 +1188,7 @@ export default function Checkout() {
               quizData
             });
             toast.error('Quiz incompleto. Por favor, preencha o quiz novamente.');
-            // ✅ NÃO limpar quiz imediatamente - manter para debug
-            // localStorage.removeItem('pending_quiz'); // Comentado para debug
-            console.warn('⚠️ [Checkout] Quiz incompleto mantido no localStorage para debug');
             const quizPath = getQuizPath();
-            console.log('🔄 [Checkout] Redirecionando para quiz (quiz incompleto):', quizPath);
             navigateWithUtms(quizPath);
             return;
           }
@@ -1246,14 +1270,10 @@ export default function Checkout() {
           }
           
           toast.error(t('checkout.errors.errorLoadingQuiz'));
-          // ✅ NÃO limpar quiz imediatamente - manter para debug
-          // localStorage.removeItem('pending_quiz'); // Comentado para debug
-          console.warn('⚠️ [Checkout] Quiz inválido mantido no localStorage para debug');
           
           // Aguardar um pouco antes de redirecionar para dar chance de ver o erro
           setTimeout(() => {
             const quizPath = getQuizPath();
-            console.log('🔄 [Checkout] Redirecionando para quiz com caminho completo:', quizPath);
             navigateWithUtms(quizPath);
           }, 2000);
           return;
@@ -1654,8 +1674,42 @@ export default function Checkout() {
     return error instanceof Error ? error.message : String(error || 'Erro desconhecido');
   };
 
-  // Checkout com Stripe ou Cakto (baseado no locale)
+  /**
+   * Processa o checkout do pedido
+   * 
+   * Função principal que gerencia todo o fluxo de checkout:
+   * 1. Valida email e WhatsApp
+   * 2. Cria/atualiza quiz no banco (via API create-checkout)
+   * 3. Cria pedido (order) no banco
+   * 4. Gera URL de pagamento da Cakto
+   * 5. Redireciona para página de pagamento
+   * 
+   * Inclui proteções contra:
+   * - Cliques duplicados (debounce)
+   * - Validações de dados
+   * - Retry automático em caso de falha
+   * - Logging completo para debug
+   * 
+   * @param isRetry - Se true, indica que é uma tentativa de retry após falha anterior
+   * @returns Promise<void> - Não retorna valor, mas pode lançar exceções
+   * 
+   * @example
+   * ```tsx
+   * // Checkout normal
+   * await handleCheckout();
+   * 
+   * // Retry após falha
+   * await handleCheckout(true);
+   * ```
+   * 
+   * @throws {Error} Se validações falharem ou criação de pedido falhar
+   */
   const handleCheckout = async (isRetry = false) => {
+    // #region agent log
+    const startTime = performance.now();
+    fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:1686',message:'handleCheckout iniciado',data:{isRetry,hasEmail:!!email,hasWhatsapp:!!whatsapp,hasQuiz:!!quiz},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
     // Criar logger local ANTES de usar qualquer logger
     const checkoutLogger = createCheckoutLogger();
     const transactionId = checkoutLogger.getTransactionId();
@@ -1716,10 +1770,15 @@ export default function Checkout() {
       return;
     }
 
-    // ✅ Definir processing=true imediatamente após validações para mostrar "Processando..."
+    // ✅ OTIMIZAÇÃO: Definir processing=true IMEDIATAMENTE após validações básicas para feedback visual instantâneo
     // ✅ IMPORTANTE: Este estado NÃO deve ser resetado antes do redirecionamento quando tudo está correto
     // ✅ O botão ficará em loading até o redirecionamento acontecer
     setProcessing(true);
+    
+    // #region agent log
+    const validationTime = performance.now() - startTime;
+    fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:1755',message:'Validações concluídas, iniciando processamento',data:{validationTimeMs:validationTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
 
     // ✅ OTIMIZAÇÃO: Rastreamento não bloqueante (fire and forget)
     if (typeof trackEvent === 'function') {
@@ -1727,8 +1786,8 @@ export default function Checkout() {
         plan: selectedPlan,
         has_email: !!email,
         has_whatsapp: !!whatsapp,
-        about_who: quiz.about_who,
-        style: quiz.style,
+        about_who: quiz?.about_who || '',
+        style: quiz?.style || '',
       }).catch(() => {});
     }
     
@@ -1742,19 +1801,8 @@ export default function Checkout() {
       paymentProvider: 'cakto'
     });
 
-    // ✅ OTIMIZAÇÃO: Limpar drafts em background (não bloqueante)
-    setTimeout(() => {
-      try {
-        const allKeys = Object.keys(localStorage);
-        allKeys.forEach(key => {
-          if (key.startsWith('checkout_logs_') || key === 'checkout_draft_old') {
-            localStorage.removeItem(key);
-          }
-        });
-      } catch (error) {
-        void error;
-      }
-    }, 0);
+    // ✅ OTIMIZAÇÃO: Limpar drafts em background (não bloqueante) - executar após redirecionamento
+    // Movido para depois do redirecionamento para não bloquear o fluxo principal
 
     // FASE 1 & 3: Usar checkoutLogger já criado no início da função
     checkoutLogger.log('checkout_started', { 
@@ -1764,8 +1812,9 @@ export default function Checkout() {
       retryCount 
     });
 
-    // FASE 2: Salvar draft
-    saveDraft(transactionId);
+    // ✅ OTIMIZAÇÃO: Salvar draft de forma não bloqueante (fire and forget)
+    // Não esperar por isso - pode ser feito em background após redirecionamento
+    // Movido para depois do redirecionamento para não bloquear o fluxo principal
 
     // Variável para armazenar o pedido criado (para redirecionamento em caso de erro)
     let orderCreated: any = null;
@@ -1798,8 +1847,8 @@ export default function Checkout() {
       // Obter parâmetros da URL para verificar se veio de um link de restore
       const urlParams = new URLSearchParams(window.location.search);
       
-      // ✅ SEMPRE SALVAR O QUIZ NO BANCO PRIMEIRO (antes de criar o pedido)
-      // Isso garante que o quiz_id esteja disponível para os links do WhatsApp
+      // ✅ OTIMIZAÇÃO: Simplificar fluxo - create-checkout faz UPSERT por session_id
+      // Não precisamos buscar/atualizar quiz aqui se não tem ID - a API faz isso
       let quizData;
       
       // ✅ PRIORIDADE 1: Buscar por session_id se disponível
@@ -1810,146 +1859,39 @@ export default function Checkout() {
         return getOrCreateQuizSessionId();
       })();
       
-      if (quizSessionId && !quiz.id) {
-        // Tentar buscar quiz no banco por session_id
-        logger.debug('Buscando quiz no banco por session_id', {
-          session_id: quizSessionId,
-          email: normalizedEmail
-        });
+      // ✅ OTIMIZAÇÃO CRÍTICA: Simplificar fluxo - create-checkout faz UPSERT por session_id
+      // Se quiz já tem ID, apenas atualizar email/WhatsApp de forma não-bloqueante
+      // Se não tem ID, deixar create-checkout fazer tudo (mais rápido)
+      if (quiz.id) {
+        // Quiz já existe - atualizar email/WhatsApp em background (não bloqueante)
+        // Não esperar por isso - create-checkout também vai atualizar
+        logger.debug('Quiz já tem ID, create-checkout fará update', { quiz_id: quiz.id });
+        quizData = { ...quiz, id: quiz.id };
         
-        const { data: existingQuizBySession, error: sessionError } = await supabase
+        // Atualizar em background (não bloqueante)
+        supabase
           .from('quizzes')
-          .select('*')
-          .eq('session_id', quizSessionId)
-          .single();
-        
-        if (!sessionError && existingQuizBySession) {
-          logger.debug('Quiz encontrado por session_id, atualizando com email/WhatsApp', {
-            quiz_id: existingQuizBySession.id,
-            session_id: quizSessionId
-          });
-          
-          // Fazer UPSERT para atualizar com email/WhatsApp
-          const { data: updatedQuiz, error: updateError } = await supabase
-            .from('quizzes')
-            .upsert({
-              ...existingQuizBySession,
-              customer_email: normalizedEmail,
-              customer_whatsapp: normalizedWhatsApp as string,
-              answers: { ...existingQuizBySession.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp },
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'session_id',
-              ignoreDuplicates: false
-            })
-            .select()
-            .single();
-          
-          if (!updateError && updatedQuiz) {
-            quizData = updatedQuiz;
-            logger.debug('Quiz atualizado com sucesso via UPSERT', {
-              quiz_id: quizData.id,
-              session_id: quizSessionId,
-              customer_email: quizData.customer_email,
-              customer_whatsapp: quizData.customer_whatsapp
-            });
-            checkoutLogger.log('quiz_created', { quiz_id: quizData.id, session_id: quizSessionId, found_by_session: true });
-          } else {
-            logger.warn('Erro ao fazer UPSERT do quiz por session_id, tentando buscar novamente', updateError);
-            // Se falhar, usar o quiz encontrado
-            quizData = existingQuizBySession;
-          }
-        } else {
-          // Se não encontrou, aguardar 1-2s e tentar novamente (pode estar salvando ainda)
-          logger.debug('Quiz não encontrado por session_id, aguardando e tentando novamente...', {
-            session_id: quizSessionId,
-            error: sessionError?.message
-          });
-          
-          await new Promise(resolve => setTimeout(resolve, 1500)); // Aguardar 1.5s
-          
-          const { data: retryQuiz, error: retryError } = await supabase
-            .from('quizzes')
-            .select('*')
-            .eq('session_id', quizSessionId)
-            .single();
-          
-          if (!retryError && retryQuiz) {
-            logger.debug('Quiz encontrado após retry, fazendo UPSERT', {
-              quiz_id: retryQuiz.id,
-              session_id: quizSessionId
-            });
-            
-            const { data: updatedQuiz, error: updateError } = await supabase
-              .from('quizzes')
-              .upsert({
-                ...retryQuiz,
-                customer_email: normalizedEmail,
-                customer_whatsapp: normalizedWhatsApp as string,
-                answers: { ...retryQuiz.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp },
-                updated_at: new Date().toISOString()
-              }, {
-                onConflict: 'session_id',
-                ignoreDuplicates: false
-              })
-              .select()
-              .single();
-            
-            if (!updateError && updatedQuiz) {
-              quizData = updatedQuiz;
-              checkoutLogger.log('quiz_created', { quiz_id: quizData.id, session_id: quizSessionId, found_by_session_retry: true });
-            } else {
-              quizData = retryQuiz;
-            }
-          }
-        }
-      }
-      
-      // ✅ PRIORIDADE 2: Se quiz tem ID direto, usar esse
-      if (!quizData && quiz.id) {
-        // Quiz já existe no banco (foi restaurado ou já foi salvo) - atualizar com email/WhatsApp
-        logger.debug('Quiz já existe no banco, atualizando com email/WhatsApp', {
-          quiz_id: quiz.id,
-          email: normalizedEmail,
-          whatsapp: normalizedWhatsApp
-        });
-        
-        // Fazer UPSERT por ID
-        const { data: existingQuiz, error: fetchError } = await supabase
-          .from('quizzes')
-          .select('*')
+          .update({
+            customer_email: normalizedEmail,
+            customer_whatsapp: normalizedWhatsApp as string,
+            answers: { ...quiz.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp },
+            updated_at: new Date().toISOString()
+          })
           .eq('id', quiz.id)
-          .single();
-        
-        if (!fetchError && existingQuiz) {
-          const { data: updatedQuiz, error: updateError } = await supabase
-            .from('quizzes')
-            .update({
-              customer_email: normalizedEmail,
-              customer_whatsapp: normalizedWhatsApp as string,
-              answers: { ...existingQuiz.answers, customer_email: normalizedEmail, customer_whatsapp: normalizedWhatsApp },
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', quiz.id)
-            .select()
-            .single();
-          
-          if (updateError || !updatedQuiz) {
-            logger.error('Erro ao atualizar quiz existente', updateError);
-            quizData = existingQuiz; // Usar quiz original se update falhar
-          } else {
-            quizData = updatedQuiz;
-            logger.debug('Quiz atualizado com sucesso', {
-              quiz_id: quizData.id,
-              customer_email: quizData.customer_email,
-              customer_whatsapp: quizData.customer_whatsapp
-            });
-            checkoutLogger.log('quiz_created', { quiz_id: quizData.id, updated: true });
-          }
-        }
+          .catch(() => {}); // Fire and forget
+      } else {
+        // ✅ OTIMIZAÇÃO: Não buscar quiz por session_id - create-checkout fará UPSERT
+        // Isso economiza 1-2 queries ao banco e acelera significativamente o checkout
+        logger.debug('Quiz sem ID, create-checkout fará UPSERT por session_id', {
+          session_id: quizSessionId
+        });
+        // Não fazer nada aqui - deixar create-checkout criar/atualizar o quiz
+        // Isso é mais rápido e confiável
       }
       
-      // ✅ SIMPLIFICAÇÃO: Se quiz não tem ID, confiar que create-checkout vai fazer UPSERT por session_id
+      // ✅ OTIMIZAÇÃO: Removido - já tratado acima quando quiz.id existe
+      
+      // ✅ OTIMIZAÇÃO: Se quiz não tem ID, confiar que create-checkout vai fazer UPSERT por session_id
       // Não precisamos criar quiz aqui - create-checkout já faz UPSERT por session_id
       // Isso evita duplicação de lógica e garante que o quiz seja salvo na mesma transação do pedido
       if (!quizData) {
@@ -1977,11 +1919,15 @@ export default function Checkout() {
           }
         }
       }
+      
+      // #region agent log
+      const quizPrepTime = performance.now() - startTime;
+      fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2004',message:'Preparação quiz concluída, iniciando create-checkout',data:{quizPrepTimeMs:quizPrepTime,hasQuizData:!!quizData,hasQuizId:!!quizData?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
+      // #endregion
 
-      // Limpar orders órfãs antes de criar nova (não bloqueante)
-      cleanupOrphanOrders(email).catch(err => {
-        console.warn('⚠️ [Checkout] Erro ao limpar orders órfãs (não bloqueante):', err);
-      });
+      // ✅ OTIMIZAÇÃO: Limpar orders órfãs em background (não bloqueante)
+      // Não esperar por isso - pode ser feito após redirecionamento
+      // Movido para depois do redirecionamento para não bloquear o fluxo principal
 
       // ✅ NOVO FLUXO: Usar edge function create-checkout para criar quiz + pedido em transação atômica
       // Garantir que amount_cents é sempre um número válido
@@ -1996,18 +1942,18 @@ export default function Checkout() {
 
       // Preparar dados do quiz para a edge function
       const quizForCheckout = {
-        about_who: quizData.about_who || quiz.about_who,
-        relationship: quizData.relationship || quiz.relationship,
-        style: quizData.style || quiz.style,
-        language: quizData.language || quiz.language || currentLanguage,
-        vocal_gender: quizData.vocal_gender || quiz.vocal_gender || null,
-        qualities: quizData.qualities || quiz.qualities,
-        memories: quizData.memories || quiz.memories,
-        message: quizData.message || quiz.message || null,
-        key_moments: quizData.key_moments || quiz.key_moments || null,
-        occasion: quizData.occasion || quiz.occasion || null,
-        desired_tone: quizData.desired_tone || quiz.desired_tone || null,
-        answers: quizData.answers || quiz.answers || {}
+        about_who: quizData?.about_who || quiz?.about_who || '',
+        relationship: quizData?.relationship || quiz?.relationship || '',
+        style: quizData?.style || quiz?.style || '',
+        language: quizData?.language || quiz?.language || currentLanguage,
+        vocal_gender: quizData?.vocal_gender || quiz?.vocal_gender || null,
+        qualities: quizData?.qualities || quiz?.qualities || '',
+        memories: quizData?.memories || quiz?.memories || '',
+        message: quizData?.message || quiz?.message || null,
+        key_moments: quizData?.key_moments || quiz?.key_moments || null,
+        occasion: quizData?.occasion || quiz?.occasion || null,
+        desired_tone: quizData?.desired_tone || quiz?.desired_tone || null,
+        answers: quizData?.answers || quiz?.answers || {}
       };
 
       // Tentar usar edge function create-checkout
@@ -2015,6 +1961,11 @@ export default function Checkout() {
       let useCreateCheckoutFunction = true;
 
       try {
+        // #region agent log
+        const apiCallStart = performance.now();
+        fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2041',message:'Iniciando chamada API createCheckout',data:{hasQuizData:!!quizData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
+        
         checkoutLogger.log('order_creation_started', { quiz_id: quizData.id, using_create_checkout: true });
 
         // Usar backend API ao invés de Edge Function
@@ -2028,6 +1979,11 @@ export default function Checkout() {
           provider: 'cakto', // Apenas Cakto agora
           transaction_id: transactionId
         });
+        
+        // #region agent log
+        const apiCallTime = performance.now() - apiCallStart;
+        fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2054',message:'Chamada API createCheckout concluída',data:{timeMs:apiCallTime,success:!!checkoutResult?.success},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
 
         if (!checkoutResult || !checkoutResult.success) {
           logger.warn('⚠️ [Checkout] Backend API create-checkout falhou, usando fallback:', {
@@ -2040,34 +1996,26 @@ export default function Checkout() {
           const returnedQuizId = checkoutResult.quiz_id;
           const returnedOrderId = checkoutResult.order_id;
 
-          // Buscar order completo
-          const { data: orderData, error: orderFetchError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('id', returnedOrderId)
-            .single();
-
-          if (orderFetchError || !orderData) {
-            logger.warn('⚠️ [Checkout] Erro ao buscar order criado pela edge function, usando fallback:', orderFetchError);
-            useCreateCheckoutFunction = false;
-          } else {
-            order = orderData;
-            quizData = { ...quizData, id: returnedQuizId }; // Atualizar quizData com ID retornado
-            checkoutLogger.log('order_created', { 
-              order_id: order.id, 
-              quiz_id: returnedQuizId,
-              created_via_function: true 
-            });
-            logger.info('✅ [Checkout] Quiz e pedido criados via create-checkout:', {
-              quiz_id: returnedQuizId,
-              order_id: order.id
-            });
-            
-            // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso
-            // Isso garante que o próximo pedido terá um novo session_id
-            clearQuizSessionId();
-            logger.info('✅ [Checkout] session_id limpo após criar pedido');
-          }
+          // ✅ OTIMIZAÇÃO: Não buscar order completo - só precisamos do ID para gerar URL
+          // A função generateCaktoUrl só precisa do orderId, não do objeto completo
+          // Isso economiza uma query ao banco de dados
+          order = { id: returnedOrderId } as any; // Criar objeto mínimo com apenas o ID
+          quizData = { ...quizData, id: returnedQuizId }; // Atualizar quizData com ID retornado
+          
+          checkoutLogger.log('order_created', { 
+            order_id: returnedOrderId, 
+            quiz_id: returnedQuizId,
+            created_via_function: true 
+          });
+          logger.info('✅ [Checkout] Quiz e pedido criados via create-checkout:', {
+            quiz_id: returnedQuizId,
+            order_id: returnedOrderId
+          });
+          
+          // ✅ CORREÇÃO: Limpar session_id após criar pedido com sucesso
+          // Isso garante que o próximo pedido terá um novo session_id
+          clearQuizSessionId();
+          logger.info('✅ [Checkout] session_id limpo após criar pedido');
         }
       } catch (functionError: any) {
         logger.warn('⚠️ [Checkout] Exceção ao chamar create-checkout, usando fallback:', functionError);
@@ -2087,14 +2035,14 @@ export default function Checkout() {
           });
 
           const quizForValidation: ValidationQuizData = {
-            about_who: quiz.about_who,
-            relationship: quiz.relationship,
-            style: quiz.style,
+            about_who: quiz?.about_who || '',
+            relationship: quiz?.relationship || '',
+            style: quiz?.style || '',
             language: currentLanguage,
-            vocal_gender: quiz.vocal_gender || null,
-            qualities: quiz.qualities,
-            memories: quiz.memories,
-            message: quiz.message,
+            vocal_gender: quiz?.vocal_gender || null,
+            qualities: quiz?.qualities || '',
+            memories: quiz?.memories || '',
+            message: quiz?.message || null,
           };
 
           const validationResult = validateQuiz(quizForValidation, { strict: false });
@@ -2205,20 +2153,40 @@ export default function Checkout() {
       // ✅ CORREÇÃO: Remover sistema de locale - sempre usar Cakto
       console.log('🌍 [Checkout] Fluxo de pagamento: Cakto (português)');
       
-      {
-        // ✅ FLUXO CAKTO - Redirecionar IMEDIATAMENTE após criar o pedido
-        console.log('✅ [Cakto] Fluxo Cakto detectado - iniciando processo de pagamento');
-        console.log('✅ [Cakto] Order criado:', {
-          orderId: order.id,
-          email,
-          whatsapp: normalizedWhatsApp,
-          language: currentLanguage
-        });
-        logger.debug('Fluxo Cakto detectado');
+      // ✅ VERIFICAÇÃO CRÍTICA: Garantir que order foi criado antes de redirecionar
+      if (!order || !order.id) {
+        console.error('❌ [Cakto] CRÍTICO: Order não foi criado ou não tem ID!', { order });
+        logger.error('Order não foi criado ou não tem ID', { order });
+        toast.error('Erro ao criar pedido. Tente novamente.');
+        setProcessing(false);
+        return;
+      }
+      
+      // ✅ FLUXO CAKTO - Redirecionar IMEDIATAMENTE após criar o pedido
+      console.log('✅ [Cakto] Fluxo Cakto detectado - iniciando processo de pagamento');
+      console.log('✅ [Cakto] Order criado:', {
+        orderId: order.id,
+        email,
+        whatsapp: normalizedWhatsApp,
+        language: currentLanguage
+      });
+      logger.debug('Fluxo Cakto detectado');
         
         // Gerar URL da Cakto ANTES de qualquer outra operação
         let caktoUrl: string;
         try {
+          console.log('🚀 [Cakto] Gerando URL da Cakto...', {
+            orderId: order.id,
+            email: email.substring(0, 10) + '...',
+            whatsapp: normalizedWhatsApp ? normalizedWhatsApp.substring(0, 5) + '...' : 'vazio',
+            language: currentLanguage
+          });
+          
+          // #region agent log
+          const urlGenStart = performance.now();
+          fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2261',message:'Iniciando geração URL Cakto',data:{orderId:order.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
+          
           caktoUrl = generateCaktoUrl(
             order.id,
             email,
@@ -2226,25 +2194,55 @@ export default function Checkout() {
             currentLanguage,
             utms || {}
           );
+          
+          // #region agent log
+          const urlGenTime = performance.now() - urlGenStart;
+          const totalTime = performance.now() - startTime;
+          fetch('http://127.0.0.1:7246/ingest/2678e88a-21a1-41b0-a187-9dc17c34b38e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Checkout.tsx:2267',message:'URL Cakto gerada, checkout completo',data:{urlGenTimeMs:urlGenTime,totalTimeMs:totalTime},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
+          
           console.log('✅ [Cakto] URL gerada com sucesso:', {
             orderId: order.id,
             urlLength: caktoUrl.length,
             urlPreview: caktoUrl.substring(0, 100),
-            isValid: caktoUrl && caktoUrl.startsWith('http')
+            isValid: caktoUrl && caktoUrl.startsWith('http'),
+            startsWithHttps: caktoUrl.startsWith('https://'),
+            containsOrderId: caktoUrl.includes(order.id),
+            containsEmail: caktoUrl.includes(email)
           });
         } catch (urlError) {
           console.error('❌ [Cakto] Erro ao gerar URL:', urlError);
+          logger.error('Erro ao gerar URL da Cakto', urlError);
           toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
-          setProcessing(false); // ✅ Manter apenas em caso de erro real (não redirecionamento)
+          setProcessing(false);
           return;
         }
         
-        // Validar URL
-        if (!caktoUrl || !caktoUrl.startsWith('http')) {
-          console.error('❌ [Cakto] URL inválida:', caktoUrl);
+        // ✅ CORREÇÃO: Validar URL com mais detalhes
+        if (!caktoUrl) {
+          console.error('❌ [Cakto] URL é null ou undefined');
+          logger.error('URL da Cakto é null ou undefined');
           toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
-          setProcessing(false); // ✅ Manter apenas em caso de erro real (não redirecionamento)
+          setProcessing(false);
           return;
+        }
+        
+        if (!caktoUrl.startsWith('http')) {
+          console.error('❌ [Cakto] URL não começa com http:', {
+            url: caktoUrl.substring(0, 50),
+            startsWith: caktoUrl.substring(0, 10)
+          });
+          logger.error('URL da Cakto não começa com http', { url: caktoUrl.substring(0, 50) });
+          toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
+          setProcessing(false);
+          return;
+        }
+        
+        if (!caktoUrl.includes('pay.cakto.com.br')) {
+          console.warn('⚠️ [Cakto] URL não contém pay.cakto.com.br:', {
+            url: caktoUrl.substring(0, 100)
+          });
+          logger.warn('URL da Cakto não contém pay.cakto.com.br', { url: caktoUrl.substring(0, 100) });
         }
         
         // ✅ OTIMIZAÇÃO: Registrar eventos após redirecionar (não bloqueante)
@@ -2282,6 +2280,11 @@ export default function Checkout() {
             void error;
           }
 
+          // ✅ OTIMIZAÇÃO: Operações não-críticas em background (fire and forget)
+          // Salvar draft e limpar orders órfãs - não bloqueiam o fluxo principal
+          saveDraft(transactionId).catch(() => {});
+          cleanupOrphanOrders(email).catch(() => {});
+
           // Tracking
           if (typeof trackEvent === 'function') {
             trackEvent('payment_initiated', {
@@ -2300,211 +2303,101 @@ export default function Checkout() {
           }).catch(() => {});
         }, 0);
         
+        // ✅ CORREÇÃO: Verificar se não estamos já na Cakto antes de redirecionar
+        if (window.location.hostname === 'pay.cakto.com.br') {
+          console.log('✅ [Cakto] Já estamos na Cakto, não redirecionar novamente');
+          logger.debug('Já estamos na Cakto, não redirecionar novamente');
+          return;
+        }
+
         // ✅ REDIRECIONAMENTO IMEDIATO - SEM DELAYS
         console.log('🚀 [Cakto] ========== INICIANDO REDIRECIONAMENTO ==========');
         console.log('🚀 [Cakto] Order ID:', order.id);
         console.log('🚀 [Cakto] URL completa:', caktoUrl);
         console.log('🚀 [Cakto] URL preview:', caktoUrl.substring(0, 150));
+        console.log('🚀 [Cakto] Hostname atual:', window.location.hostname);
+        console.log('🚀 [Cakto] URL válida:', caktoUrl && caktoUrl.startsWith('http'));
+        console.log('🚀 [Cakto] Timestamp:', new Date().toISOString());
+        
+        logger.debug('Iniciando redirecionamento para Cakto', {
+          orderId: order.id,
+          urlLength: caktoUrl.length,
+          hostname: window.location.hostname,
+          urlPreview: caktoUrl.substring(0, 100)
+        });
         
         // ✅ processing já foi definido no início da função após validações
         // ✅ IMPORTANTE: NÃO resetar processing aqui - manter loading até redirecionamento
         // ✅ Redirecionamento INSTANTÂNEO - o mais rápido possível
         
-        // Forçar redirecionamento - múltiplas tentativas
-        // Método 1: window.location.replace (preferido)
+        // ✅ CORREÇÃO: Usar apenas window.location.replace() de forma direta e síncrona
+        // Remover múltiplas tentativas que podem causar conflitos
+        // ⚠️ CRÍTICO: Este código deve ser executado de forma síncrona, sem delays
+        console.log('🚀 [Cakto] ⚠️ EXECUTANDO REDIRECIONAMENTO AGORA - window.location.replace()');
+        console.log('🚀 [Cakto] URL final para redirecionamento:', caktoUrl);
+        console.log('🚀 [Cakto] Tipo da URL:', typeof caktoUrl);
+        console.log('🚀 [Cakto] URL válida?', caktoUrl && typeof caktoUrl === 'string' && caktoUrl.startsWith('http'));
+        logger.debug('Executando window.location.replace() agora', { url: caktoUrl.substring(0, 100) });
+        
+        // ✅ VERIFICAÇÃO FINAL: Garantir que a URL é válida antes de redirecionar
+        if (!caktoUrl || typeof caktoUrl !== 'string' || !caktoUrl.startsWith('http')) {
+          console.error('❌ [Cakto] CRÍTICO: URL inválida antes do redirecionamento!', {
+            caktoUrl,
+            type: typeof caktoUrl,
+            startsWithHttp: caktoUrl?.startsWith('http')
+          });
+          logger.error('URL inválida antes do redirecionamento', { caktoUrl });
+          toast.error('Erro ao gerar URL de pagamento. Tente novamente.');
+          setProcessing(false);
+          return;
+        }
+        
         try {
-          console.log('🚀 [Cakto] Tentando window.location.replace...');
+          // ✅ CORREÇÃO: Executar redirecionamento de forma síncrona e imediata
+          // ⚠️ CRÍTICO: window.location.replace() deve redirecionar imediatamente
+          // Se não redirecionar, pode ser bloqueado por algum motivo (ex: popup blocker, CORS, etc.)
+          console.log('🚀 [Cakto] Chamando window.location.replace() com URL:', caktoUrl.substring(0, 150));
           window.location.replace(caktoUrl);
-          console.log('✅ [Cakto] window.location.replace executado com sucesso');
-        } catch (e) {
-          console.error('❌ [Cakto] Erro no replace:', e);
-          // Tentar href imediatamente se replace falhar
-          try {
-            console.log('🚀 [Cakto] Tentando window.location.href...');
-            window.location.href = caktoUrl;
-          } catch (e2) {
-            console.error('❌ [Cakto] Erro no href também:', e2);
-            // Método 3: Criar link e clicar
-            try {
-              const link = document.createElement('a');
-              link.href = caktoUrl;
-              link.target = '_self';
-              link.style.display = 'none';
-              document.body.appendChild(link);
-              link.click();
-              console.log('✅ [Cakto] Link.click() executado');
-            } catch (e3) {
-              console.error('❌ [Cakto] Todos os métodos falharam:', e3);
+          
+          // ⚠️ NOTA: O código abaixo NÃO será executado se o redirecionamento funcionar
+          // Se chegarmos aqui, significa que o redirecionamento falhou silenciosamente
+          // Isso pode acontecer se o navegador bloquear o redirecionamento
+          console.error('❌ [Cakto] CRÍTICO: window.location.replace() não redirecionou!');
+          console.error('❌ [Cakto] Isso pode indicar que o redirecionamento foi bloqueado pelo navegador');
+          logger.error('window.location.replace() não redirecionou', { url: caktoUrl });
+          
+          // Fallback imediato com window.location.href
+          console.log('🚀 [Cakto] Tentando fallback com window.location.href...');
+          window.location.href = caktoUrl;
+          
+          // Se ainda não redirecionou, tentar com window.open como último recurso
+          setTimeout(() => {
+            if (window.location.href !== caktoUrl && !window.location.href.includes('pay.cakto.com.br')) {
+              console.warn('⚠️ [Cakto] Redirecionamento ainda não funcionou, tentando window.open como último recurso...');
+              window.open(caktoUrl, '_self');
             }
+          }, 100);
+        } catch (e) {
+          console.error('❌ [Cakto] Erro ao executar window.location.replace():', e);
+          logger.error('Erro ao executar window.location.replace()', e);
+          
+          // Fallback apenas se replace falhar com exceção
+          try {
+            console.log('🚀 [Cakto] Tentando fallback com window.location.href...');
+            window.location.href = caktoUrl;
+            console.log('✅ [Cakto] Fallback window.location.href executado');
+          } catch (e2) {
+            console.error('❌ [Cakto] Erro também no fallback:', e2);
+            logger.error('Erro também no fallback href', e2);
+            toast.error('Erro ao redirecionar para página de pagamento. Tente novamente.');
+            setProcessing(false);
+            return;
           }
         }
         
+        // ⚠️ NOTA: Este código não deve ser alcançado se o redirecionamento funcionar
         console.log('🚀 [Cakto] ========== FIM DO REDIRECIONAMENTO ==========');
         return;
-      }
-
-      // FLUXO STRIPE PARA OUTROS PAÍSES
-      // ✅ processing já foi definido no início da função após validações
-      
-      // Usar plan que já foi validado anteriormente
-      logger.log('checkout_requested', { 
-        order_id: order.id,
-        plan: plan?.name || selectedPlan,
-        price: plan?.price || amountCents,
-        provider: 'stripe'
-      });
-
-      // Mapear plano para formato da edge function (apenas express em português)
-      const mappedPlan = 'pt_express';
-
-      const utmQuery = getUtmQueryString(false); // Não incluir params existentes
-      // ✅ CORREÇÃO: Remover prefixo de idioma - rotas sem /pt/
-      const successPath = `/payment-success${utmQuery}`;
-      const cancelPath = `/checkout${utmQuery}`;
-      const successUrl = `${window.location.origin}${successPath}`;
-      const cancelUrl = `${window.location.origin}${cancelPath}`;
-      
-      // ✅ VALIDAÇÃO 2: Validar URLs
-      try {
-        new URL(successUrl);
-        new URL(cancelUrl);
-      } catch (urlError) {
-        throw new Error('URLs de redirecionamento inválidas');
-      }
-      
-      // ✅ VALIDAÇÃO 3: Validar email (já validado antes, mas garantir novamente)
-      if (!email || !emailSchema.safeParse(email).success) {
-        throw new Error('Email inválido');
-      }
-      
-      // ✅ VALIDAÇÃO 4: Validar order.id
-      if (!order.id) {
-        throw new Error('ID do pedido ausente');
-      }
-      
-      const checkoutPayload = {
-        plan: mappedPlan,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        customer_email: normalizedEmail,
-        customer_whatsapp: normalizedWhatsApp as string,
-        metadata: {
-          orderId: order.id,
-          language: currentLanguage,
-          customer_whatsapp: normalizedWhatsApp
-        }
-      };
-
-      // ✅ OTIMIZAÇÃO: Logs removidos para velocidade
-
-      // Timeout de 30 segundos para evitar espera indefinida
-      const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
-
-      let session: StripeCheckoutResponse | null = null;
-      
-      try {
-        const result = await supabase.functions.invoke(
-          'stripe-checkout',
-          { 
-            body: checkoutPayload,
-            signal: controller.signal as any
-          }
-        ) as { data: StripeCheckoutResponse | null; error: unknown };
-        
-        clearTimeout(timeoutId);
-        
-        // ✅ PRIORIDADE 1: Verificar se há erro HTTP ou erro no result.error
-        if (result?.error) {
-          const errorMessage = extractErrorMessage(result.error, result);
-          throw new Error(errorMessage);
-        }
-        
-        // ✅ PRIORIDADE 2: Verificar se data existe
-        if (!result?.data) {
-          throw new Error('Resposta do servidor de pagamento está vazia');
-        }
-        
-        // ✅ PRIORIDADE 3: Verificar success === false ANTES de acessar outras propriedades
-        if (result.data.success === false) {
-          const errorMessage = result.data.error || result.data.message || 'Erro ao criar checkout';
-          throw new Error(errorMessage);
-        }
-        
-        // ✅ Se chegou aqui, success deve ser true
-        session = result.data;
-        
-      } catch (error: unknown) {
-        clearTimeout(timeoutId);
-        
-        const err = error as { name?: string; message?: string };
-        
-        if (err?.name === 'AbortError') {
-          throw new Error('Tempo limite excedido. Tente novamente.');
-        }
-        
-        // Se já é um Error com mensagem, relançar
-        if (error instanceof Error) {
-          throw error;
-        }
-        
-        // Caso contrário, criar novo Error
-        const errorMessage = extractErrorMessage(error);
-        throw new Error(errorMessage);
-      }
-
-      // ✅ VALIDAR: session.success deve ser true, sessionId e url devem existir
-      if (!session || session.success !== true) {
-        const errorMessage = session?.error || session?.message || 'Resposta do Stripe inválida';
-        throw new Error(errorMessage);
-      }
-      
-      if (!session.sessionId || !session.url) {
-        throw new Error('Resposta do Stripe incompleta. Tente novamente.');
-      }
-
-      logger.log('checkout_received', { 
-        session_id: session.sessionId,
-        has_url: !!session.url
-      });
-
-      // ✅ OTIMIZAÇÃO: Limpar localStorage em background (não bloqueante)
-      setTimeout(() => {
-        try {
-          localStorage.removeItem('pending_quiz');
-          localStorage.removeItem('selected_plan');
-          localStorage.removeItem('checkout_draft');
-          localStorage.removeItem(`checkout_logs_${transactionId}`);
-        } catch (error) {
-          void error;
-        }
-      }, 0);
-
-      // Validação final de segurança
-      if (!session.url || typeof session.url !== 'string') {
-        throw new Error('URL de pagamento inválida. Tente novamente.');
-      }
-
-      // ✅ OTIMIZAÇÃO: Tracking em background
-      setTimeout(() => {
-        if (typeof trackEvent === 'function') {
-          trackEvent('payment_initiated', {
-            order_id: order.id,
-            plan: plan?.name || selectedPlan,
-            amount: plan?.price || amountCents,
-            currency: 'BRL',
-            email,
-            has_whatsapp: !!normalizedWhatsApp,
-            payment_provider: 'stripe',
-          }).catch(() => {});
-        }
-      }, 0);
-      
-      const checkoutUrl = session.url;
-      
-      // ✅ IMPORTANTE: NÃO resetar processing aqui - manter loading até redirecionamento
-      // ✅ Redirecionamento INSTANTÂNEO - o mais rápido possível
-      window.location.href = checkoutUrl;
       
     } catch (error: unknown) {
       setProcessing(false);

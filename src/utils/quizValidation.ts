@@ -1,8 +1,20 @@
 /**
  * Utilitário centralizado para validação de dados do quiz
- * Usado tanto no frontend quanto no backend para garantir consistência
+ * 
+ * Este módulo fornece funções de validação e sanitização para dados do quiz.
+ * As validações agora usam schemas Zod centralizados para garantir consistência
+ * em todo o sistema.
+ * 
+ * @module utils/quizValidation
  */
 
+import { z } from 'zod';
+import { quizSchema, quizRequiredSchema, type QuizData as ZodQuizData } from '@/lib/validation/schemas';
+
+/**
+ * Tipo de dados do quiz (compatível com interface antiga)
+ * Mantido para compatibilidade com código existente
+ */
 export interface QuizData {
   relationship?: string;
   about_who?: string;
@@ -16,51 +28,27 @@ export interface QuizData {
   [key: string]: any;
 }
 
+/**
+ * Erro de validação de campo
+ */
 export interface ValidationError {
   field: string;
   message: string;
 }
 
+/**
+ * Resultado de validação
+ */
 export interface ValidationResult {
   valid: boolean;
   errors: ValidationError[];
 }
 
-// Limites de caracteres conforme definido no sistema
-const FIELD_LIMITS = {
-  about_who: { min: 1, max: 100 },
-  relationship: { min: 1, max: 100 },
-  customRelationship: { min: 2, max: 100 },
-  style: { min: 1, max: 50 },
-  language: { min: 1, max: 10 },
-  qualities: { max: 500 },
-  memories: { max: 800 },
-  message: { max: 500 },
-  vocal_gender: { allowed: ['m', 'f', ''] },
-} as const;
-
-// Idiomas permitidos
-const ALLOWED_LANGUAGES = ['pt', 'en', 'es'];
-
-// Estilos permitidos (pode ser expandido)
-const ALLOWED_STYLES = [
-  'Romântico',
-  'Romantic',
-  'Romántico',
-  'Pop', // Mantido para compatibilidade com dados antigos
-  'Rock',
-  'MPB',
-  'Sertanejo',
-  'Forró',
-  'Jazz',
-  'Gospel',
-  'Reggae',
-  'Eletrônica',
-  'Rap',
-];
-
 /**
  * Sanitiza uma string removendo espaços extras e caracteres perigosos
+ * 
+ * @param value - Valor a ser sanitizado
+ * @returns String sanitizada
  */
 export function sanitizeString(value: string | undefined | null): string {
   if (!value) return '';
@@ -68,176 +56,139 @@ export function sanitizeString(value: string | undefined | null): string {
 }
 
 /**
- * Valida um campo de texto com limites
+ * Converte erros Zod para formato ValidationError
+ * 
+ * @param zodError - Erro do Zod
+ * @returns Array de erros de validação
  */
-function validateTextField(
-  field: string,
-  value: string | undefined | null,
-  limits: { min?: number; max?: number },
-  required = false
-): ValidationError | null {
-  const sanitized = sanitizeString(value);
-
-  if (required && !sanitized) {
-    // Mapear campos para mensagens amigáveis (serão traduzidas no componente)
-    const fieldMessages: Record<string, string> = {
-      'about_who': 'Nome é obrigatório',
-      'relationship': 'Relacionamento é obrigatório',
-      'style': 'Estilo musical é obrigatório',
-      'language': 'Idioma é obrigatório',
-      'customRelationship': 'Relacionamento é obrigatório',
-    };
-    
-    return {
-      field,
-      message: fieldMessages[field] || `${field} é obrigatório`,
-    };
-  }
-
-  if (!sanitized && !required) {
-    return null; // Campo opcional vazio é válido
-  }
-
-  if (limits.min && sanitized.length < limits.min) {
-    return {
-      field,
-      message: `${field} deve ter pelo menos ${limits.min} caracteres`,
-    };
-  }
-
-  if (limits.max && sanitized.length > limits.max) {
-    return {
-      field,
-      message: `${field} deve ter no máximo ${limits.max} caracteres`,
-    };
-  }
-
-  return null;
+function convertZodErrors(zodError: z.ZodError): ValidationError[] {
+  return zodError.errors.map((err) => ({
+    field: err.path.join('.') || 'unknown',
+    message: err.message,
+  }));
 }
 
 /**
- * Valida campo de enum (valores permitidos)
+ * Prepara dados do quiz para validação Zod
+ * 
+ * Converte o formato antigo (relationship com "Outro: ") para o formato Zod
+ * 
+ * @param quiz - Dados do quiz no formato antigo
+ * @returns Dados preparados para validação Zod
  */
-function validateEnumField(
-  field: string,
-  value: string | undefined | null,
-  allowedValues: readonly string[],
-  required = false
-): ValidationError | null {
-  if (required && !value) {
-    return {
-      field,
-      message: `${field} é obrigatório`,
-    };
+function prepareQuizForZod(quiz: QuizData): Partial<ZodQuizData> {
+  // Tratar vocal_gender: converter null para string vazia ou manter valor válido
+  let vocalGender: 'm' | 'f' | '' | null | undefined = undefined;
+  if (quiz.vocal_gender === 'm' || quiz.vocal_gender === 'f') {
+    vocalGender = quiz.vocal_gender;
+  } else if (quiz.vocal_gender === '' || quiz.vocal_gender === null || quiz.vocal_gender === undefined) {
+    vocalGender = ''; // String vazia é valor válido no enum
   }
 
-  if (!value && !required) {
-    return null;
-  }
+  const prepared: Partial<ZodQuizData> = {
+    about_who: quiz.about_who,
+    style: quiz.style,
+    language: quiz.language as 'pt' | 'en' | 'es' | undefined,
+    vocal_gender: vocalGender,
+    qualities: quiz.qualities,
+    memories: quiz.memories,
+    message: quiz.message,
+  };
 
-  if (value && !allowedValues.includes(value)) {
-    return {
-      field,
-      message: `${field} deve ser um dos valores permitidos: ${allowedValues.join(', ')}`,
-    };
-  }
-
-  return null;
-}
-
-/**
- * Validação completa do quiz
- */
-export function validateQuiz(quiz: QuizData, options: { strict?: boolean } = {}): ValidationResult {
-  const errors: ValidationError[] = [];
-  const { strict = false } = options;
-
-  // 1. Validar about_who (obrigatório)
-  const aboutWhoError = validateTextField(
-    'about_who',
-    quiz.about_who,
-    FIELD_LIMITS.about_who,
-    true
-  );
-  if (aboutWhoError) errors.push(aboutWhoError);
-
-  // 2. Validar relationship (obrigatório)
+  // Tratar relationship: se começa com "Outro: ", extrair como customRelationship
   const relationship = quiz.relationship || '';
   if (relationship.startsWith('Outro: ')) {
-    const customRel = relationship.replace('Outro: ', '');
-    const customRelError = validateTextField(
-      'customRelationship',
-      customRel,
-      FIELD_LIMITS.customRelationship,
-      true
-    );
-    if (customRelError) errors.push(customRelError);
+    prepared.customRelationship = relationship.replace('Outro: ', '');
+    prepared.relationship = ''; // Será validado como vazio, mas customRelationship será usado
   } else {
-    const relationshipError = validateTextField(
-      'relationship',
-      relationship,
-      FIELD_LIMITS.relationship,
-      true
-    );
-    if (relationshipError) errors.push(relationshipError);
+    prepared.relationship = relationship;
   }
 
-  // 3. Validar style (obrigatório)
-  const styleError = validateTextField('style', quiz.style, FIELD_LIMITS.style, true);
-  if (styleError) errors.push(styleError);
+  return prepared;
+}
 
-  // 4. Validar language (obrigatório)
-  const languageError = validateEnumField('language', quiz.language, ALLOWED_LANGUAGES, true);
-  if (languageError) errors.push(languageError);
-
-  // 5. Validar vocal_gender (opcional, mas se fornecido deve ser válido)
-  if (quiz.vocal_gender !== null && quiz.vocal_gender !== undefined && quiz.vocal_gender !== '') {
-    const vocalGenderError = validateEnumField(
-      'vocal_gender',
-      quiz.vocal_gender,
-      FIELD_LIMITS.vocal_gender.allowed,
-      false
-    );
-    if (vocalGenderError) errors.push(vocalGenderError);
-  }
-
-  // 6. Validar qualities (opcional)
-  if (quiz.qualities) {
-    const qualitiesError = validateTextField('qualities', quiz.qualities, FIELD_LIMITS.qualities, false);
-    if (qualitiesError) errors.push(qualitiesError);
-  }
-
-  // 7. Validar memories (opcional)
-  if (quiz.memories) {
-    const memoriesError = validateTextField('memories', quiz.memories, FIELD_LIMITS.memories, false);
-    if (memoriesError) errors.push(memoriesError);
-  }
-
-  // 8. Validar message (opcional)
-  if (quiz.message) {
-    const messageError = validateTextField('message', quiz.message, FIELD_LIMITS.message, false);
-    if (messageError) errors.push(messageError);
-  }
-
-  // 9. Validação adicional em modo strict
-  if (strict) {
-    // Verificar se style é um dos valores permitidos
-    if (quiz.style && !ALLOWED_STYLES.includes(quiz.style)) {
-      errors.push({
-        field: 'style',
-        message: `Estilo musical deve ser um dos valores permitidos`,
+/**
+ * Validação completa do quiz usando schemas Zod
+ * 
+ * Valida todos os campos do quiz incluindo obrigatórios e opcionais.
+ * Em modo strict, também valida se os valores estão dentro dos permitidos.
+ * 
+ * @param quiz - Dados do quiz a serem validados
+ * @param options - Opções de validação
+ * @param options.strict - Se true, valida também valores permitidos (ex: estilos musicais)
+ * @returns Resultado da validação com lista de erros (se houver)
+ * 
+ * @example
+ * ```ts
+ * const result = validateQuiz({
+ *   about_who: "João",
+ *   relationship: "Amigo",
+ *   style: "Romântico",
+ *   language: "pt"
+ * });
+ * 
+ * if (!result.valid) {
+ *   console.error(result.errors);
+ * }
+ * ```
+ */
+export function validateQuiz(quiz: QuizData, options: { strict?: boolean } = {}): ValidationResult {
+  try {
+    // Preparar dados para validação Zod
+    const preparedQuiz = prepareQuizForZod(quiz);
+    
+    // Validar usando schema Zod (já inclui validação strict de estilos)
+    quizSchema.parse(preparedQuiz);
+    
+    return {
+      valid: true,
+      errors: [],
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors = convertZodErrors(error);
+      
+      // Ajustar campo relationship/customRelationship para compatibilidade
+      const adjustedErrors = errors.map((err) => {
+        // Se o erro é em customRelationship mas o quiz tem relationship com "Outro: "
+        if (err.field === 'customRelationship' && quiz.relationship?.startsWith('Outro: ')) {
+          return { ...err, field: 'relationship' };
+        }
+        return err;
       });
+      
+      return {
+        valid: false,
+        errors: adjustedErrors,
+      };
     }
+    
+    // Erro inesperado
+    return {
+      valid: false,
+      errors: [{ field: 'unknown', message: 'Erro de validação inesperado' }],
+    };
   }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
 }
 
 /**
  * Sanitiza todos os campos do quiz
+ * 
+ * Remove espaços extras, caracteres de controle e normaliza os valores.
+ * Deve ser usado antes de salvar ou enviar dados do quiz.
+ * 
+ * @param quiz - Dados do quiz a serem sanitizados
+ * @returns Quiz sanitizado com todos os campos limpos
+ * 
+ * @example
+ * ```ts
+ * const cleanQuiz = sanitizeQuiz({
+ *   about_who: "  João  ",
+ *   relationship: "Amigo\n",
+ *   style: "Romântico"
+ * });
+ * // Resultado: { about_who: "João", relationship: "Amigo", style: "Romântico" }
+ * ```
  */
 export function sanitizeQuiz(quiz: QuizData): QuizData {
   return {
@@ -254,31 +205,55 @@ export function sanitizeQuiz(quiz: QuizData): QuizData {
 }
 
 /**
- * Validação rápida apenas dos campos obrigatórios
+ * Validação rápida apenas dos campos obrigatórios usando Zod
+ * 
+ * Valida apenas os campos essenciais: about_who, relationship, style e language.
+ * Mais rápida que validateQuiz() e útil para validação em tempo real durante o preenchimento.
+ * 
+ * @param quiz - Dados do quiz a serem validados
+ * @returns Resultado da validação apenas dos campos obrigatórios
+ * 
+ * @example
+ * ```ts
+ * // Validação rápida durante o preenchimento
+ * const result = validateQuizRequired(partialQuiz);
+ * if (result.valid) {
+ *   // Pode prosseguir para próxima etapa
+ * }
+ * ```
  */
 export function validateQuizRequired(quiz: QuizData): ValidationResult {
-  const errors: ValidationError[] = [];
-
-  if (!quiz.about_who || !sanitizeString(quiz.about_who)) {
-    errors.push({ field: 'about_who', message: 'Nome é obrigatório' });
+  try {
+    const preparedQuiz = prepareQuizForZod(quiz);
+    quizRequiredSchema.parse(preparedQuiz);
+    
+    return {
+      valid: true,
+      errors: [],
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors = convertZodErrors(error);
+      
+      // Ajustar campo relationship/customRelationship para compatibilidade
+      const adjustedErrors = errors.map((err) => {
+        if (err.field === 'customRelationship' && quiz.relationship?.startsWith('Outro: ')) {
+          return { ...err, field: 'relationship' };
+        }
+        return err;
+      });
+      
+      return {
+        valid: false,
+        errors: adjustedErrors,
+      };
+    }
+    
+    return {
+      valid: false,
+      errors: [{ field: 'unknown', message: 'Erro de validação inesperado' }],
+    };
   }
-
-  if (!quiz.style || !sanitizeString(quiz.style)) {
-    errors.push({ field: 'style', message: 'Estilo musical é obrigatório' });
-  }
-
-  if (!quiz.language || !ALLOWED_LANGUAGES.includes(quiz.language)) {
-    errors.push({ field: 'language', message: 'Idioma é obrigatório' });
-  }
-
-  if (!quiz.relationship || !sanitizeString(quiz.relationship)) {
-    errors.push({ field: 'relationship', message: 'Relacionamento é obrigatório' });
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
 }
 
 /**

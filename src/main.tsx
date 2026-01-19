@@ -3,9 +3,6 @@ import React from "react";
 // Verificar se está em desenvolvimento
 const isDev = import.meta.env.DEV;
 
-// Debug logs removidos para otimização de performance
-
-// Log removido para reduzir verbosidade
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -34,7 +31,6 @@ const cleanupErrorSuppression = setupErrorSuppression();
 // ✅ CORREÇÃO: Configurar tratamento global de erros ANTES de tudo
 const cleanupErrorHandling = setupGlobalErrorHandling();
 
-// ✅ Tracking de comportamento removido conforme solicitado (save-behavior-event)
 
 // ✅ FASE 5: Monitoramento de recarregamentos (sem interceptar para evitar loops)
 if (typeof window !== 'undefined') {
@@ -164,11 +160,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('hashchange', checkHrefChange);
 }
 
-// ✅ Loading removido do HTML - página carrega diretamente
-
-// ✅ CORREÇÃO LOADING INFINITO: Logs removidos para reduzir verbosidade
-
-// ✅ CORREÇÃO: Tratamento de erro robusto na inicialização do React
+// Tratamento de erro robusto na inicialização do React
 // Função para inicializar React com tratamento de erro
 function initializeReact() {
   try {
@@ -265,28 +257,12 @@ function initializeReact() {
   }
 }
 
-// ✅ CORREÇÃO: Aguardar DOM estar pronto antes de inicializar React
-// ✅ AUDITORIA: Log removido em produção
-// console.log('🔍 [Main] Verificando estado do DOM antes de inicializar React...', {
-//   readyState: document.readyState,
-//   rootExists: !!document.getElementById('root'),
-//   reactAvailable: typeof React !== 'undefined',
-//   reactDOMAvailable: typeof createRoot !== 'undefined'
-// });
-
+// Aguardar DOM estar pronto antes de inicializar React
 if (document.readyState === 'loading') {
-  // ✅ AUDITORIA: Log removido em produção
-  // console.log('🔍 [Main] DOM ainda carregando, aguardando DOMContentLoaded...');
   document.addEventListener('DOMContentLoaded', () => {
-    // ✅ AUDITORIA: Log removido em produção
-    // console.log('🔍 [Main] DOMContentLoaded disparado, inicializando React...');
     initializeReact();
   });
 } else {
   // DOM já está pronto, inicializar imediatamente
-  // ✅ AUDITORIA: Log removido em produção
-  // console.log('🔍 [Main] DOM já está pronto, inicializando React imediatamente...');
-  // ✅ CORREÇÃO: Inicializar imediatamente sem setTimeout - React deve renderizar o mais rápido possível
-  // O setTimeout estava causando delay desnecessário que poderia fazer o loading ficar preso
   initializeReact();
 }
