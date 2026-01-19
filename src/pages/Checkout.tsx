@@ -89,6 +89,54 @@ const getCaktoConfig = () => {
   };
 };
 
+// ✅ FUNÇÃO DE RETRY AUTOMÁTICO COM BACKOFF EXPONENCIAL
+// Resolve erros de rede em background sem mostrar ao usuário
+const MAX_RETRIES = 5;
+const INITIAL_DELAY = 1000; // 1 segundo
+
+function isNetworkError(error: unknown): boolean {
+  if (!error) return false;
+  const message = error instanceof Error ? error.message : String(error);
+  const lowerMessage = message.toLowerCase();
+  return lowerMessage.includes('load failed') ||
+         lowerMessage.includes('network') ||
+         lowerMessage.includes('fetch') ||
+         lowerMessage.includes('timeout') ||
+         lowerMessage.includes('econnrefused') ||
+         lowerMessage.includes('err_connection');
+}
+
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = MAX_RETRIES,
+  initialDelay: number = INITIAL_DELAY
+): Promise<T> {
+  let lastError: unknown;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      
+      // Se não for erro de rede, não fazer retry
+      if (!isNetworkError(error)) {
+        throw error;
+      }
+      
+      // Se ainda há tentativas, aguardar e tentar novamente
+      if (attempt < maxRetries) {
+        const delay = initialDelay * Math.pow(2, attempt); // Backoff exponencial
+        console.log(`🔄 [Retry] Tentativa ${attempt + 1}/${maxRetries + 1} falhou. Tentando novamente em ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  // Todas as tentativas falharam
+  throw lastError;
+}
+
 // ✅ Alias para getCaktoConfig (compatibilidade)
 const getCaktoConfigByDomain = () => getCaktoConfig();
 
@@ -2096,7 +2144,7 @@ export default function Checkout() {
           });
         }
 
-        // Criar pedido (fluxo antigo)
+        // Criar pedido (fluxo antigo) - ✅ COM RETRY AUTOMÁTICO EM BACKGROUND
         const orderPayload = {
           quiz_id: quizData.id,
           user_id: null,
@@ -2110,11 +2158,21 @@ export default function Checkout() {
           transaction_id: transactionId
         } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
 
-        const { data: orderData, error: orderError } = await supabase
-          .from('orders')
-          .insert(orderPayload)
-          .select()
-          .single();
+        // ✅ RETRY AUTOMÁTICO: Tenta criar pedido até 5 vezes em caso de erro de rede
+        const { data: orderData, error: orderError } = await retryWithBackoff(async () => {
+          const result = await supabase
+            .from('orders')
+            .insert(orderPayload)
+            .select()
+            .single();
+          
+          // Se houver erro de rede, lançar para retry
+          if (result.error && isNetworkError(result.error)) {
+            throw result.error;
+          }
+          
+          return result;
+        });
 
         orderCreated = orderData;
 
@@ -2133,11 +2191,7 @@ export default function Checkout() {
           } catch (rollbackError) {
             logger.error('Erro ao executar rollback', rollbackError);
           }
-          // ✅ CORREÇÃO: Não expor mensagem técnica ao usuário
-          const isNetworkError = orderError.message?.toLowerCase().includes('load failed') || 
-                                  orderError.message?.toLowerCase().includes('network') ||
-                                  orderError.message?.toLowerCase().includes('fetch');
-          throw new Error(isNetworkError ? 'Load failed' : 'Erro ao processar pedido');
+          throw new Error('Erro ao processar pedido');
         }
 
         if (!orderData || !orderData.id) {
@@ -2406,11 +2460,22 @@ export default function Checkout() {
         return;
       
     } catch (error: unknown) {
-      setProcessing(false);
-      setLastClickTime(0); // Resetar para permitir nova tentativa
-      
       // Usar a função extractErrorMessage que já foi definida no escopo acima
       const actualErrorMessage = extractErrorMessage(error);
+      
+      // ✅ CORREÇÃO: Se for erro de rede, tentar novamente automaticamente em background
+      // Não mostrar erro ao usuário - apenas tentar novamente
+      if (isNetworkError(error) && !isRetry) {
+        console.log('🔄 [Checkout] Erro de rede detectado, tentando novamente em background...');
+        // Aguardar 2 segundos e tentar novamente
+        setTimeout(() => {
+          handleCheckout(true); // isRetry = true para evitar loop infinito
+        }, 2000);
+        return; // Não mostrar erro, manter botão em "Processando..."
+      }
+      
+      setProcessing(false);
+      setLastClickTime(0); // Resetar para permitir nova tentativa
       
       // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
       // ✅ CORREÇÃO: Remover verificação de prefixo /pt - sempre usar Cakto para português
@@ -2442,6 +2507,13 @@ export default function Checkout() {
           console.error('❌ [Cakto] Erro ao tentar redirecionar após erro:', redirectError);
           // Continuar para mostrar erro ao usuário
         }
+      }
+      
+      // ✅ Se for erro de rede mesmo após retry, não mostrar mensagem técnica
+      if (isNetworkError(error)) {
+        console.log('⚠️ [Checkout] Erro de rede persistente, aguardando usuário tentar novamente...');
+        // Apenas resetar o botão, não mostrar toast de erro
+        return;
       }
       
       // ✅ OTIMIZAÇÃO: Log e tracking de erro em background (não bloqueante)
