@@ -89,54 +89,6 @@ const getCaktoConfig = () => {
   };
 };
 
-// ✅ FUNÇÃO DE RETRY AUTOMÁTICO COM BACKOFF EXPONENCIAL
-// Resolve erros de rede em background sem mostrar ao usuário
-const MAX_RETRIES = 3; // ✅ Reduzido para resolver mais rápido
-const INITIAL_DELAY = 300; // ✅ 300ms para resposta mais rápida
-
-function isNetworkError(error: unknown): boolean {
-  if (!error) return false;
-  const message = error instanceof Error ? error.message : String(error);
-  const lowerMessage = message.toLowerCase();
-  return lowerMessage.includes('load failed') ||
-         lowerMessage.includes('network') ||
-         lowerMessage.includes('fetch') ||
-         lowerMessage.includes('timeout') ||
-         lowerMessage.includes('econnrefused') ||
-         lowerMessage.includes('err_connection');
-}
-
-async function retryWithBackoff<T>(
-  operation: () => Promise<T>,
-  maxRetries: number = MAX_RETRIES,
-  initialDelay: number = INITIAL_DELAY
-): Promise<T> {
-  let lastError: unknown;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error;
-      
-      // Se não for erro de rede, não fazer retry
-      if (!isNetworkError(error)) {
-        throw error;
-      }
-      
-      // Se ainda há tentativas, aguardar e tentar novamente
-      if (attempt < maxRetries) {
-        const delay = initialDelay * Math.pow(2, attempt); // Backoff exponencial
-        console.log(`🔄 [Retry] Tentativa ${attempt + 1}/${maxRetries + 1} falhou. Tentando novamente em ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-  
-  // Todas as tentativas falharam
-  throw lastError;
-}
-
 // ✅ Alias para getCaktoConfig (compatibilidade)
 const getCaktoConfigByDomain = () => getCaktoConfig();
 
@@ -2158,21 +2110,12 @@ export default function Checkout() {
           transaction_id: transactionId
         } as Database['public']['Tables']['orders']['Insert'] & { customer_whatsapp: string };
 
-        // ✅ RETRY AUTOMÁTICO: Tenta criar pedido até 5 vezes em caso de erro de rede
-        const { data: orderData, error: orderError } = await retryWithBackoff(async () => {
-          const result = await supabase
-            .from('orders')
-            .insert(orderPayload)
-            .select()
-            .single();
-          
-          // Se houver erro de rede, lançar para retry
-          if (result.error && isNetworkError(result.error)) {
-            throw result.error;
-          }
-          
-          return result;
-        });
+        // Criar pedido no Supabase
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .insert(orderPayload)
+          .select()
+          .single();
 
         orderCreated = orderData;
 
@@ -2460,33 +2403,9 @@ export default function Checkout() {
         return;
       
     } catch (error: unknown) {
-      // Usar a função extractErrorMessage que já foi definida no escopo acima
-      const actualErrorMessage = extractErrorMessage(error);
-      
-      // ✅ CORREÇÃO: Se for erro de rede, tentar novamente automaticamente em background
-      // Não mostrar erro ao usuário - apenas tentar novamente
-      if (isNetworkError(error) && !isRetry) {
-        console.log('🔄 [Checkout] Erro de rede detectado, tentando novamente em background...');
-        // ✅ Aguardar apenas 500ms e tentar novamente (mais rápido)
-        setTimeout(() => {
-          handleCheckout(true); // isRetry = true para evitar loop infinito
-        }, 500);
-        return; // Não mostrar erro, manter botão em "Processando..."
-      }
-      
-      setProcessing(false);
-      setLastClickTime(0); // Resetar para permitir nova tentativa
-      
-      // ✅ CRÍTICO: Se o pedido foi criado e estamos no fluxo Cakto, tentar redirecionar mesmo com erro
-      // ✅ CORREÇÃO: Remover verificação de prefixo /pt - sempre usar Cakto para português
+      // ✅ RETRY SILENCIOSO: Se pedido foi criado, tentar redirecionar
       if (orderCreated && orderCreated.id) {
-        console.log('⚠️ [Cakto] Erro ocorreu mas pedido foi criado, tentando redirecionar mesmo assim...', {
-          orderId: orderCreated.id,
-          error: actualErrorMessage
-        });
-        
         try {
-          // Tentar gerar URL da Cakto e redirecionar
           const normalizedWhatsApp = formatWhatsappForCakto(whatsapp);
           const currentLanguage = getCurrentLanguage();
           const caktoUrl = generateCaktoUrl(
@@ -2498,107 +2417,27 @@ export default function Checkout() {
           );
           
           if (caktoUrl && caktoUrl.startsWith('http')) {
-            console.log('🚀 [Cakto] Redirecionando apesar do erro...', { caktoUrl: caktoUrl.substring(0, 100) });
-            // ✅ Não resetar processing - manter "Processando..." até redirecionar
+            console.log('[Checkout] Redirecionando para Cakto apesar do erro...');
             window.location.replace(caktoUrl);
-            return; // Não mostrar erro se redirecionou
+            return;
           }
         } catch (redirectError) {
-          console.error('❌ [Cakto] Erro ao tentar redirecionar após erro:', redirectError);
-          // Continuar para mostrar erro ao usuário
+          console.error('[Checkout] Erro ao redirecionar:', redirectError);
         }
       }
       
-      // ✅ Se for erro de rede mesmo após retry, não mostrar mensagem técnica
-      if (isNetworkError(error)) {
-        console.log('⚠️ [Checkout] Erro de rede persistente, aguardando usuário tentar novamente...');
-        // Apenas resetar o botão, não mostrar toast de erro
-        return;
+      // ✅ RETRY AUTOMATICO SILENCIOSO (max 1 retry)
+      if (!isRetry) {
+        console.log('[Checkout] Tentando novamente em background...');
+        setTimeout(() => handleCheckout(true), 500);
+        return; // Manter botao em "Processando..."
       }
       
-      // ✅ OTIMIZAÇÃO: Log e tracking de erro em background (não bloqueante)
-      setTimeout(() => {
-        try {
-          if (typeof trackEvent === 'function') {
-            trackEvent('payment_error', {
-              order_id: orderCreated?.id || 'unknown',
-              plan: selectedPlan,
-              error_message: actualErrorMessage,
-              payment_provider: 'cakto', // ✅ CORREÇÃO: Sempre Cakto (português)
-            }).catch(() => {});
-          }
-        } catch (error) {
-          void error;
-        }
-      }, 0);
-      
-      // Mapa de mensagens amigáveis
-      const errorMessages: Record<string, string> = {
-        // ✅ CORREÇÃO: Erros de rede/conexão - mensagens amigáveis
-        'Load failed': 'Falha na conexão. Verifique sua internet e tente novamente.',
-        'TypeError: Load failed': 'Falha na conexão. Verifique sua internet e tente novamente.',
-        'Failed to fetch': 'Falha na conexão. Verifique sua internet e tente novamente.',
-        'NetworkError': 'Erro de rede. Verifique sua conexão e tente novamente.',
-        'network error': 'Erro de rede. Verifique sua conexão e tente novamente.',
-        'ERR_NETWORK': 'Erro de rede. Verifique sua conexão e tente novamente.',
-        'ERR_CONNECTION': 'Falha na conexão. Verifique sua internet e tente novamente.',
-        'ECONNREFUSED': 'Servidor indisponível. Tente novamente em alguns segundos.',
-        'timeout': 'Tempo limite excedido. Verifique sua conexão e tente novamente.',
-        'Chave de API do Stripe expirada': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
-        'api_key_expired': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
-        'Expired API Key': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
-        'Chave de API do Stripe inválida': 'Sistema de pagamento não configurado corretamente. Contate o suporte.',
-        'api_key_invalid': 'Sistema de pagamento não configurado corretamente. Contate o suporte.',
-        'Invalid API Key': 'Sistema de pagamento não configurado corretamente. Contate o suporte.',
-        'Chave de API do Stripe não configurada': 'Sistema de pagamento não configurado. Contate o suporte.',
-        'STRIPE_SECRET_KEY não configurado': 'Sistema de pagamento não configurado. Contate o suporte.',
-        'STRIPE_SECRET_KEY': 'Sistema de pagamento não configurado. Contate o suporte.',
-        'Tempo limite excedido': 'Tempo limite excedido. Verifique sua conexão e tente novamente.',
-        'Email inválido': 'Email inválido. Verifique e tente novamente.',
-        'Order já foi paga': 'Este pedido já foi pago.',
-        'Email não corresponde ao pedido': 'Email não corresponde ao pedido.',
-        'Order não encontrada': 'Pedido não encontrado. Por favor, tente novamente.',
-        'rate limit': 'Muitas tentativas. Por favor, aguarde alguns minutos e tente novamente.',
-        'Price não encontrado': 'Erro na configuração de preços. Contate o suporte.',
-        'Parâmetros obrigatórios': 'Erro ao processar pagamento. Verifique os dados e tente novamente.',
-        'Resposta do Stripe incompleta': 'Resposta do servidor de pagamento incompleta. Tente novamente.',
-        'Resposta do servidor de pagamento está vazia': 'Resposta do servidor de pagamento está vazia. Tente novamente.',
-        'URLs de redirecionamento inválidas': 'Erro na configuração de URLs. Contate o suporte.',
-        'Plano': 'Plano selecionado não é válido. Tente novamente.'
-      };
-
-      // Buscar mensagem amigável
-      let finalErrorMessage = actualErrorMessage;
-      for (const [key, friendly] of Object.entries(errorMessages)) {
-        if (actualErrorMessage.toLowerCase().includes(key.toLowerCase())) {
-          finalErrorMessage = friendly;
-          break;
-        }
-      }
-      
-      // Se ainda for genérico, tentar usar mensagem original se for mais específica
-      if (finalErrorMessage === 'Erro desconhecido' || (finalErrorMessage.length < 10 && actualErrorMessage.length > 10)) {
-        finalErrorMessage = actualErrorMessage.length > 100 
-          ? actualErrorMessage.substring(0, 100) + '...'
-          : actualErrorMessage;
-      }
-      
-      // Garantir que sempre há uma mensagem
-      if (!finalErrorMessage || finalErrorMessage.trim().length === 0) {
-        finalErrorMessage = 'Erro ao processar pagamento. Por favor, tente novamente ou entre em contato com o suporte.';
-      }
-
-      logger.debug('Mensagem final de erro', { finalErrorMessage });
-
-      toast.error(finalErrorMessage, {
-        duration: 5000,
-        action: {
-          label: 'Tentar Novamente',
-          onClick: () => {
-            handleCheckout(false);
-          }
-        }
-      });
+      // ✅ Todas as tentativas falharam - apenas resetar botao silenciosamente
+      console.log('[Checkout] Tentativas esgotadas, resetando botao');
+      setProcessing(false);
+      setLastClickTime(0);
+      // NAO mostrar toast.error - usuario pode clicar novamente
     }
   };
 
