@@ -91,8 +91,8 @@ const getCaktoConfig = () => {
 
 // ✅ FUNÇÃO DE RETRY AUTOMÁTICO COM BACKOFF EXPONENCIAL
 // Resolve erros de rede em background sem mostrar ao usuário
-const MAX_RETRIES = 5;
-const INITIAL_DELAY = 1000; // 1 segundo
+const MAX_RETRIES = 3; // ✅ Reduzido para resolver mais rápido
+const INITIAL_DELAY = 300; // ✅ 300ms para resposta mais rápida
 
 function isNetworkError(error: unknown): boolean {
   if (!error) return false;
@@ -2467,10 +2467,10 @@ export default function Checkout() {
       // Não mostrar erro ao usuário - apenas tentar novamente
       if (isNetworkError(error) && !isRetry) {
         console.log('🔄 [Checkout] Erro de rede detectado, tentando novamente em background...');
-        // Aguardar 2 segundos e tentar novamente
+        // ✅ Aguardar apenas 500ms e tentar novamente (mais rápido)
         setTimeout(() => {
           handleCheckout(true); // isRetry = true para evitar loop infinito
-        }, 2000);
+        }, 500);
         return; // Não mostrar erro, manter botão em "Processando..."
       }
       
