@@ -2133,7 +2133,11 @@ export default function Checkout() {
           } catch (rollbackError) {
             logger.error('Erro ao executar rollback', rollbackError);
           }
-          throw new Error(`Erro ao criar pedido: ${orderError.message}`);
+          // ✅ CORREÇÃO: Não expor mensagem técnica ao usuário
+          const isNetworkError = orderError.message?.toLowerCase().includes('load failed') || 
+                                  orderError.message?.toLowerCase().includes('network') ||
+                                  orderError.message?.toLowerCase().includes('fetch');
+          throw new Error(isNetworkError ? 'Load failed' : 'Erro ao processar pedido');
         }
 
         if (!orderData || !orderData.id) {
@@ -2458,6 +2462,16 @@ export default function Checkout() {
       
       // Mapa de mensagens amigáveis
       const errorMessages: Record<string, string> = {
+        // ✅ CORREÇÃO: Erros de rede/conexão - mensagens amigáveis
+        'Load failed': 'Falha na conexão. Verifique sua internet e tente novamente.',
+        'TypeError: Load failed': 'Falha na conexão. Verifique sua internet e tente novamente.',
+        'Failed to fetch': 'Falha na conexão. Verifique sua internet e tente novamente.',
+        'NetworkError': 'Erro de rede. Verifique sua conexão e tente novamente.',
+        'network error': 'Erro de rede. Verifique sua conexão e tente novamente.',
+        'ERR_NETWORK': 'Erro de rede. Verifique sua conexão e tente novamente.',
+        'ERR_CONNECTION': 'Falha na conexão. Verifique sua internet e tente novamente.',
+        'ECONNREFUSED': 'Servidor indisponível. Tente novamente em alguns segundos.',
+        'timeout': 'Tempo limite excedido. Verifique sua conexão e tente novamente.',
         'Chave de API do Stripe expirada': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
         'api_key_expired': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
         'Expired API Key': 'Sistema de pagamento temporariamente indisponível. Contate o suporte para resolver.',
