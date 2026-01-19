@@ -613,13 +613,15 @@
       "heartMessagePlaceholder": "O que você quer que eles saibam, sintam ou lembrem?"
     },
     "relationships": {
-      "spouse": "Esposo(a)",
-      "child": "Filho(a)",
+      "husband": "Esposo",
+      "wife": "Esposa",
+      "son": "Filho",
+      "daughter": "Filha",
       "father": "Pai",
       "mother": "Mãe",
-      "sibling": "Irmão(ã)",
-      "friend": "Amigo(a)",
-      "myself": "Eu mesmo(a)",
+      "brother": "Irmão",
+      "friend": "Amigo",
+      "myself": "Eu mesmo",
       "other": "Outro"
     },
     "styles": {

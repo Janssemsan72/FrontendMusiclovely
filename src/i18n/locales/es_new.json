@@ -404,13 +404,15 @@
       "heartMessagePlaceholder": "¿Qué quieres que sepan, sientan o recuerden?"
     },
     "relationships": {
-      "spouse": "Esposo(a)",
-      "child": "Hijo(a)",
+      "husband": "Esposo",
+      "wife": "Esposa",
+      "son": "Hijo",
+      "daughter": "Hija",
       "father": "Padre",
       "mother": "Madre",
-      "sibling": "Hermano(a)",
-      "friend": "Amigo(a)",
-      "myself": "Yo mismo(a)",
+      "brother": "Hermano",
+      "friend": "Amigo",
+      "myself": "Yo mismo",
       "other": "Otro"
     },
     "styles": {

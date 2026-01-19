@@ -46,11 +46,13 @@ const Quiz = memo(() => {
 
   // Translated constants
   const RELATIONSHIPS = [
-    t('quiz.relationships.spouse'),
-    t('quiz.relationships.child'),
+    t('quiz.relationships.husband'),
+    t('quiz.relationships.wife'),
+    t('quiz.relationships.son'),
+    t('quiz.relationships.daughter'),
     t('quiz.relationships.father'),
     t('quiz.relationships.mother'),
-    t('quiz.relationships.sibling'),
+    t('quiz.relationships.brother'),
     t('quiz.relationships.friend'),
     t('quiz.relationships.myself'),
     t('quiz.relationships.other')

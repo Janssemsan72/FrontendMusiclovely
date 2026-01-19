@@ -401,11 +401,13 @@
       "heartMessagePlaceholder": "What do you want them to know, feel or remember?"
     },
     "relationships": {
-      "spouse": "Spouse",
-      "child": "Child",
+      "husband": "Husband",
+      "wife": "Wife",
+      "son": "Son",
+      "daughter": "Daughter",
       "father": "Father",
       "mother": "Mother",
-      "sibling": "Sibling",
+      "brother": "Brother",
       "friend": "Friend",
       "myself": "Myself",
       "other": "Other"
