@@ -421,17 +421,17 @@ const Quiz = memo(() => {
   // Preparar dados do quiz para validação
   const getQuizDataForValidation = useCallback((): QuizData => {
     const finalRelationship = formData.relationship === t('quiz.relationships.other') 
-      ? `${t('quiz.relationships.other')}: ${formData.customRelationship}` 
-      : formData.relationship;
+      ? `${t('quiz.relationships.other')}: ${formData.customRelationship || ''}` 
+      : (formData.relationship || '');
     
     return {
-      relationship: finalRelationship,
-      about_who: formData.aboutWho,
-      style: formData.style,
+      relationship: finalRelationship || '',
+      about_who: formData.aboutWho || '',
+      style: formData.style || '',
       vocal_gender: formData.vocalGender || '',
-      qualities: formData.qualities,
-      memories: formData.memories,
-      message: formData.message,
+      qualities: formData.qualities || '',
+      memories: formData.memories || '',
+      message: formData.message || '',
       language: 'pt', // Será atualizado no submit
     };
   }, [formData, t]);
@@ -614,8 +614,8 @@ const Quiz = memo(() => {
     
     try {
       const finalRelationship = formData.relationship === t('quiz.relationships.other') 
-        ? `${t('quiz.relationships.other')}: ${formData.customRelationship}` 
-        : formData.relationship;
+        ? `${t('quiz.relationships.other')}: ${formData.customRelationship || ''}` 
+        : (formData.relationship || '');
 
       // Detectar e persistir idioma
       const detectAndPersistLanguage = () => {
