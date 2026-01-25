@@ -36,7 +36,10 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 VITE_SUPABASE_URL=sua_url_supabase
 VITE_SUPABASE_ANON_KEY=sua_chave_anonima
 VITE_STRIPE_PUBLISHABLE_KEY=sua_chave_stripe
+VITE_BACKEND_URL=https://seu-backend.railway.app
 ```
+
+**Nota:** `VITE_BACKEND_URL` deve apontar para a URL do backend que roda na Railway.
 
 ## Desenvolvimento
 
@@ -80,7 +83,24 @@ public/
 
 ## Deploy
 
-O projeto está configurado para deploy no Vercel. O arquivo `vercel.json` contém as configurações necessárias.
+O projeto está configurado para deploy no **Vercel**. O arquivo `vercel.json` contém as configurações necessárias.
+
+### Variáveis de Ambiente no Vercel
+
+Configure as seguintes variáveis de ambiente na plataforma Vercel:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_STRIPE_PUBLISHABLE_KEY`
+- `VITE_BACKEND_URL` (URL do backend no Railway)
+
+### Integração com Backend
+
+O frontend consome a API do backend que roda na Railway. Certifique-se de que:
+
+1. O backend está rodando e acessível
+2. A variável `VITE_BACKEND_URL` está configurada corretamente
+3. O CORS no backend permite requisições do domínio do frontend
 
 ## Scripts Disponíveis
 

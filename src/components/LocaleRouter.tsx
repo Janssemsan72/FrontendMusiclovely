@@ -46,7 +46,7 @@ function LocaleRouterWrapper() {
   // ✅ CORREÇÃO: Redirecionar imediatamente se necessário, sem esperar useEffect
   if (shouldRedirect) {
     const pathWithoutLocale = currentPath.replace(/^\/(pt)/, '') || '/';
-    const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
+    const newPath = `${pathWithoutLocale}${location.search || ''}${location.hash || ''}`;
     
     // Usar navigate de forma síncrona para garantir redirecionamento imediato
     navigate(newPath, { replace: true });
@@ -62,7 +62,7 @@ function LocaleRouterWrapper() {
     // Verificação dupla para garantir que não perdemos nenhum caso
     if (path.startsWith('/pt/') || path === '/pt') {
       const pathWithoutLocale = path.replace(/^\/(pt)/, '') || '/';
-      const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
+      const newPath = `${pathWithoutLocale}${location.search || ''}${location.hash || ''}`;
       
       if (path !== newPath) {
         navigate(newPath, { replace: true });
