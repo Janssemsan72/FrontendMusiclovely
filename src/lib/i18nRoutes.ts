@@ -1,6 +1,6 @@
 import type { Locale } from './detectLocale';
 
-const SUPPORTED_LOCALES: Locale[] = ['pt', 'en', 'es'];
+const SUPPORTED_LOCALES: Locale[] = ['pt'];
 
 /**
  * Extrai o locale da URL atual
@@ -22,7 +22,7 @@ export function getCurrentLocale(pathname: string): Locale | null {
  */
 export function getLocalizedPath(path: string, locale: Locale): string {
   // Remove prefixo de idioma existente se houver
-  const cleanPath = path.replace(/^\/(pt|en|es)/, '') || '/';
+  const cleanPath = path.replace(/^\/(pt)/, '') || '/';
   
   // ✅ CORREÇÃO: Site é apenas português, não adicionar prefixo
   // Retornar caminho limpo sem prefixo de idioma
@@ -33,7 +33,7 @@ export function getLocalizedPath(path: string, locale: Locale): string {
  * Remove o prefixo de idioma de um caminho
  */
 export function removeLocalePrefix(path: string): string {
-  return path.replace(/^\/(pt|en|es)/, '') || '/';
+  return path.replace(/^\/(pt)/, '') || '/';
 }
 
 /**
@@ -50,7 +50,7 @@ export function switchLocale(currentPath: string, newLocale: Locale): string {
  * Verifica se um caminho tem prefixo de idioma
  */
 export function hasLocalePrefix(path: string): boolean {
-  return /^\/(pt|en|es)/.test(path);
+  return /^\/(pt)/.test(path);
 }
 
 /**

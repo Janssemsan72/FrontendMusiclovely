@@ -78,12 +78,6 @@ class LazyTranslationManager implements LazyTranslationLoader {
               case 'pt':
                 i18nLog('Carregando PT...');
                 return await import('@/i18n/locales/pt.json');
-              case 'en':
-                i18nLog('Carregando EN...');
-                return await import('@/i18n/locales/en_new.json');
-              case 'es':
-                i18nLog('Carregando ES...');
-                return await import('@/i18n/locales/es_new.json');
               default:
                 throw new Error(`Locale não suportado: ${locale}`);
             }
@@ -165,7 +159,7 @@ class LazyTranslationManager implements LazyTranslationLoader {
    * Pré-carrega todos os idiomas suportados
    */
   async preloadAll(): Promise<void> {
-    const supportedLocales: Locale[] = ['pt', 'en', 'es'];
+    const supportedLocales: Locale[] = ['pt'];
     
     i18nLog('Pré-carregando todos os idiomas...');
     

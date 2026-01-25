@@ -45,13 +45,13 @@ vi.mock('@/lib/translationCache', () => ({
 
 // Mock do detectLocale
 vi.mock('@/lib/detectLocale', () => ({
-  detectLocaleSimple: vi.fn(() => Promise.resolve('es')),
+  detectLocaleSimple: vi.fn(() => Promise.resolve('pt')),
   getCookieLocale: vi.fn(() => null),
   saveLocalePreference: vi.fn(),
   getLocaleFromPath: vi.fn((path) => {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0];
-    return ['pt', 'en', 'es'].includes(firstSegment) ? firstSegment : null;
+    return firstSegment === 'pt' ? 'pt' : null;
   })
 }));
 
@@ -60,13 +60,13 @@ vi.mock('@/lib/i18nRoutes', () => ({
   getCurrentLocale: vi.fn((path) => {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0];
-    return ['pt', 'en', 'es'].includes(firstSegment) ? firstSegment : null;
+    return firstSegment === 'pt' ? 'pt' : null;
   }),
   getLocalizedPath: vi.fn((path, locale) => `/${locale}${path}`),
-  removeLocalePrefix: vi.fn((path) => path.replace(/^\/(pt|en|es)/, '') || '/'),
-  switchLocale: vi.fn((currentPath, newLocale) => `/${newLocale}${currentPath.replace(/^\/(pt|en|es)/, '')}`),
-  hasLocalePrefix: vi.fn((path) => /^\/(pt|en|es)/.test(path)),
-  getBasePath: vi.fn((path) => path.replace(/^\/(pt|en|es)/, ''))
+  removeLocalePrefix: vi.fn((path) => path.replace(/^\/(pt)/, '') || '/'),
+  switchLocale: vi.fn((currentPath, newLocale) => `/${newLocale}${currentPath.replace(/^\/(pt)/, '')}`),
+  hasLocalePrefix: vi.fn((path) => /^\/(pt)/.test(path)),
+  getBasePath: vi.fn((path) => path.replace(/^\/(pt)/, ''))
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -97,33 +97,7 @@ describe('Sistema de Rotas Internacionalizadas', () => {
       });
     });
 
-    it('deve renderizar rota /en/pricing corretamente', async () => {
-      window.history.pushState({}, '', '/en/pricing');
-      
-      render(
-        <TestWrapper>
-          <App />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
-
-    it('deve renderizar rota /es/quiz corretamente', async () => {
-      window.history.pushState({}, '', '/es/quiz');
-      
-      render(
-        <TestWrapper>
-          <App />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
+    
   });
 
   describe('Rota Raiz com Detecção Automática', () => {
@@ -187,7 +161,7 @@ describe('Sistema de Rotas Internacionalizadas', () => {
   });
 
   describe('Redirecionamentos', () => {
-    it('deve redirecionar /pt para /pt/', async () => {
+    it('deve redirecionar /pt para /', async () => {
       window.history.pushState({}, '', '/pt');
       
       render(
@@ -197,21 +171,7 @@ describe('Sistema de Rotas Internacionalizadas', () => {
       );
 
       await waitFor(() => {
-        expect(window.location.pathname).toBe('/pt/');
-      });
-    });
-
-    it('deve redirecionar /en para /en/', async () => {
-      window.history.pushState({}, '', '/en');
-      
-      render(
-        <TestWrapper>
-          <App />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(window.location.pathname).toBe('/en/');
+        expect(window.location.pathname).toBe('/');
       });
     });
   });

@@ -89,7 +89,7 @@ function prepareQuizForZod(quiz: QuizData): Partial<ZodQuizData> {
   const prepared: Partial<ZodQuizData> = {
     about_who: quiz.about_who || '',
     style: quiz.style || '',
-    language: quiz.language as 'pt' | 'en' | 'es' | undefined,
+    language: quiz.language as 'pt' | undefined,
     vocal_gender: vocalGender,
     qualities: quiz.qualities || '',
     memories: quiz.memories || '',

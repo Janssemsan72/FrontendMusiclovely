@@ -8,7 +8,7 @@ interface UseEmailTemplatesOptions {
 }
 
 export function useEmailTemplates(options: UseEmailTemplatesOptions = {}) {
-  const { templateTypes = ['order_paid', 'music_released'], languages = ['pt', 'en', 'es'] } = options;
+  const { templateTypes = ['order_paid', 'music_released'], languages = ['pt'] } = options;
   const queryClient = useQueryClient();
 
   // Query para buscar templates
@@ -40,12 +40,12 @@ export function useEmailTemplates(options: UseEmailTemplatesOptions = {}) {
         allTemplates.push(...templatesWithLang);
       }
 
-      // Agrupar templates por tipo, mostrando apenas um por tipo (prioridade: pt > en > es)
+      // Agrupar templates por tipo, mostrando apenas um por tipo (prioridade: pt)
       const groupedTemplates: EmailTemplate[] = [];
       const templateTypeSet = new Set<string>();
       
       // Ordenar por prioridade de idioma
-      const priorityOrder = ['pt', 'en', 'es'];
+      const priorityOrder = ['pt'];
       const sortedTemplates = allTemplates.sort((a, b) => {
         const aPriority = priorityOrder.indexOf(a.language);
         const bPriority = priorityOrder.indexOf(b.language);

@@ -64,7 +64,7 @@
     "step2": {
       "title": "Nossa Equipe Cria Sua Música",
       "description": "Entregamos uma música única, criada com dedicação para transformar sua história em melodia e palavras.",
-      "time": "48 horas",
+      "time": "6 horas",
       "highlight": "Profissionais experientes"
     },
     "step3": {
@@ -99,10 +99,10 @@
       "title": "Formas de Pagamento",
       "description": "Aceitamos cartões de crédito via Cakto. Pagamento 100% seguro e criptografado."
     },
-    "deliveryTime": "Entrega em 48 horas",
+    "deliveryTime": "Entrega em 6 horas",
     "deliveryTimeDetails": {
       "title": "Prazo de Entrega",
-      "description": "Sua música personalizada é entregue em até 48 horas após confirmação do pagamento."
+      "description": "Sua música personalizada é entregue em até 6 horas após confirmação do pagamento."
     },
     "whatsIncluded": {
       "title": "O que está incluído?",
@@ -121,7 +121,7 @@
       "customCover": "Capa personalizada",
       "fullLyrics": "Letra completa",
       "unlimitedDownload": "Download ilimitado",
-      "delivery48h": "Entrega em 48h"
+      "delivery48h": "Entrega em 6h"
     },
     "benefits": {
       "unlimitedDownload": {
@@ -130,7 +130,7 @@
       },
       "fastDelivery": {
         "title": "Entrega Rápida",
-        "description": "Pronto em 48 horas"
+        "description": "Pronto em 6 horas"
       },
       "guarantee": {
         "title": "Garantia Total",
@@ -145,7 +145,7 @@
     "methods": {
       "email": {
         "title": "E-mail",
-        "subtitle": "Resposta em até 48h"
+        "subtitle": "Resposta em até 6h"
       },
       "whatsapp": {
         "title": "WhatsApp",
@@ -184,7 +184,7 @@
         },
         "deliveryTimes": {
           "question": "Como funcionam os prazos?",
-          "answer": "Nossa entrega padrão é de 48 horas. Para pedidos expressos, podemos entregar em até 12 horas. Você receberá sua música personalizada no prazo combinado, pronta para compartilhar."
+          "answer": "Nossa entrega é de até 6 horas. Você receberá sua música personalizada no prazo combinado, pronta para compartilhar."
         },
         "whatYouGet": {
           "question": "O que recebo ao final?",
@@ -197,7 +197,7 @@
       },
       "deliveryTime": {
         "question": "Quanto tempo leva para criar minha música?",
-        "answer": "Nossa entrega padrão é de 48 horas. Para pedidos expressos, podemos entregar em até 12 horas."
+        "answer": "Nossa entrega é de até 6 horas."
       },
       "adjustments": {
         "question": "Posso pedir ajustes na música?",
@@ -229,7 +229,7 @@
     "badge": "Depoimentos",
     "title": "O Que Nossos Clientes Dizem",
     "subtitle": "Histórias reais de pessoas reais que criaram momentos mágicos",
-    "deliveredWithLove": "Entregue com amor, cuidado e dedicação em 7 dias",
+    "deliveredWithLove": "Entregue com amor, cuidado e dedicação em 6 horas",
     "moreThan500Songs": "Mais de 1000 músicas criadas"
   },
   "checkout": {
@@ -257,12 +257,12 @@
     "musicFor": "Música para:",
     "style": "Estilo:",
     "delivery": "Entrega:",
-    "delivery24h": "48 horas ⚡",
-    "delivery48h": "48 horas ⚡",
+    "delivery24h": "6 horas ⚡",
+    "delivery48h": "6 horas ⚡",
     "total": "Total:",
     "customSongOrder": "Seu Pedido de Música Personalizada",
-    "deliveryIn48h": "Em 48 horas",
-    "deliveryIn7Days": "Em 7 dias",
+    "deliveryIn48h": "Em 6 horas",
+    "deliveryIn7Days": "Em 6 horas",
     "twoVersionsBenefit": "Pague 1, Leve 2 Versões",
     "personalizedMusic": "Música Personalizada",
     "discount70": "70% OFF",
@@ -291,8 +291,8 @@
     "radioQualitySubtitle": "Música profissional, pronta para compartilhar",
     "personalizedLyrics": "Letra Personalizada",
     "writtenFor": "Escrita especialmente para",
-    "delivery24hTitle": "Entrega em 48 Horas",
-    "delivery48hTitle": "Entrega em 48 Horas",
+    "delivery24hTitle": "Entrega em 6 Horas",
+    "delivery48hTitle": "Entrega em 6 Horas",
     "delivery7DaysTitle": "Entrega em 7 Dias",
     "perfectForLastMinute": "Perfeito para presentes de última hora",
     "whyChooseMusicLovely": "⭐ Por Que Escolher o MusicLovely?",
@@ -331,8 +331,8 @@
       "fullLyrics": "Letra completa",
       "unlimitedDownload": "Download ilimitado",
       "professionalProduction": "Produção profissional",
-      "delivery24h": "Entrega em 48h ⚡",
-      "delivery48h": "Entrega em 48h ⚡"
+      "delivery24h": "Entrega em 6h ⚡",
+      "delivery48h": "Entrega em 6h ⚡"
     },
     "errors": {
       "invalidEmail": "Email inválido",
@@ -395,8 +395,8 @@
     },
     "deliveryTime": {
       "title": "Tempo de Entrega",
-      "mainMessage": "Sua música estará pronta em 48 horas!",
-      "description": "São 48 horas para entregar seu pedido. Nossa equipe trabalhará com dedicação para criar sua música personalizada e entregá-la no prazo prometido."
+      "mainMessage": "Sua música estará pronta em 6 horas!",
+      "description": "São 6 horas para entregar seu pedido. Nossa equipe trabalhará com dedicação para criar sua música personalizada e entregá-la no prazo prometido."
     },
     "socialMedia": {
       "title": "Siga-nos nas redes sociais",
@@ -517,7 +517,7 @@
       },
       "deliveryTimes": {
         "question": "Como funcionam os prazos?",
-        "answer": "No plano Padrão, sua música fica pronta em até 7 dias. No plano Expresso, entregamos em até 48 horas. Você recebe uma prévia antes da liberação final."
+        "answer": "Sua música fica pronta em até 6 horas. Você recebe uma prévia antes da liberação final."
       },
       "whatYouGet": {
         "question": "O que recebo ao final?",
@@ -712,7 +712,7 @@
       },
       "services": {
         "title": "2. Serviços Oferecidos",
-        "content": "O MusicLovely oferece serviços de criação de músicas personalizadas. Nos comprometemos a entregar produtos de alta qualidade dentro dos prazos estabelecidos (7 dias para Plano Padrão, 48 horas para Plano Expresso)."
+        "content": "O MusicLovely oferece serviços de criação de músicas personalizadas. Nos comprometemos a entregar produtos de alta qualidade em até 6 horas."
       },
       "copyright": {
         "title": "3. Direitos Autorais e Propriedade",

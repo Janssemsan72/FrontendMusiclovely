@@ -589,9 +589,9 @@ export const LyricsCard = memo(function LyricsCard({
   // Obter horas do plano
   const getPlanHours = () => {
     const plan = approval.orders?.plan;
-    if (!plan) return 48; // Default: 48h
+    if (!plan) return 6; // Default: 6h
     
-    // ✅ CORREÇÃO: TODOS os planos são de 48 horas
+    // ✅ CORREÇÃO: TODOS os planos são de 6 horas
     const planMap: { [key: string]: number } = {
       'pt': 48,
       'super_express': 48,
@@ -600,19 +600,19 @@ export const LyricsCard = memo(function LyricsCard({
       'relaxado': 48
     };
     
-    return planMap[plan] || 48; // Default: 48h
+    return planMap[plan] || 6; // Default: 6h
   };
 
-  // Calcular tempo restante em horas baseado no plano (48h)
+  // Calcular tempo restante em horas baseado no plano (6h)
   const getTimeRemaining = () => {
-    const planHours = 48; // ✅ CORREÇÃO: Todos os planos são 48h
+    const planHours = 6; // ✅ CORREÇÃO: Todos os planos são 6h
     const now = new Date();
     const created = new Date(approval.created_at);
     const diffMs = now.getTime() - created.getTime();
     const hoursElapsed = Math.floor(diffMs / (1000 * 60 * 60));
     const remaining = planHours - hoursElapsed;
     
-    // ✅ CORREÇÃO: Garantir que nunca mostre mais de 48h
+    // ✅ CORREÇÃO: Garantir que nunca mostre mais de 6h
     const finalRemaining = Math.min(remaining, 48);
     
     return finalRemaining > 0 ? finalRemaining : 0;

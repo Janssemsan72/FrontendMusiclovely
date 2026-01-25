@@ -3,15 +3,15 @@
  * Elimina código duplicado em múltiplos arquivos
  */
 
-type SupportedLocale = 'pt' | 'en' | 'es';
+type SupportedLocale = 'pt';
 
-const SUPPORTED_LOCALES: SupportedLocale[] = ['pt', 'en', 'es'];
+const SUPPORTED_LOCALES: SupportedLocale[] = ['pt'];
 const DEFAULT_LOCALE: SupportedLocale = 'pt';
 
 /**
  * Detecta o idioma atual baseado na URL, localStorage e cookies
  * Ordem de prioridade:
- * 1. Prefixo na URL (/pt, /en, /es)
+ * 1. Prefixo na URL (/pt)
  * 2. localStorage (musiclovely_language)
  * 3. Cookie (lang)
  * 4. navigator.language
@@ -48,7 +48,7 @@ export function getLocalizedPath(path: string, locale: SupportedLocale): string 
   const cleanPath = path.endsWith('/') && path !== '/' ? path.slice(0, -1) : path;
   
   // Remover prefixo de idioma se existir
-  const pathWithoutLocale = cleanPath.replace(/^\/(pt|en|es)/, '') || '/';
+  const pathWithoutLocale = cleanPath.replace(/^\/(pt)/, '') || '/';
   
   // ✅ CORREÇÃO: Nunca adicionar prefixo - sempre retornar caminho sem prefixo
   return pathWithoutLocale === '/' ? '/' : pathWithoutLocale;

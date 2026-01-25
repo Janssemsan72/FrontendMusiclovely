@@ -9,7 +9,7 @@ import { getDeviceInfo, getOptimizedTimeout } from '@/utils/detection/deviceDete
 import PublicRoutes from './PublicRoutes';
 import { devLog, i18nLog, isDevVerbose } from '@/utils/debug/devLogger';
 
-const SUPPORTED_LOCALES = ['pt', 'en', 'es'] as const;
+const SUPPORTED_LOCALES = ['pt'] as const;
 
 // Cache para resultado da detecção de edge (evitar múltiplas chamadas)
 let cachedEdgeDetection: { locale: string | null; timestamp: number } | null = null;
@@ -38,16 +38,14 @@ function LocaleRouterWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // ✅ CORREÇÃO CRÍTICA: Redirecionar /pt/*, /en/*, /es/* para /* (remover prefixo)
+  // ✅ CORREÇÃO CRÍTICA: Redirecionar /pt/* para /* (remover prefixo)
   // Fazer verificação síncrona ANTES de qualquer renderização para evitar 404 em produção
   const currentPath = location.pathname;
-  const shouldRedirect = currentPath.startsWith('/pt/') || currentPath === '/pt' ||
-                         currentPath.startsWith('/en/') || currentPath === '/en' ||
-                         currentPath.startsWith('/es/') || currentPath === '/es';
+  const shouldRedirect = currentPath.startsWith('/pt/') || currentPath === '/pt';
   
   // ✅ CORREÇÃO: Redirecionar imediatamente se necessário, sem esperar useEffect
   if (shouldRedirect) {
-    const pathWithoutLocale = currentPath.replace(/^\/(pt|en|es)/, '') || '/';
+    const pathWithoutLocale = currentPath.replace(/^\/(pt)/, '') || '/';
     const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
     
     // Usar navigate de forma síncrona para garantir redirecionamento imediato
@@ -62,10 +60,8 @@ function LocaleRouterWrapper() {
     const path = location.pathname;
     
     // Verificação dupla para garantir que não perdemos nenhum caso
-    if (path.startsWith('/pt/') || path === '/pt' ||
-        path.startsWith('/en/') || path === '/en' ||
-        path.startsWith('/es/') || path === '/es') {
-      const pathWithoutLocale = path.replace(/^\/(pt|en|es)/, '') || '/';
+    if (path.startsWith('/pt/') || path === '/pt') {
+      const pathWithoutLocale = path.replace(/^\/(pt)/, '') || '/';
       const newPath = `${pathWithoutLocale}${location.search}${location.hash}`;
       
       if (path !== newPath) {
@@ -81,7 +77,7 @@ function LocaleRouterWrapper() {
     SUPPORTED_LOCALES.includes(localeFromPath as any)
   );
   
-  // ✅ CORREÇÃO: Se tem locale válido (pt, en, es), NÃO renderizar PublicRoutes diretamente
+  // ✅ CORREÇÃO: Se tem locale válido (pt), NÃO renderizar PublicRoutes diretamente
   // O redirecionamento acima já foi feito
   // Se não tem locale válido, renderizar LocaleRouter para processar
   return <LocaleRouterInternal />;
@@ -270,7 +266,7 @@ function LocaleRouterInternal() {
     }
 
     // ✅ CORREÇÃO: Se tem locale na URL, SEMPRE redirecionar para remover o prefixo
-    // Nunca manter prefixo /pt, /en ou /es na URL
+    // Nunca manter prefixo /pt na URL
     if (localeFromPath && SUPPORTED_LOCALES.includes(localeFromPath as any)) {
       // ✅ FASE 2: Adicionar ao cache com timestamp
       globalNavigationState.hasProcessed.set(routeKey, Date.now());

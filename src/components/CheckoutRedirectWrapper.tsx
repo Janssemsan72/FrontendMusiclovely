@@ -49,7 +49,7 @@ export default function CheckoutRedirectWrapper({ children }: { children: React.
     
     // Redirecionar se:
     // 1. For rota de checkout E tiver os parâmetros necessários, OU
-    // 2. For rota home (/pt, /en, /es) E tiver message_id e order_id (vindo do WhatsApp)
+    // 2. For rota home (/pt) E tiver message_id e order_id (vindo do WhatsApp)
     const shouldRedirect = (
       (isCheckoutRoute && (messageId || hasCheckoutParams) && orderId) ||
       (isHomeRoute && messageId && orderId)

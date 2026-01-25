@@ -32,9 +32,7 @@ export default function AdminEmailTemplates() {
   const [previewMode, setPreviewMode] = useState(false);
 
   const languages = [
-    { key: 'pt', name: 'Português', flag: '🇧🇷' },
-    { key: 'en', name: 'English', flag: '🇺🇸' },
-    { key: 'es', name: 'Español', flag: '🇪🇸' }
+    { key: 'pt', name: 'Português', flag: '🇧🇷' }
   ];
 
   const templateTypes = [
@@ -67,18 +65,6 @@ export default function AdminEmailTemplates() {
         },
         {
           id: '2',
-          template_type: 'order_paid',
-          language: 'en',
-          subject: 'Payment Confirmed - Your Music is Being Created!',
-          html_content: '<html><body><h1>Order Confirmed!</h1><p>Hello {{customer_name}}...</p></body></html>',
-          variables: ['customer_name', 'recipient_name', 'order_id'],
-          from_name: 'Music Lovely',
-          from_email: 'no-reply@musiclovely.com',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '3',
           template_type: 'music_released',
           language: 'pt',
           subject: 'Sua Música Está Pronta para Download!',
@@ -143,7 +129,7 @@ export default function AdminEmailTemplates() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Templates de Email</h1>
-          <p className="text-muted-foreground">Gerencie templates multiidioma</p>
+          <p className="text-muted-foreground">Gerencie templates em português</p>
         </div>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -155,8 +141,6 @@ export default function AdminEmailTemplates() {
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="pt">🇧🇷 Português</TabsTrigger>
-          <TabsTrigger value="en">🇺🇸 English</TabsTrigger>
-          <TabsTrigger value="es">🇪🇸 Español</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">

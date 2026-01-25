@@ -1159,7 +1159,7 @@ export default function AdminOrderDetails() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Plano</p>
-              <Badge data-testid="order-plan" className="select-text">{order.plan === "express" ? "Express (48h)" : "Standard (7 dias)"}</Badge>
+              <Badge data-testid="order-plan" className="select-text">{order.plan === "express" ? "Express (6h)" : "Standard (6h)"}</Badge>
             </div>
             <div data-testid="order-amount">
               <CopyableField 

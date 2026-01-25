@@ -81,7 +81,7 @@ export default function IndexCompany() {
     },
     {
       number: '3',
-      title: 'Entrega em até 48 horas',
+      title: 'Entrega em até 6 horas',
       description: 'Você recebe a música final no e-mail cadastrado.'
     }
   ];
@@ -113,7 +113,7 @@ export default function IndexCompany() {
   const stats = [
     { number: '20000+', label: 'Músicas Criadas' },
     { number: '98%', label: 'Satisfação' },
-    { number: '48h', label: 'Entrega Rápida' },
+    { number: '6h', label: 'Recebimento ultra rápido' },
     { number: '5.0', label: 'Avaliação Média' }
   ];
 

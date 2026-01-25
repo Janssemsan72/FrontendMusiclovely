@@ -114,7 +114,7 @@ export default function RegionalPricingSection() {
           price_cents: caktoConfig.price_display,
           currency: 'BRL',
           stripe_price_id: 'price_BR_EXPRESS',
-          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 48h'],
+          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Entrega em 6h'],
           is_active: true
         }
       ];

@@ -10,14 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { switchLocale, getCurrentLocale, removeLocalePrefix } from '@/lib/i18nRoutes';
+import { switchLocale } from '@/lib/i18nRoutes';
 
-type Language = 'en' | 'pt' | 'es';
+type Language = 'pt';
 
 const languages = [
-  { code: 'es', name: 'Español', flag: '🇪🇸', native: 'Español' },
   { code: 'pt', name: 'Português', flag: '🇧🇷', native: 'Português' },
-  { code: 'en', name: 'English', flag: '🇺🇸', native: 'English' },
 ];
 
 export default function LanguageSelector() {

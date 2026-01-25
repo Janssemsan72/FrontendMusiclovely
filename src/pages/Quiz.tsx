@@ -617,28 +617,12 @@ const Quiz = memo(() => {
         ? `${t('quiz.relationships.other')}: ${formData.customRelationship || ''}` 
         : (formData.relationship || '');
 
-      // Detectar e persistir idioma
+      // ✅ CORREÇÃO: Sempre português, sem detecção
       const detectAndPersistLanguage = () => {
-        const pathname = window.location.pathname;
-        let lang = 'en'; // fallback inglês
-        
-        if (pathname.startsWith('/pt')) lang = 'pt';
-        else if (pathname.startsWith('/es')) lang = 'es';
-        else if (pathname.startsWith('/en')) lang = 'en';
-        else {
-          const stored = localStorage.getItem('musiclovely_language');
-          if (stored && ['pt', 'en', 'es'].includes(stored)) lang = stored;
-          else {
-            const nav = navigator.language?.slice(0, 2);
-            if (nav && ['pt', 'en', 'es'].includes(nav)) lang = nav;
-          }
-        }
-        
+        const lang = 'pt';
         localStorage.setItem('musiclovely_language', lang);
         document.cookie = `lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
         document.documentElement.lang = lang;
-        
-        console.log('🌍 [Quiz] Idioma detectado e persistido:', lang);
         return lang;
       };
 

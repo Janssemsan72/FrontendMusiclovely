@@ -1,11 +1,10 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useLocaleSimple, type Locale } from '@/hooks/useLocaleSimple';
 
-// Importar traduções
-// ✅ CORREÇÃO VERCEL: Usar import direto (Vite suporta importação de JSON nativamente)
+// ✅ CORREÇÃO: Importar apenas traduções em português
 import ptTranslations from '@/i18n/locales/pt.json';
-import esTranslations from '@/i18n/locales/es_new.json';
-import enTranslations from '@/i18n/locales/en_new.json';
+
+// ✅ CORREÇÃO: Tipo simplificado - apenas português
+type Locale = 'pt';
 
 interface SimpleLocaleContextType {
   locale: Locale;
@@ -15,8 +14,8 @@ interface SimpleLocaleContextType {
 }
 
 const SimpleLocaleContext = createContext<SimpleLocaleContextType>({
-  locale: 'es',
-  isLoading: true,
+  locale: 'pt',
+  isLoading: false,
   changeLocale: () => {},
   t: (key: string) => key
 });
@@ -24,22 +23,15 @@ const SimpleLocaleContext = createContext<SimpleLocaleContextType>({
 export const useSimpleLocaleContext = () => useContext(SimpleLocaleContext);
 
 export const SimpleLocaleProvider = ({ children }: { children: ReactNode }) => {
-  const { locale, isLoading, changeLocale } = useLocaleSimple();
-
-  // Obter traduções baseado no idioma
-  const getTranslations = () => {
-    switch (locale) {
-      case 'pt':
-        return ptTranslations;
-      case 'en':
-        return enTranslations;
-      case 'es':
-      default:
-        return esTranslations;
-    }
+  // ✅ CORREÇÃO: Sempre português, sem detecção, sem loading
+  const locale: Locale = 'pt';
+  const isLoading = false;
+  const changeLocale = (_newLocale: Locale) => {
+    // Não faz nada - sempre português
   };
 
-  const translations = getTranslations();
+  // ✅ CORREÇÃO: Sempre usar traduções em português
+  const translations = ptTranslations;
 
   // Função de tradução
   const t = (key: string): string => {
@@ -60,8 +52,6 @@ export const SimpleLocaleProvider = ({ children }: { children: ReactNode }) => {
       return key;
     }
   };
-
-  console.log('🌍 [SimpleLocaleProvider] Renderizando com locale:', locale, 'isLoading:', isLoading);
 
   return (
     <SimpleLocaleContext.Provider value={{

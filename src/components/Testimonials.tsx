@@ -9,27 +9,62 @@ const testimonialAvatar1 = "/testimonials/avatar-1.webp";
 const testimonialAvatar2 = "/testimonials/avatar-2.webp";
 const testimonialAvatar3 = "/testimonials/avatar-3.webp";
 
-// ✅ CORREÇÃO: Helper para garantir que URLs de imagens sejam resolvidas corretamente em produção
-const getImageUrl = (url: string | undefined | null): string | undefined => {
-  if (!url) return undefined;
-  
-  // Converter para string se necessário
-  const urlString = String(url).trim();
-  if (!urlString) return undefined;
-  
-  // Se já é uma URL completa (http/https/data), retornar como está
-  if (urlString.startsWith('http://') || urlString.startsWith('https://') || urlString.startsWith('data:')) {
-    return urlString;
-  }
-  
-  // ✅ CORREÇÃO: Caminhos absolutos (começando com /) funcionam igual em dev e produção
-  // Arquivos em public/ são servidos na raiz em ambos os ambientes
-  if (urlString.startsWith('/')) {
-    return urlString;
-  }
-  
-  // Se não começar com /, adicionar / no início para tornar absoluto
-  return '/' + urlString;
+// Avatares reais do RandomUser (estáticos)
+const FEMALE_AVATARS = [
+  "https://randomuser.me/api/portraits/women/68.jpg",
+  "https://randomuser.me/api/portraits/women/32.jpg",
+  "https://randomuser.me/api/portraits/women/44.jpg",
+  "https://randomuser.me/api/portraits/women/21.jpg",
+  "https://randomuser.me/api/portraits/women/55.jpg",
+  "https://randomuser.me/api/portraits/women/77.jpg"
+];
+const MALE_AVATARS = [
+  "https://randomuser.me/api/portraits/men/68.jpg",
+  "https://randomuser.me/api/portraits/men/32.jpg",
+  "https://randomuser.me/api/portraits/men/44.jpg",
+  "https://randomuser.me/api/portraits/men/21.jpg",
+  "https://randomuser.me/api/portraits/men/55.jpg",
+  "https://randomuser.me/api/portraits/men/77.jpg"
+];
+
+const normalizeName = (name: string): string => {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+};
+
+const FEMALE_NAME_HINTS = new Set([
+  "ana", "maria", "mariana", "juliana", "camila", "jessica", "beatriz",
+  "carla", "patricia", "fernanda", "luana", "larissa", "amanda", "bruna",
+  "carolina", "paula", "renata", "leticia", "bianca", "isabela", "gabriela",
+  "sara", "aline", "adriana", "raquel", "veronica", "priscila", "thais",
+  "vanessa", "rita", "rosa", "alice", "helena", "vitoria", "clarice", "elaine", "eliane", "tatiana"
+]);
+const MALE_NAME_HINTS = new Set([
+  "carlos", "joao", "jose", "paulo", "lucas", "marcos", "fernando", "ricardo",
+  "roberto", "bruno", "gustavo", "rafael", "mateus", "thiago", "diego", "andre",
+  "pedro", "henrique", "felipe", "murilo", "daniel", "leonardo", "eduardo", "gabriel",
+  "caio", "otavio", "victor", "vitor", "vinicius", "miguel", "davi", "arthur"
+]);
+
+const inferGenderFromName = (name: string): "male" | "female" | "unknown" => {
+  const normalized = normalizeName(name);
+  if (!normalized) return "unknown";
+  const firstName = normalized.split(/\s+/)[0];
+  if (!firstName) return "unknown";
+  if (FEMALE_NAME_HINTS.has(firstName)) return "female";
+  if (MALE_NAME_HINTS.has(firstName)) return "male";
+  if (firstName.endsWith('a')) return "female";
+  if (firstName.endsWith('o')) return "male";
+  return "unknown";
+};
+
+const getAvatarForTestimonial = (name: string, index: number): string => {
+  const gender = inferGenderFromName(name);
+  const pool = gender === "female" ? FEMALE_AVATARS : MALE_AVATARS;
+  return pool[index % pool.length];
 };
 
 interface Testimonial {
@@ -269,7 +304,7 @@ export default function Testimonials() {
                   <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">6h</div>
                   <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
                 </div>
               </div>
@@ -293,6 +328,7 @@ export default function Testimonials() {
   const displayTestimonial = currentTestimonial || (testimonials.length > 0 
     ? getTranslatedTestimonial(testimonials[0], currentLanguage)
     : null);
+  const displayIndex = currentTestimonial ? validIndex : 0;
 
   if (!displayTestimonial) {
     // Fallback: mostrar apenas stats se não houver depoimentos válidos
@@ -327,7 +363,7 @@ export default function Testimonials() {
                   <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">6h</div>
                   <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
                 </div>
               </div>
@@ -375,9 +411,8 @@ export default function Testimonials() {
               
               <div className="flex items-center justify-center gap-2 sm:gap-3">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-3 border-primary/20 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                  {displayTestimonial.avatar_url ? (
-                    <img 
-                      src={getImageUrl(displayTestimonial.avatar_url) || undefined} 
+                  <img
+                      src={getAvatarForTestimonial(displayTestimonial.name, displayIndex)}
                       alt={displayTestimonial.name}
                       className="w-full h-full object-cover absolute inset-0 z-10"
                       width={48}
@@ -385,7 +420,7 @@ export default function Testimonials() {
                       loading="lazy"
                       decoding="async"
                       onError={(e) => {
-                        console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.avatar_url);
+                        console.warn('⚠️ [Testimonials] Erro ao carregar avatar:', displayTestimonial.name);
                         const target = e.currentTarget;
                         target.style.display = 'none';
                         target.style.visibility = 'hidden';
@@ -407,8 +442,7 @@ export default function Testimonials() {
                         }
                       }}
                     />
-                  ) : null}
-                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0 z-0" style={{ display: displayTestimonial.avatar_url ? 'none' : 'flex' }}>
+                  <div className="avatar-fallback w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm sm:text-base absolute inset-0 z-0" style={{ display: 'none' }}>
                     {displayTestimonial.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
@@ -461,6 +495,7 @@ export default function Testimonials() {
         <div className="grid md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
           {testimonials.slice(0, 3).map((testimonial, index) => {
             const translatedTestimonial = getTranslatedTestimonial(testimonial, currentLanguage);
+            const avatarUrl = getAvatarForTestimonial(translatedTestimonial.name, index);
             return (
               <Card 
                 key={testimonial.id} 
@@ -480,9 +515,8 @@ export default function Testimonials() {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative">
-                      {translatedTestimonial.avatar_url ? (
-                        <img 
-                          src={getImageUrl(translatedTestimonial.avatar_url) || undefined} 
+                      <img
+                          src={avatarUrl}
                           alt={translatedTestimonial.name}
                           className="w-full h-full object-cover absolute inset-0 z-10"
                           width={40}
@@ -490,7 +524,7 @@ export default function Testimonials() {
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
-                            console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.avatar_url);
+                            console.warn('⚠️ [Testimonials] Erro ao carregar avatar no grid:', translatedTestimonial.name);
                             const target = e.currentTarget;
                             target.style.display = 'none';
                             target.style.visibility = 'hidden';
@@ -512,8 +546,7 @@ export default function Testimonials() {
                             }
                           }}
                         />
-                      ) : null}
-                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0 z-0" style={{ display: translatedTestimonial.avatar_url ? 'none' : 'flex' }}>
+                      <div className="avatar-fallback-grid w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-sm absolute inset-0 z-0" style={{ display: 'none' }}>
                         {translatedTestimonial.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
@@ -543,7 +576,7 @@ export default function Testimonials() {
                 <div className="text-base sm:text-lg text-muted-foreground">Avaliação Média</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">48h</div>
+                <div className="text-4xl sm:text-5xl font-bold text-primary mb-2">6h</div>
                 <div className="text-base sm:text-lg text-muted-foreground">Tempo de Entrega</div>
               </div>
             </div>

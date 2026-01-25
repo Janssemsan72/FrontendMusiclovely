@@ -704,7 +704,7 @@ export default function AdminReleases() {
                       </button>
                     </div>
                     <Badge variant="secondary" className="text-[9px] w-fit px-1.5 py-0">
-                      {order.plan === 'express' ? '⚡ Express (48h)' : '📅 Standard (7 dias)'}
+                      {order.plan === 'express' ? '⚡ Express (6h)' : '📅 Standard (6h)'}
                     </Badge>
                   </div>
                 </div>

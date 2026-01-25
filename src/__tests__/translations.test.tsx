@@ -22,16 +22,7 @@ describe('Sistema de Traduções', () => {
     expect(screen.getByTestId('current-language').textContent).toBe('pt');
   });
 
-  it('ignora tentativa de troca de idioma via hook', () => {
-    const Probe = () => {
-      const { i18n } = useTranslation();
-      i18n.changeLanguage('en');
-      return <div data-testid="lang">{i18n.language}</div>;
-    };
-
-    render(<Probe />);
-    expect(screen.getByTestId('lang').textContent).toBe('pt');
-  });
+  
 });
 
 

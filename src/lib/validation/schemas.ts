@@ -38,7 +38,7 @@ export const whatsappSchema = z
 /**
  * Idiomas permitidos no sistema
  */
-const ALLOWED_LANGUAGES = ['pt', 'en', 'es'] as const;
+const ALLOWED_LANGUAGES = ['pt'] as const;
 
 /**
  * Estilos musicais permitidos
@@ -122,7 +122,7 @@ export const quizSchema = z.object({
 
   language: z
     .enum(ALLOWED_LANGUAGES, {
-      errorMap: () => ({ message: "Idioma é obrigatório e deve ser pt, en ou es" }),
+      errorMap: () => ({ message: "Idioma é obrigatório e deve ser pt" }),
     }),
 
   // Campos opcionais

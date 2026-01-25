@@ -75,7 +75,7 @@ export default function FAQ() {
             {
               id: '2',
               question: t('faq.questions.deliveryTimes.question') || 'Como funcionam os prazos?',
-              answer: t('faq.questions.deliveryTimes.answer') || 'Nossa entrega padrão é de 48 horas. Para pedidos expressos, podemos entregar em até 12 horas.'
+              answer: t('faq.questions.deliveryTimes.answer') || 'Nossa entrega é de até 6 horas.'
             },
             {
               id: '3',
@@ -104,7 +104,7 @@ export default function FAQ() {
           {
             id: '2',
             question: t('faq.questions.deliveryTimes.question') || 'Como funcionam os prazos?',
-            answer: t('faq.questions.deliveryTimes.answer') || 'Nossa entrega padrão é de 48 horas.'
+            answer: t('faq.questions.deliveryTimes.answer') || 'Nossa entrega é de até 6 horas.'
           },
           {
             id: '3',

@@ -44,13 +44,13 @@ vi.mock('@/lib/translationCache', () => ({
 }));
 
 vi.mock('@/lib/detectLocale', () => ({
-  detectLocaleSimple: vi.fn(() => Promise.resolve('es')),
+  detectLocaleSimple: vi.fn(() => Promise.resolve('pt')),
   getCookieLocale: vi.fn(() => null),
   saveLocalePreference: vi.fn(),
   getLocaleFromPath: vi.fn((path) => {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0];
-    return ['pt', 'en', 'es'].includes(firstSegment) ? firstSegment : null;
+    return firstSegment === 'pt' ? 'pt' : null;
   })
 }));
 
@@ -58,13 +58,13 @@ vi.mock('@/lib/i18nRoutes', () => ({
   getCurrentLocale: vi.fn((path) => {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0];
-    return ['pt', 'en', 'es'].includes(firstSegment) ? firstSegment : null;
+    return firstSegment === 'pt' ? 'pt' : null;
   }),
   getLocalizedPath: vi.fn((path, locale) => `/${locale}${path}`),
-  removeLocalePrefix: vi.fn((path) => path.replace(/^\/(pt|en|es)/, '') || '/'),
-  switchLocale: vi.fn((currentPath, newLocale) => `/${newLocale}${currentPath.replace(/^\/(pt|en|es)/, '')}`),
-  hasLocalePrefix: vi.fn((path) => /^\/(pt|en|es)/.test(path)),
-  getBasePath: vi.fn((path) => path.replace(/^\/(pt|en|es)/, ''))
+  removeLocalePrefix: vi.fn((path) => path.replace(/^\/(pt)/, '') || '/'),
+  switchLocale: vi.fn((currentPath, newLocale) => `/${newLocale}${currentPath.replace(/^\/(pt)/, '')}`),
+  hasLocalePrefix: vi.fn((path) => /^\/(pt)/.test(path)),
+  getBasePath: vi.fn((path) => path.replace(/^\/(pt)/, ''))
 }));
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -80,7 +80,7 @@ describe('Força de Idioma por URL', () => {
     vi.clearAllMocks();
   });
 
-  describe('Rotas /pt, /en, /es devem forçar idioma específico', () => {
+  describe('Rotas /pt devem forçar idioma específico', () => {
     it('deve forçar português para /pt', async () => {
       window.history.pushState({}, '', '/pt');
       
@@ -96,33 +96,7 @@ describe('Força de Idioma por URL', () => {
       });
     });
 
-    it('deve forçar inglês para /en', async () => {
-      window.history.pushState({}, '', '/en');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
-
-    it('deve forçar espanhol para /es', async () => {
-      window.history.pushState({}, '', '/es');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
+    
   });
 
   describe('Rotas com prefixo devem forçar idioma específico', () => {
@@ -140,37 +114,11 @@ describe('Força de Idioma por URL', () => {
       });
     });
 
-    it('deve forçar inglês para /en/pricing', async () => {
-      window.history.pushState({}, '', '/en/pricing');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
-
-    it('deve forçar espanhol para /es/quiz', async () => {
-      window.history.pushState({}, '', '/es/quiz');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Title')).toBeInTheDocument();
-      });
-    });
+    
   });
 
   describe('Redirecionamentos automáticos', () => {
-    it('deve redirecionar /pt para /pt/', async () => {
+    it('deve redirecionar /pt para /', async () => {
       window.history.pushState({}, '', '/pt');
       
       render(
@@ -180,35 +128,7 @@ describe('Força de Idioma por URL', () => {
       );
 
       await waitFor(() => {
-        expect(window.location.pathname).toBe('/pt/');
-      });
-    });
-
-    it('deve redirecionar /en para /en/', async () => {
-      window.history.pushState({}, '', '/en');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(window.location.pathname).toBe('/en/');
-      });
-    });
-
-    it('deve redirecionar /es para /es/', async () => {
-      window.history.pushState({}, '', '/es');
-      
-      render(
-        <TestWrapper>
-          <LocaleRouter />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(window.location.pathname).toBe('/es/');
+        expect(window.location.pathname).toBe('/');
       });
     });
   });

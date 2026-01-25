@@ -51,7 +51,7 @@ export default function About() {
     },
     {
       icon: Clock,
-      title: "Entrega Rápida",
+      title: "Recebimento ultra rápido",
       description: "Entregamos sua música personalizada em até 24 horas, sem comprometer a qualidade."
     }
   ];
@@ -190,7 +190,7 @@ export default function About() {
                   <div className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
                     <div>
-                      <h3 className="font-semibold">Entrega Rápida</h3>
+                      <h3 className="font-semibold">Recebimento ultra rápido</h3>
                       <p className="text-sm text-muted-foreground">
                         Receba sua música personalizada em até 24 horas.
                       </p>

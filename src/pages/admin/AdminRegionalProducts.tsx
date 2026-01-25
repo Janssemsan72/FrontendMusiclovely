@@ -54,7 +54,7 @@ export default function AdminRegionalProducts() {
           price_cents: 4790,
           currency: 'BRL',
           stripe_price_id: 'price_BR_EXPRESS',
-          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Download ilimitado', 'Entrega em 48h'],
+          features: ['MP3 alta qualidade', 'Capa personalizada', 'Letra completa', 'Download ilimitado', 'Entrega em 6h'],
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -66,7 +66,7 @@ export default function AdminRegionalProducts() {
           price_cents: 3900,
           currency: 'USD',
           stripe_price_id: 'price_1SKUOFCkSeRm9TUrSTOgC0b3',
-          features: ['High quality MP3', 'Custom cover', 'Full lyrics', 'Unlimited download', '48h delivery'],
+          features: ['High quality MP3', 'Custom cover', 'Full lyrics', 'Unlimited download', '6h delivery'],
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -78,7 +78,7 @@ export default function AdminRegionalProducts() {
           price_cents: 4900,
           currency: 'USD',
           stripe_price_id: 'price_1SKUOFCkSeRm9TUrSTOgC0b3',
-          features: ['MP3 de alta calidad', 'Portada personalizada', 'Letra completa', 'Descarga ilimitada', 'Entrega en 48h'],
+          features: ['MP3 de alta calidad', 'Portada personalizada', 'Letra completa', 'Descarga ilimitada', 'Entrega en 6h'],
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

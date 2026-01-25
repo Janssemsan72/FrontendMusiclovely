@@ -473,8 +473,7 @@ export default function AdminEmails() {
 
       if (error) throw error;
 
-      const languageName = (selectedTemplate as any).language === 'pt' ? 'Português' : 
-                          (selectedTemplate as any).language === 'en' ? 'English' : 'Español';
+      const languageName = 'Português';
       
       toast.success(`Template ${languageName} atualizado com sucesso!`, {
         description: `Template: ${selectedTemplate.template_type} (${(selectedTemplate as any).language?.toUpperCase()})`
@@ -532,9 +531,9 @@ export default function AdminEmails() {
           recipient_name: 'Maria Santos',
           order_id: `TEST-${Date.now()}`,
           music_style: 'Pop',
-          plan: 'Express (48 horas)',
+          plan: 'Express (6 horas)',
           style: 'Pop',
-          delivery_time: '48 horas',
+          delivery_time: '6 horas',
           release_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
         };
       } else if (template.template_type === 'music_released') {
@@ -595,26 +594,26 @@ export default function AdminEmails() {
       
       let testVariables: Record<string, any> = {};
       if (template.template_type === 'order_paid') {
-          testVariables = {
+        testVariables = {
           customer_name: customerName,
-          recipient_name: selectedLanguage === 'en' ? 'Emma' : selectedLanguage === 'es' ? 'Ana' : 'Maria',
-          order_id: `TEST-${selectedLanguage.toUpperCase()}-${Date.now()}`,
-            music_style: 'Pop',
-          plan: selectedLanguage === 'en' ? 'Express (48 hours)' : selectedLanguage === 'es' ? 'Expreso (48 horas)' : 'Express (48 horas)',
+          recipient_name: 'Maria',
+          order_id: `TEST-PT-${Date.now()}`,
+          music_style: 'Pop',
+          plan: 'Express (6 horas)',
           style: 'Pop',
-          delivery_time: selectedLanguage === 'en' ? '48 hours' : '48 horas',
+          delivery_time: '6 horas',
           release_date: new Date().toISOString().slice(0,10)
         };
       } else if (template.template_type === 'music_released') {
-          testVariables = {
+        testVariables = {
           customer_name: customerName,
-          recipient_name: selectedLanguage === 'en' ? 'Emma' : selectedLanguage === 'es' ? 'Ana' : 'Maria',
-          song_title_1: selectedLanguage === 'en' ? 'Our Song' : selectedLanguage === 'es' ? 'Nuestra Canción' : 'Nossa Música',
-            music_style: 'Pop',
+          recipient_name: 'Maria',
+          song_title_1: 'Nossa Música',
+          music_style: 'Pop',
           duration: '3:20',
           release_date: new Date().toISOString().slice(0,10),
           download_url_1: 'https://example.com/song1.mp3',
-          song_title_2: selectedLanguage === 'en' ? 'Our Song (Alt)' : selectedLanguage === 'es' ? 'Nuestra Canción (Alt)' : 'Nossa Música (Alt)',
+          song_title_2: 'Nossa Música (Alt)',
           download_url_2: 'https://example.com/song2.mp3'
           };
       }
@@ -622,7 +621,7 @@ export default function AdminEmails() {
       const { data, error } = await supabase.functions.invoke('test-send-email-template', {
             body: {
               template_type: template.template_type,
-          language: selectedLanguage,
+          language: 'pt',
               to_email: testEmail.trim(),
               variables: testVariables
             }
@@ -632,7 +631,7 @@ export default function AdminEmails() {
         throw new Error(data?.error || (error as any)?.message || 'Falha ao enviar teste localizado');
       }
 
-      toast.success(`✅ Email localizado enviado (${selectedLanguage.toUpperCase()}) para ${testEmail}`, {
+      toast.success(`✅ Email localizado enviado (PT) para ${testEmail}`, {
         description: `Template: ${template.template_type} | ID: ${data?.resend_id || 'N/A'}`
       });
     } catch (error: any) {
@@ -646,8 +645,9 @@ export default function AdminEmails() {
   };
 
   const getTemplateTitle = (type: string, language?: string) => {
-    const languageFlag = language === 'pt' ? '🇧🇷' : language === 'en' ? '🇺🇸' : language === 'es' ? '🇲🇽' : '';
-    const languageName = language === 'pt' ? 'PT' : language === 'en' ? 'EN' : language === 'es' ? 'ES' : '';
+    const hasLocale = language === 'pt';
+    const languageFlag = hasLocale ? '🇧🇷' : '';
+    const languageName = hasLocale ? 'PT' : '';
     
     switch (type) {
       case 'order_paid':
@@ -660,7 +660,7 @@ export default function AdminEmails() {
   };
 
   const getTemplateDescription = (type: string, language?: string) => {
-    const languageText = language === 'pt' ? 'Português' : language === 'en' ? 'English' : language === 'es' ? 'Español' : '';
+    const languageText = language === 'pt' ? 'Português' : '';
     
     switch (type) {
       case 'order_paid':
@@ -698,9 +698,9 @@ export default function AdminEmails() {
           </Badge>
           {templates.length > 0 && (
             <div className="flex items-center gap-1">
-              {['pt', 'en', 'es'].map(lang => {
+              {['pt'].map(lang => {
                 const count = templates.filter(t => (t as any).language === lang).length;
-                const flag = lang === 'pt' ? '🇧🇷' : lang === 'en' ? '🇺🇸' : '🇲🇽';
+                const flag = lang === 'pt' ? '🇧🇷' : '';
                 return count > 0 ? (
                   <Badge key={lang} variant="outline" className="text-xs">
                     {flag} {count}
@@ -749,7 +749,7 @@ export default function AdminEmails() {
               </h3>
               <p className="text-xs text-blue-700 dark:text-blue-300">
                 Os templates são automaticamente traduzidos para português, inglês e espanhol. 
-                O sistema detecta o idioma do usuário e envia o template apropriado.
+                O sistema envia templates apenas em português.
               </p>
               <div className="flex items-center gap-1 mt-1">
                 <span className="text-xs text-blue-600 dark:text-blue-400">Idiomas:</span>
@@ -805,8 +805,6 @@ export default function AdminEmails() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pt">🇧🇷 Português</SelectItem>
-                  <SelectItem value="en">🇺🇸 English</SelectItem>
-                  <SelectItem value="es">🇲🇽 Español</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -814,7 +812,7 @@ export default function AdminEmails() {
           <div className="text-xs md:text-sm text-muted-foreground mt-2">
             <p>• Emails de teste serão enviados para este endereço</p>
             <p>• O nome do cliente será detectado automaticamente ou você pode editá-lo</p>
-            <p>• Selecione o idioma para testar emails localizados</p>
+            <p>• Os testes usam templates em português</p>
           </div>
         </CardContent>
       </Card>
@@ -932,7 +930,7 @@ export default function AdminEmails() {
                   onClick={() => handleTestLocalizedEmail(template)}
                   disabled={isSendingLocalized}
                   className="w-full text-xs h-6 border-blue-300 text-blue-700 hover:bg-blue-50"
-                  title={`Enviar email localizado em ${selectedLanguage === 'pt' ? 'Português' : selectedLanguage === 'en' ? 'English' : 'Español'}`}
+                  title="Enviar email localizado em Português"
                 >
                   {isSendingLocalized ? (
                     <>
@@ -944,10 +942,10 @@ export default function AdminEmails() {
                     <>
                       <Globe className="h-3 w-3 mr-1" />
                       <span className="hidden sm:inline">
-                        Teste Localizado ({selectedLanguage === 'pt' ? '🇧🇷 PT' : selectedLanguage === 'en' ? '🇺🇸 EN' : '🇲🇽 ES'})
+                        Teste Localizado (🇧🇷 PT)
                       </span>
                       <span className="sm:hidden">
-                        {selectedLanguage === 'pt' ? '🇧🇷 PT' : selectedLanguage === 'en' ? '🇺🇸 EN' : '🇲🇽 ES'}
+                        🇧🇷 PT
                       </span>
                     </>
                   )}
@@ -1329,7 +1327,7 @@ export default function AdminEmails() {
                   De: {selectedTemplate.from_name} &lt;{selectedTemplate.from_email}&gt;
                 </p>
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  🌍 Template: {selectedTemplate.template_type} ({(selectedTemplate as any).language === 'pt' ? '🇧🇷 Português' : (selectedTemplate as any).language === 'en' ? '🇺🇸 English' : '🇲🇽 Español'})
+                  🌍 Template: {selectedTemplate.template_type} (🇧🇷 Português)
                 </p>
               </div>
               

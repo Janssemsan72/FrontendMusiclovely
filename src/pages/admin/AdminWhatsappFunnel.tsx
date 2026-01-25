@@ -3289,7 +3289,7 @@ export default function AdminWhatsappFunnel() {
                             <div className="whitespace-pre-wrap break-words">
                               🔥 {selectedFunnel.customer_email?.split('@')[0].split('.')[0] || 'Olá'}, sua música para {selectedFunnel.quiz?.about_who || 'alguém especial'} está 99% pronta!
 
-⏰ Últimas horas para garantir entrega em 48h
+⏰ Últimas horas para garantir entrega em 6h
 💔 Não deixe esse momento especial passar
 
 ✨ Um clique e você transforma sentimentos em música
@@ -3310,7 +3310,7 @@ export default function AdminWhatsappFunnel() {
 🎵 Uma canção que conta sua história de amor
 
 ✨ Sua música está a um clique de se tornar realidade
-⏰ Entregamos em até 48h - perfeito para surpreender
+⏰ Entregamos em até 6h - perfeito para surpreender
 💝 Um presente que vai tocar a alma
 
 🌟 Vamos fazer esse sonho acontecer?
@@ -3345,7 +3345,7 @@ export default function AdminWhatsappFunnel() {
 🎵 Uma canção que vai tocar o coração para sempre
 
 🚀 Finalize AGORA e veja a magia acontecer!
-⏰ Entrega garantida em até 48h
+⏰ Entrega garantida em até 6h
 💛 Não perca essa chance única!
                             </div>
                           </div>
