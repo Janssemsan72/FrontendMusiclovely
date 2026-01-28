@@ -40,17 +40,26 @@ export default function AdminOrders() {
   const [convertingOrder, setConvertingOrder] = useState<string | null>(null);
   const ordersPerPage = 50; // ✅ Aumentado para melhor performance
   
+  // ✅ CORREÇÃO: Normalizar role para evitar variações (ex: "colaborador")
+  const normalizeRole = (role: string | null): 'admin' | 'collaborator' | null => {
+    if (!role) return null;
+    const normalized = role.toLowerCase().trim();
+    if (normalized === 'admin') return 'admin';
+    if (normalized === 'collaborator' || normalized === 'colaborador') return 'collaborator';
+    return null;
+  };
+  
   // ✅ CORREÇÃO: Verificar localStorage de forma SÍNCRONA antes de renderizar (evita flash)
   // Isso garante que a verificação aconteça ANTES do primeiro render
   const getInitialRole = (): 'admin' | 'collaborator' | null => {
     if (typeof window === 'undefined') return null;
     const role = localStorage.getItem('user_role');
-    return role === 'admin' || role === 'collaborator' ? role : null;
+    return normalizeRole(role);
   };
   
   const [initialRole] = useState<'admin' | 'collaborator' | null>(getInitialRole());
   const { userRole, isLoading: isRoleLoading } = useCollaboratorPermissions();
-  const [cachedRole, setCachedRole] = useState<string | null>(initialRole);
+  const [cachedRole, setCachedRole] = useState<'admin' | 'collaborator' | null>(initialRole);
   // ✅ CORREÇÃO: Inicializar roleVerified como false e só marcar como true quando tivermos certeza
   const [roleVerified, setRoleVerified] = useState(false);
   
@@ -58,7 +67,8 @@ export default function AdminOrders() {
   useEffect(() => {
     // Verificar imediatamente
     const role = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null;
-    setCachedRole(role);
+    const normalizedRole = normalizeRole(role);
+    setCachedRole(normalizedRole);
     
     // Só marcar como verificado se tivermos uma role válida OU se o hook já tiver retornado
     if (role || (!isRoleLoading && userRole)) {
@@ -66,7 +76,7 @@ export default function AdminOrders() {
       
       // Adicionar atributo data no body para CSS global
       if (typeof document !== 'undefined') {
-        const finalRole = role || userRole;
+        const finalRole = normalizedRole || userRole;
         if (finalRole) {
           document.body.setAttribute('data-user-role', finalRole);
         }
@@ -78,11 +88,12 @@ export default function AdminOrders() {
   useEffect(() => {
     const checkRole = () => {
       const role = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null;
-      setCachedRole(role);
+      const normalizedRole = normalizeRole(role);
+      setCachedRole(normalizedRole);
       
       // Atualizar atributo no body
-      if (typeof document !== 'undefined' && role) {
-        document.body.setAttribute('data-user-role', role);
+      if (typeof document !== 'undefined' && normalizedRole) {
+        document.body.setAttribute('data-user-role', normalizedRole);
       }
     };
     
@@ -92,9 +103,10 @@ export default function AdminOrders() {
     // Escutar mudanças no localStorage
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'user_role') {
-        setCachedRole(e.newValue);
-        if (typeof document !== 'undefined' && e.newValue) {
-          document.body.setAttribute('data-user-role', e.newValue);
+        const normalizedRole = normalizeRole(e.newValue);
+        setCachedRole(normalizedRole);
+        if (typeof document !== 'undefined' && normalizedRole) {
+          document.body.setAttribute('data-user-role', normalizedRole);
         }
       }
     };
@@ -113,9 +125,9 @@ export default function AdminOrders() {
   // ✅ CORREÇÃO: Verificação mais conservadora - se houver QUALQUER indicação de colaborador, ocultar
   // Só mostrar o card se tivermos CERTEZA ABSOLUTA de que é admin
   // Verificação DIRETA no momento do cálculo (não depende de estado)
-  const getCurrentRole = (): string | null => {
+  const getCurrentRole = (): 'admin' | 'collaborator' | null => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('user_role');
+      return normalizeRole(localStorage.getItem('user_role'));
     }
     return null;
   };
@@ -375,6 +387,8 @@ export default function AdminOrders() {
             <Card
               className="admin-card-compact relative overflow-hidden border-2 hover:shadow-lg transition-shadow"
               data-testid="stats-total-revenue"
+              data-card="pago"
+              data-hide-for-collaborator="true"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-bl-full z-0" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-green-500/5 rounded-tr-full z-0" />
